@@ -244,7 +244,7 @@ function performChiSquareTest() {
                 <td class="cell-data">
                     <div class="observed">${observed[i][j]}</div>
                     <div class="expected">(${expected[i][j].toFixed(2)})</div>
-                    <div class="contribution">[${contributions[i][j].toFixed(4)}]</div>
+                   
                 </td>`;
         }
         resultHtml += '</tr>';
