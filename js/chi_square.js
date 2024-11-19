@@ -201,8 +201,12 @@ function performChiSquareTest() {
     // Calculate chi-square statistic and contributions
     const { chiSquare, contributions } = calculateChiSquare(observed, expected, rows, cols);
 
-    // Get significance level
+    // Get and validate significance level
     const significanceLevel = parseFloat(document.getElementById('significance-level').value);
+    if (isNaN(significanceLevel) || significanceLevel <= 0 || significanceLevel >= 1) {
+        alert("Please enter a valid significance level between 0 and 1 (e.g., 0.05 for 5%)");
+        return;
+    }
 
     // Determine critical value and conclusion
     const degreesOfFreedom = (rows - 1) * (cols - 1);
