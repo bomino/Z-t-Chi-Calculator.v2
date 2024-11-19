@@ -31,13 +31,7 @@
                     It compares observed frequencies with expected frequencies to test if variables are independent.
                 </span>
             </p>
-            <div class="key-features">
-                <ul>
-                    <li>Test independence between variables</li>
-                    <li>Compare observed vs expected frequencies</li>
-                    <li>Analyze categorical data relationships</li>
-                </ul>
-            </div>
+
         </div>
     </div>
 
@@ -87,14 +81,7 @@
                     <li>Use only non-negative whole numbers</li>
                     <li>Ensure all cells have values (use 0 if none observed)</li>
                 </ul>
-                <div class="data-tips">
-                    <strong>Tips for Good Data:</strong>
-                    <ul>
-                        <li>Each cell should ideally have an expected frequency of at least 5</li>
-                        <li>No cell should have an expected frequency less than 1</li>
-                        <li>Total sample size should be appropriate for your degrees of freedom</li>
-                    </ul>
-                </div>
+
             </div>
 
             <div class="button-group">
@@ -112,16 +99,9 @@
                 <h3>Instructions:</h3>
                 <ul>
                     <li>Select your desired significance level (α)</li>
-                    <li>This determines how strong the evidence needs to be to reject the null hypothesis</li>
+                  
                 </ul>
-                <div class="significance-info">
-                    <strong>Common Significance Levels:</strong>
-                    <ul>
-                        <li>0.05 (5%): Standard level, balanced between Type I and Type II errors</li>
-                        <li>0.01 (1%): More conservative, stronger evidence needed</li>
-                        <li>0.10 (10%): More liberal, weaker evidence needed</li>
-                    </ul>
-                </div>
+
             </div>
             <div class="input-group">
                 <label for="significance-level">Significance Level:</label>
@@ -140,27 +120,7 @@
 
         <section class="section">
             <h2>Results</h2>
-            <div class="instruction-panel">
-                <h3>Understanding Your Results:</h3>
-                <ul>
-                    <li><strong>Chi-Square Statistic (χ²):</strong> Measures the difference between observed and
-                        expected frequencies</li>
-                    <li><strong>Degrees of Freedom (df):</strong> (rows-1) × (columns-1)</li>
-                    <li><strong>P-value:</strong> Probability of obtaining test results at least as extreme as observed,
-                        assuming null hypothesis is true</li>
-                    <li><strong>Critical Value:</strong> The minimum chi-square value needed to reject the null
-                        hypothesis</li>
-                </ul>
-                <div class="interpretation-guide">
-                    <strong>Interpreting Results:</strong>
-                    <ul>
-                        <li>If p-value < significance level: Reject null hypothesis (variables are dependent)</li>
-                        <li>If p-value ≥ significance level: Fail to reject null hypothesis (insufficient evidence of
-                            dependence)</li>
-                        <li>If χ² > Critical Value: Reject null hypothesis</li>
-                    </ul>
-                </div>
-            </div>
+
             <div id="loading-indicator" class="loading-spinner" style="display: none;">
                 Calculating...
             </div>
