@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'ztchi-v3';
+const CACHE_VERSION = 'ztchi-v4';
 
 const APP_SHELL = [
   './',
@@ -33,6 +33,9 @@ const APP_SHELL = [
   './js/common.js',
   './js/state.js',
   './js/layout.js',
+  './js/theme.js',
+  './notation.html',
+  './error-traps.html',
   './js/reports.js',
   './js/predict.js',
   './js/checks.js',

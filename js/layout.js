@@ -49,7 +49,8 @@
                 `<button type="button" class="nav-toggle" aria-expanded="false" aria-controls="ztchi-nav-list">` +
                 `<span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span>` +
                 `</button>` +
-                renderNav();
+                renderNav() +
+                `<div class="theme-switcher-host"></div>`;
 
             const toggle = nav.querySelector('.nav-toggle');
             const list = nav.querySelector('.nav-bar');
@@ -67,6 +68,12 @@
                         toggle.setAttribute('aria-expanded', 'false');
                     }
                 });
+            }
+
+            // Theme switcher (if theme.js loaded)
+            const themeHost = nav.querySelector('.theme-switcher-host');
+            if (themeHost && window.ZtChi && window.ZtChi.theme) {
+                window.ZtChi.theme.renderInto(themeHost);
             }
         });
     }
