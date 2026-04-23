@@ -14,6 +14,7 @@
         { href: 't_calculator.html', label: 't Calculator' },
         { href: 'chi_square.html', label: 'Chi-Square Calculator' },
         { href: 'compare.html', label: 'Compare' },
+        { href: 'simulate.html', label: 'Simulate' },
     ];
 
     function currentPage() {

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation &mdash; Bootstrap &amp; Permutation</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.5/jstat.min.js"
+            integrity="sha384-G0LNImWgCl2Dv94gWHL462179lItxVdMl0mIkiGu4HaUYuC4jZlAVdyqTZxTKRTs"
+            crossorigin="anonymous"></script>
+    <script src="js/common.js" defer></script>
+    <script src="js/state.js" defer></script>
+    <script src="js/layout.js" defer></script>
+    <script async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+            integrity="sha384-Wuix6BuhrWbjDBs24bXrjf4ZQ5aFeFWBuKkFekO2t8xFU0iNaLQfp2K6/1Nxveei"
+            crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <nav>
+        <ul class="nav-bar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="z_calculator.html">Z Calculator</a></li>
+            <li><a href="t_calculator.html">t Calculator</a></li>
+            <li><a href="chi_square.html">Chi-Square Calculator</a></li>
+            <li><a href="compare.html">Compare</a></li>
+            <li><a href="simulate.html" class="active">Simulate</a></li>
+        </ul>
+    </nav>
+
+    <div class="header-container">
+        <h1>Simulation-Based Inference</h1>
+        <p>See the same conclusion from a second angle &mdash; bootstrap confidence intervals and permutation p-values, alongside the formula-based result.</p>
+        <div class="info-box">
+            <p>
+                <strong>Why simulate?</strong>
+                <span class="info-content">
+                    Formula-based tests rely on distributional assumptions (normality, large n). Simulation makes fewer assumptions: it just resamples the data you have. When the two approaches agree, you know your conclusion is robust. When they diverge, something about your data is violating a formula assumption &mdash; and that's a learning moment.
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <main role="main">
+        <section class="section">
+            <h2>Step 1: Pick a mode</h2>
+            <div class="input-group">
+                <label>
+                    <input type="radio" name="sim-mode" value="bootstrap" checked>
+                    <strong>Bootstrap</strong> &mdash; confidence interval for a single-sample mean
+                </label>
+                <br>
+                <label>
+                    <input type="radio" name="sim-mode" value="permutation">
+                    <strong>Permutation</strong> &mdash; p-value for a two-sample difference in means
+                </label>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Step 2: Paste your data</h2>
+            <div class="instruction-panel">
+                <h3>Instructions:</h3>
+                <ul>
+                    <li>One number per line, or comma/space separated.</li>
+                    <li>Bootstrap mode: one column (sample). Permutation mode: two columns (Group A on top, Group B below &mdash; or use the second textarea).</li>
+                    <li>Non-numeric entries are skipped with a warning.</li>
+                </ul>
+            </div>
+
+            <div class="input-group" id="sim-input-a-group">
+                <label for="sim-data-a">Sample data (Group A):</label>
+                <textarea id="sim-data-a" rows="6" style="width: 100%; font-family: Menlo, Consolas, monospace;" placeholder="e.g. 105, 98, 112, 100, 108, 95, ..."></textarea>
+                <button type="button" id="sim-example-a" class="secondary-button">Load example</button>
+            </div>
+
+            <div class="input-group" id="sim-input-b-group" style="display: none;">
+                <label for="sim-data-b">Sample data (Group B):</label>
+                <textarea id="sim-data-b" rows="6" style="width: 100%; font-family: Menlo, Consolas, monospace;" placeholder="e.g. 115, 122, 108, 118, ..."></textarea>
+                <button type="button" id="sim-example-b" class="secondary-button">Load example</button>
+            </div>
+
+            <div class="input-group">
+                <label for="sim-iterations">Resamples:</label>
+                <input type="number" id="sim-iterations" value="10000" min="1000" max="50000" step="1000">
+                <small class="input-help">10,000 is plenty for most teaching examples. More = smoother histogram, slower run.</small>
+            </div>
+
+            <div class="input-group">
+                <label for="sim-ci">CI level (bootstrap only):</label>
+                <input type="number" id="sim-ci" value="0.95" min="0.50" max="0.999" step="0.01">
+            </div>
+
+            <div class="button-group">
+                <button id="sim-run-btn" class="primary-button">Run Simulation</button>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Results</h2>
+            <div id="sim-progress" style="display: none;" class="loading-spinner">Running simulation...</div>
+            <div id="sim-results"></div>
+        </section>
+
+        <section class="section">
+            <h2>How to read this</h2>
+            <div class="info-box">
+                <p><strong>Bootstrap CI:</strong> resample the data <em>with replacement</em> to approximate what the sampling distribution of the mean would look like. The CI is the middle X% of the resampled means.</p>
+                <p><strong>Permutation p-value:</strong> under H<sub>0</sub> of "no difference," the group labels are arbitrary. Randomly reshuffle the labels many times and see how often the resulting difference is as extreme as what you observed.</p>
+                <p><strong>Comparison to formula:</strong> for approximately-normal data with moderate n, the bootstrap CI matches the t-CI closely, and the permutation p-value matches the t-test p-value closely. Divergence is informative.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer-container">
+        <p>&copy; 2024 Z-t-Chi Calculator by Hadiza Galadima, PhD. All rights reserved.</p>
+        <p>For educational purposes only. Always double-check statistical calculations.</p>
+    </footer>
+
+    <script src="js/simulate.js" defer></script>
+</body>
+
+</html>
