@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-t-Chi Calculator — Regression Tests</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.5/jstat.min.js"
+            integrity="sha384-G0LNImWgCl2Dv94gWHL462179lItxVdMl0mIkiGu4HaUYuC4jZlAVdyqTZxTKRTs"
+            crossorigin="anonymous"></script>
+    <script src="js/common.js" defer></script>
+    <script src="js/reports.js" defer></script>
+    <style>
+        body { max-width: 1100px; margin: 20px auto; padding: 0 20px; font-family: -apple-system, sans-serif; color: #222; }
+        h1 { color: #1976d2; margin-bottom: 4px; }
+        .subtitle { color: #666; margin-top: 0; }
+        .test-summary { padding: 14px 18px; border-radius: 8px; margin: 20px 0; font-weight: 600; font-size: 1.1em; }
+        .test-summary.all-pass { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
+        .test-summary.has-fail { background: #ffebee; color: #b71c1c; border: 1px solid #ef9a9a; }
+        .test-group { margin: 24px 0; padding: 14px 18px; background: #fbfbfd; border: 1px solid #e1e4e8; border-radius: 8px; }
+        .test-group h2 { margin: 0 0 10px 0; color: #1976d2; font-size: 1.15em; border-bottom: 1px solid #e1e4e8; padding-bottom: 6px; }
+        .test-row { display: grid; grid-template-columns: 80px 1fr; gap: 12px; padding: 6px 0; border-bottom: 1px dashed #eee; font-size: 0.94em; }
+        .test-row:last-child { border-bottom: none; }
+        .test-badge { font-weight: 600; font-size: 0.85em; padding: 2px 8px; border-radius: 4px; display: inline-block; text-align: center; }
+        .test-badge.pass { background: #c8e6c9; color: #1b5e20; }
+        .test-badge.fail { background: #ffcdd2; color: #b71c1c; }
+        .test-name { color: #333; }
+        .test-error { color: #b71c1c; font-family: Menlo, Consolas, monospace; font-size: 0.85em; margin-top: 4px; }
+        .data-card { background: #f1f8ff; border-left: 3px solid #1976d2; padding: 8px 14px; margin-top: 12px; border-radius: 0 6px 6px 0; font-size: 0.9em; }
+        .data-card code { background: #e3f2fd; padding: 1px 5px; border-radius: 3px; font-family: Menlo, Consolas, monospace; }
+    </style>
+</head>
+
+<body>
+    <h1>Z-t-Chi Calculator — Regression Tests</h1>
+    <p class="subtitle">Synthetic-data-driven checks on every math path. Green = all calculators match reference values.</p>
+
+    <div id="summary" class="test-summary">Running tests...</div>
+    <div id="groups"></div>
+
+    <script src="tests.js" defer></script>
+</body>
+
+</html>
