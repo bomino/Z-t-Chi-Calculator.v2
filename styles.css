@@ -1145,6 +1145,230 @@ textarea {
 [data-theme="high-contrast"] svg.normal-curve polyline { stroke: #000000; }
 [data-theme="high-contrast"] svg.normal-curve path { fill: #0000cc; fill-opacity: 0.5; }
 
+/* ================================================================
+   Visual polish (dark + light shared refinements).
+   Reduces nested-box feel, tones down over-saturated accents,
+   softens header ornamentation, improves spacing rhythm.
+   ================================================================ */
+
+/* Softer accent that doesn't hit the eye as hard in either theme */
+[data-theme="dark"] {
+    --accent: #58a6ff;      /* GitHub-like dark-mode blue: warmer, less neon */
+    --accent-dark: #79bbff;
+    --accent-deep: #a6d2ff;
+    --accent-bg: rgba(88, 166, 255, 0.12);
+    --fg-heading: #7fb3ff;  /* slightly warmer than the previous icy blue */
+}
+
+/* Tone down the header: kill the diagonal stripe pattern in dark, soften
+   the gradient, make the on-header info-box feel integrated rather than
+   floating in glass. */
+[data-theme="dark"] .header-container {
+    background: linear-gradient(140deg, #132033 0%, #1a2a44 50%, #20354f 100%);
+    box-shadow: none;
+}
+
+[data-theme="dark"] .header-container::before {
+    opacity: 0.08;        /* was fully visible; drops the harshness */
+}
+
+[data-theme="dark"] .header-container h1 {
+    color: #a6d2ff;       /* less neon than pure accent on the hero */
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .header-container p {
+    color: #d0dce9;
+}
+
+[data-theme="dark"] .header-container .info-box {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Make `main` blend into the page instead of being its own island.
+   Dark mode looks much calmer without a strong main-level border/shadow. */
+[data-theme="dark"] main {
+    background: transparent;
+    box-shadow: none;
+    padding: 20px 0;
+}
+
+/* Section containers inherit the full visual weight instead of main. */
+[data-theme="dark"] section,
+[data-theme="dark"] .section {
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    padding: 22px;
+    margin-bottom: 20px;
+}
+
+/* .calculator-cards is a section but stays a grid layout, not a card. */
+[data-theme="dark"] section.calculator-cards {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 15px;
+}
+
+/* Intro-card on the landing page: flatten to a single-depth card so it
+   doesn't feel like a bright box nested inside a dark main. */
+[data-theme="dark"] .intro-card {
+    background: linear-gradient(135deg, #132033 0%, #1f3355 100%);
+    border: 1px solid #2a4268;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .intro-card h2 {
+    color: #e0ebf7;
+}
+
+[data-theme="dark"] .intro-card p {
+    color: #c7d4e6;
+}
+
+/* Calc cards on landing — slightly lifted, with a hover accent. */
+[data-theme="dark"] .calc-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-theme="dark"] .calc-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Quiet down the section-heading blue in dark mode — it was too loud. */
+[data-theme="dark"] .section h2,
+[data-theme="dark"] .instruction-panel h3,
+[data-theme="dark"] .section h3:first-child,
+[data-theme="dark"] .guide-walkthrough h3 {
+    color: #a6d2ff;
+    font-weight: 600;
+}
+
+/* Instruction panels get a subtler look — a thin accent bar, no heavy fill. */
+[data-theme="dark"] .instruction-panel {
+    background: rgba(88, 166, 255, 0.04);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+}
+
+/* Learning-mode toggle: smaller, less box-like */
+[data-theme="dark"] .learning-mode-toggle {
+    background: rgba(88, 166, 255, 0.06);
+    border: 1px solid rgba(88, 166, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+[data-theme="dark"] .learning-mode-switch {
+    color: var(--accent);
+    font-size: 0.9em;
+}
+
+/* Primary button: solid accent with a subtle glow on hover instead of gradient */
+[data-theme="dark"] .primary-button {
+    background: var(--accent);
+    color: #0d1117;
+    font-weight: 600;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .primary-button:hover {
+    background: var(--accent-dark);
+    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.4);
+    transform: translateY(-1px);
+}
+
+/* Navigation: softer shadow, slightly rounded corners, integrated feel */
+[data-theme="dark"] nav {
+    background: linear-gradient(180deg, #1a2432 0%, #151e2a 100%);
+    border: 1px solid #2a3441;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .nav-bar li a.active {
+    background: rgba(88, 166, 255, 0.15);
+    box-shadow: inset 0 -3px 0 var(--accent);
+    color: #fff;
+}
+
+/* Tables — reduce border weight in dark */
+[data-theme="dark"] .notation-table,
+[data-theme="dark"] .compact-results-table {
+    box-shadow: none;
+}
+
+[data-theme="dark"] .notation-table thead th,
+[data-theme="dark"] .compact-results-table th {
+    background: #1d2938;
+    border-bottom: 1px solid var(--accent);
+    color: #a6d2ff;
+    font-weight: 600;
+}
+
+[data-theme="dark"] .notation-table td {
+    border-bottom: 1px solid #242e3a;
+}
+
+/* Result / card internals: rely on slightly-lighter bg for depth rather than heavy borders */
+[data-theme="dark"] .result-box,
+[data-theme="dark"] .probability-result,
+[data-theme="dark"] .conclusion-box,
+[data-theme="dark"] .result-interpretation {
+    border: none;
+    box-shadow: none;
+}
+
+[data-theme="dark"] .stat-item {
+    background: rgba(88, 166, 255, 0.04);
+    border: 1px solid rgba(88, 166, 255, 0.1);
+}
+
+[data-theme="dark"] .compare-card,
+[data-theme="dark"] .epi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transition: border-color 0.2s ease;
+}
+
+[data-theme="dark"] .compare-card:hover,
+[data-theme="dark"] .epi-card:hover {
+    border-color: rgba(88, 166, 255, 0.4);
+}
+
+/* Footer: quieter */
+[data-theme="dark"] footer,
+[data-theme="dark"] .footer-container {
+    background: transparent;
+    border-top: 1px solid var(--border);
+    box-shadow: none;
+    color: var(--fg-muted);
+    padding: 20px 0;
+}
+
+/* Light mode polish: reduce over-use of shadows that made the original feel heavy */
+:root:not([data-theme="dark"]):not([data-theme="high-contrast"]) .section,
+[data-theme="light"] .section {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(25, 118, 210, 0.08);
+}
+
+/* Subtle body gradient in dark for some depth without being distracting */
+[data-theme="dark"] body {
+    background: radial-gradient(ellipse at top, #121821 0%, #0a0e15 70%);
+    min-height: 100vh;
+}
+
 /* Override card-prose text colours that were hardcoded to #333 */
 [data-theme="dark"] .compare-card p,
 [data-theme="dark"] .compare-divergence p,
@@ -1221,6 +1445,7 @@ textarea {
 [data-theme="high-contrast"] main .info-box p { color: #000000; }
 
 /* ---- High-contrast: second pass ---- */
+[data-theme="high-contrast"] section,
 [data-theme="high-contrast"] .section,
 [data-theme="high-contrast"] .example-box,
 [data-theme="high-contrast"] .info-panel,
