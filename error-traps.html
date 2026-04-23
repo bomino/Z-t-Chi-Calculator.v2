@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Common Error Traps &mdash; Z-t-Chi Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <meta name="theme-color" content="#1976d2">
+    <script src="js/common.js" defer></script>
+    <script src="js/state.js" defer></script>
+    <script src="js/layout.js" defer></script>
+</head>
+
+<body>
+    <nav>
+        <ul class="nav-bar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="z_calculator.html">Z Calculator</a></li>
+            <li><a href="t_calculator.html">t Calculator</a></li>
+            <li><a href="chi_square.html">Chi-Square Calculator</a></li>
+            <li><a href="compare.html">Compare</a></li>
+            <li><a href="simulate.html">Simulate</a></li>
+            <li><a href="epidemiology.html">Epi 2&times;2</a></li>
+            <li><a href="datasets.html">Datasets</a></li>
+            <li><a href="assumption.html">Assumption Coach</a></li>
+            <li><a href="guide.html">Guide</a></li>
+            <li><a href="notation.html">Notation</a></li>
+            <li><a href="error-traps.html" class="active">Error Traps</a></li>
+        </ul>
+    </nav>
+
+    <div class="header-container">
+        <h1>Common Error Traps</h1>
+        <p>Fifteen classic mistakes in applied statistics, each with the scenario, why it looks right, what's actually wrong, and the correct approach. Filter by the test you're running.</p>
+        <div class="info-box">
+            <p>
+                <strong>How to use this page:</strong>
+                <span class="info-content">
+                    Read the cards for any test you're planning to run. If your data-and-method combination matches a scenario described here, stop and reconsider. Every card cites a source you can point to in a lab meeting or a reviewer response.
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <main role="main">
+        <section class="section">
+            <div class="trap-filter">
+                <label><strong>Filter:</strong></label>
+                <button type="button" class="trap-filter-btn active" data-filter="all">All</button>
+                <button type="button" class="trap-filter-btn" data-filter="t">t-test</button>
+                <button type="button" class="trap-filter-btn" data-filter="chi">Chi-square</button>
+                <button type="button" class="trap-filter-btn" data-filter="z">Z / proportions</button>
+                <button type="button" class="trap-filter-btn" data-filter="ci">CI / p-value</button>
+                <button type="button" class="trap-filter-btn" data-filter="general">General inference</button>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="trap-list">
+
+                <article class="error-trap" data-tags="chi">
+                    <h3>1. Running chi-square on paired / matched binary data</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> A student measures 40 patients' opinions (agree / disagree) before and after an intervention. They analyse by a 2&times;2 chi-square test of independence.</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> The data are categorical, arranged in a 2&times;2 table, and chi-square is "the" test for 2&times;2 tables.</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> The "before" and "after" columns are the same subjects measured twice. The observations in the two cells of each row are not independent of one another &mdash; but chi-square of independence requires independent observations.</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> Use <strong>McNemar's test</strong> for 2&times;2 matched-pair binary data. McNemar tests whether the two marginal proportions differ, which is the right question for before/after on the same subjects.</p>
+                    <p class="trap-citation">McNemar (1947); Agresti (2018), <em>Statistical Methods for the Social Sciences</em>, Ch. 10.</p>
+                </article>
+
+                <article class="error-trap" data-tags="t">
+                    <h3>2. Independent-samples t-test on paired data</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> A before/after design with 20 subjects: 20 pre-treatment BP values and 20 post-treatment BP values. Student runs an independent (two-sample) t-test.</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> There are two groups of 20 numbers each &mdash; that sure looks like two samples.</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> The two "samples" are not independent &mdash; each post value shares a subject with exactly one pre value. The paired structure contains information (within-subject correlation) that an independent-samples test ignores. Power is usually lost, and occasionally Type I error is inflated.</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> Use a <strong>paired t-test</strong> on the within-subject differences. In this app, open the t Calculator, switch to "Paired" mode, and paste the two columns.</p>
+                    <p class="trap-citation">Rosner (2015), <em>Fundamentals of Biostatistics</em>, Ch. 8.</p>
+                </article>
+
+                <article class="error-trap" data-tags="t">
+                    <h3>3. Pooled-variance t-test when variances clearly differ</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> Student compares treatment and control means; treatment SD is 4, control SD is 12. Runs a classic (pooled) two-sample t-test.</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> "Student's t-test" is what the textbook calls the two-sample comparison.</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> The pooled variant assumes equal population variances. When variances differ substantially (and especially with unequal sample sizes) the test's Type I error rate can be far from the nominal &alpha;. This is the Behrens-Fisher problem.</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> Use <strong>Welch's t-test</strong> (the default in R's <code>t.test</code>). It uses the Welch-Satterthwaite df and is accurate under unequal variances. In this app, open t Calculator and choose "Two-sample (Welch's)" mode.</p>
+                    <p class="trap-citation">Welch (1947); Ruxton (2006), "The unequal variance t-test is an underused alternative to Student's t-test..." <em>Behav. Ecol.</em> 17:688-690.</p>
+                </article>
+
+                <article class="error-trap" data-tags="chi">
+                    <h3>4. Chi-square on a sparse 2&times;2 table</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> Pilot trial with <code>[[8, 2], [1, 5]]</code>. Student reports the chi-square p-value of 0.013.</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> The test ran, produced a number, and that number is below 0.05.</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> Minimum expected cell count is below 5 (it's 2.63 here). The chi-square approximation to the discrete hypergeometric distribution fails in this regime &mdash; uncorrected &chi;&sup2; gives p = .013, Fisher's exact gives p = .035, and Yates-corrected &chi;&sup2; gives p = .051. The three disagree across the 0.05 line.</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> For any 2&times;2 with an expected cell &lt; 5 (Cochran, 1954), use <strong>Fisher's exact test</strong>. In this app, the Compare page auto-flags the Cochran violation and shows Fisher's alongside the other tests.</p>
+                    <p class="trap-citation">Cochran (1954), <em>Biometrics</em> 10:417-451; Campbell (2007), <em>Statistics in Medicine</em>.</p>
+                </article>
+
+                <article class="error-trap" data-tags="chi">
+                    <h3>5. Chi-square to compare group means</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> Comparing average exam scores across three teaching methods. Student runs a chi-square test.</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> Three groups, a comparison, a table &mdash; sounds like chi-square.</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> Chi-square is for <strong>categorical</strong> counts (how many subjects fall into each cell). Means are continuous measurements, not counts. Putting the means into a "table" and running chi-square doesn't make sense &mdash; the test has no way to know the values are on a continuous scale.</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> For 2 groups, use a t-test. For 3+ groups, use <strong>ANOVA</strong> (followed by post-hoc comparisons with a correction for multiple comparisons).</p>
+                    <p class="trap-citation">Moore, McCabe &amp; Craig (2021), <em>Introduction to the Practice of Statistics</em>, Ch. 7 and 12.</p>
+                </article>
+
+                <article class="error-trap" data-tags="z t">
+                    <h3>6. Z-test with small n and unknown population SD</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> Student has n = 20 observations and computes Z = (x&#772; &minus; &mu;&#x2080;) / (s/&radic;n), reporting Z with a standard-normal p-value.</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> The formula for Z and t look nearly identical; substituting s for &sigma; feels harmless.</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> When s is a sample estimate (not the known population &sigma;), the resulting statistic doesn't follow N(0,1) &mdash; it follows Student's t with df = n &minus; 1. For small n, the t distribution has heavier tails, so a standard-normal p-value is too small. You're under-stating your uncertainty.</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> Use the <strong>t-test</strong>. For n &ge; ~30 the two distributions are close enough that the distinction rarely matters; for small n, use t.</p>
+                    <p class="trap-citation">Student [Gosset] (1908), <em>Biometrika</em> 6:1-25.</p>
+                </article>
+
+                <article class="error-trap" data-tags="general">
+                    <h3>7. Running 20 tests, reporting only the significant one</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> Researcher runs 20 outcome comparisons on the same dataset. One has p = .03. Manuscript reports that one, doesn't mention the other 19.</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> p &lt; .05; result is "significant"; why not publish?</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> Under a true null, the probability of at least one p &lt; .05 in 20 tests is about 1 &minus; 0.95&sup2;&#x2070; = 0.64. You are 64% likely to "find something" when there's nothing there. This is the multiple-comparisons problem; without correction, reported p-values are not what they claim to be.</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> Pre-register your primary outcome. For the remaining comparisons, apply <strong>Bonferroni</strong> (very conservative) or <strong>Benjamini-Hochberg</strong> (controls FDR). Always disclose how many comparisons were made.</p>
+                    <p class="trap-citation">Benjamini &amp; Hochberg (1995), <em>JRSS-B</em> 57:289-300. Also the &quot;garden of forking paths&quot; &mdash; Gelman &amp; Loken (2013).</p>
+                </article>
+
+                <article class="error-trap" data-tags="ci">
+                    <h3>8. Interpreting p = .03 as "97% probability the effect is real"</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> Student finds p = .03, concludes "There's a 97% chance our hypothesis is correct."</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> Small p, big confidence; feels like a natural reading.</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> The p-value is P(data this extreme | H<sub>0</sub> is true). It is NOT P(H<sub>0</sub> is true given the data). Those are different conditional probabilities (Bayes' theorem). A p-value of .03 does not tell you how likely H<sub>0</sub> is; it tells you how unusual the data would be if H<sub>0</sub> were true.</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> Phrase it as "Under H<sub>0</sub>, we would see data this extreme about 3% of the time." To get a probability statement about H<sub>0</sub>, you need Bayesian analysis.</p>
+                    <p class="trap-citation">Wasserstein &amp; Lazar (2016), ASA Statement on p-values, <em>The American Statistician</em> 70:129-133.</p>
+                </article>
+
+                <article class="error-trap" data-tags="general">
+                    <h3>9. Reporting statistical significance without an effect size</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> RCT with n = 3,000 per arm. BP reduction of 0.6 mmHg is "highly significant" (p &lt; .0001). Manuscript celebrates.</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> p &lt; .0001; large trial; published.</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> With a huge N, statistical significance is easy; practical significance is not. A 0.6 mmHg BP drop is clinically meaningless. "Significant" has a technical meaning here (statistical); readers often infer the everyday meaning (important), which is misleading.</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> Always report an <strong>effect size</strong> alongside the p-value: Cohen's d for means, Cramer's V or OR for 2&times;2. Discuss clinical importance, not just statistical significance.</p>
+                    <p class="trap-citation">Cohen (1988); Cumming (2014), "The New Statistics."</p>
+                </article>
+
+                <article class="error-trap" data-tags="general">
+                    <h3>10. Picking one-tailed after seeing the data</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> Two-tailed p = .07 &mdash; "not significant." Student notices the direction matches their hypothesis and switches to a one-tailed test, getting p = .035.</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> One-tailed is valid when the hypothesis was directional.</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> Choosing the one-tailed direction AFTER seeing the data is a form of <strong>p-hacking</strong>. The actual probability of "seeing something this extreme in the direction of greatest observed effect" under H<sub>0</sub> is the two-tailed p-value. The declared one-tailed p is too small by a factor of 2.</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> Declare the test direction before looking at the data (pre-registration helps). One-tailed is appropriate only when you had a specific directional hypothesis a priori and are willing to treat effects in the opposite direction as "null."</p>
+                    <p class="trap-citation">Ruxton &amp; Neuh&auml;user (2010), "When should we use one-tailed hypothesis testing?" <em>Methods Ecol. Evol.</em> 1:114-117.</p>
+                </article>
+
+                <article class="error-trap" data-tags="t">
+                    <h3>11. Running t-test on strongly skewed data without checking</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> n = 8 observations of medical costs (per-patient expenditure), deeply right-skewed. Student runs a one-sample t-test.</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> Cost is a number; t-test is for numbers; n &ge; 2 technically suffices.</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> The t-test assumes the sampling distribution of the mean is approximately normal. For n = 8 and strong skew, the Central Limit Theorem is not rescuing you; the test's Type I error rate is likely off.</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> Check with the <a href="assumption.html">Assumption Coach</a> first. If the verdict is yellow or red: consider log-transformation, non-parametric Wilcoxon signed-rank test, or bootstrap CI (Simulate page). For cost data specifically, log-transformation is often the first step.</p>
+                    <p class="trap-citation">Sawilowsky &amp; Blair (1992), <em>Psychol. Bull.</em> 111:352-360.</p>
+                </article>
+
+                <article class="error-trap" data-tags="general">
+                    <h3>12. Correlation implies causation</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> Observational study finds r = .45 between coffee consumption and longevity. Headline: "Coffee makes you live longer."</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> Statistical association is real (p is tiny). Cause seems to follow.</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> Correlation is consistent with: A causes B, B causes A, a third variable causes both (confounding), selection bias, or chance. Without randomisation or a strong quasi-experimental design, any of these alternatives may be at work. Heavy coffee drinkers may also be richer, better educated, non-smokers &mdash; any of which could drive the association.</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> Adjust for known confounders (if observational). For causal claims, aim for a randomised design, a natural experiment, or Mendelian randomisation. State clearly in the discussion that correlational data cannot establish causation.</p>
+                    <p class="trap-citation">Hill (1965), "The Environment and Disease: Association or Causation?" <em>Proc. R. Soc. Med.</em> 58:295-300.</p>
+                </article>
+
+                <article class="error-trap" data-tags="ci">
+                    <h3>13. "95% CI means 95% probability the parameter is inside"</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> Student computes a 95% CI of [2.3, 5.1] for a mean difference and states "There is a 95% probability the true mean difference lies between 2.3 and 5.1."</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> "95%" and "confidence" naturally read as "95% probability."</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> In frequentist statistics, the true parameter is a fixed (unknown) number. The CI is random &mdash; it would be different in a different sample. The "95%" refers to the <em>procedure</em>: under repeated sampling, about 95% of the CIs so constructed would contain the true parameter. For any <em>specific</em> computed interval, the true value is either inside or outside (probability is 0 or 1, not 0.95).</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> Phrase it as "We are 95% confident (in the sense of the procedure's long-run coverage) that the interval [2.3, 5.1] contains the true mean difference." Or, for a probability statement about the parameter, use Bayesian credible intervals (different philosophy).</p>
+                    <p class="trap-citation">Hoekstra, Morey, Rouder &amp; Wagenmakers (2014), <em>Psychon. Bull. Rev.</em> 21:1157-1164.</p>
+                </article>
+
+                <article class="error-trap" data-tags="ci">
+                    <h3>14. "p &gt; .05 means there's no effect"</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> Pilot trial (n = 15 per arm) finds p = .12 for the treatment vs. control difference. Conclusion: "Treatment has no effect."</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> p &gt; .05; "not significant"; move on.</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> "Absence of evidence is not evidence of absence" (Altman &amp; Bland, 1995). A non-significant result with a small sample is uninformative about whether the effect is zero or meaningful. Your 95% CI might span both "no effect" and "substantial effect."</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> Report the CI for the effect, not just the p-value. A CI of [&minus;2, 10] for a mean difference tells you the data is consistent with everything from a small negative effect to a large positive one &mdash; a very different story from a CI of [&minus;0.2, 0.3].</p>
+                    <p class="trap-citation">Altman &amp; Bland (1995), <em>BMJ</em> 311:485.</p>
+                </article>
+
+                <article class="error-trap" data-tags="general">
+                    <h3>15. Misinterpreting regression to the mean</h3>
+                    <p class="trap-scenario"><strong>Scenario:</strong> Highest-BP patients are given a new drug. At follow-up their BP has dropped. Conclusion: "The drug worked."</p>
+                    <p class="trap-looks-right"><strong>Why it looks right:</strong> BP went down after the drug, in patients selected for high BP. Clean pre-post comparison.</p>
+                    <p class="trap-whats-wrong"><strong>What's actually wrong:</strong> Patients selected for being extreme on a noisy measurement will, on repeat measurement, tend to be less extreme even with no intervention. This is <strong>regression to the mean</strong>, and it produces a pre-post drop whether or not the drug has any effect. Without a control group, you cannot separate RTM from the real effect.</p>
+                    <p class="trap-fix"><strong>Correct approach:</strong> Use a <strong>randomised control group</strong>. Compare the change in treated patients to the change in untreated controls (both selected with the same criterion). The difference-in-differences isolates the treatment effect.</p>
+                    <p class="trap-citation">Bland &amp; Altman (1994), <em>BMJ</em> 308:1499. Galton (1886), "Regression toward mediocrity in hereditary stature."</p>
+                </article>
+
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer-container">
+        <p>&copy; 2024 Z-t-Chi Calculator by Hadiza Galadima, PhD. All rights reserved.</p>
+        <p>For educational purposes only. Always double-check statistical calculations.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.querySelectorAll('.trap-filter-btn');
+            const traps = document.querySelectorAll('.error-trap');
+            buttons.forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    buttons.forEach((b) => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const f = btn.getAttribute('data-filter');
+                    traps.forEach((t) => {
+                        const tags = (t.getAttribute('data-tags') || '').split(/\s+/);
+                        t.style.display = (f === 'all' || tags.includes(f)) ? '' : 'none';
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

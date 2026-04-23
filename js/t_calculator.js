@@ -154,9 +154,10 @@ function renderOutputs(ctx) {
 }
 
 function renderPostResult(testType, ctx) {
-    const { reports, showWork, checks } = window.ZtChi || {};
+    const { reports, showWork, checks, threeLevel } = window.ZtChi || {};
 
     const parts = [];
+    if (threeLevel && threeLevel.render) parts.push(threeLevel.render(testType, ctx));
     if (reports && reports.buildReportButtons) parts.push(reports.buildReportButtons(testType));
     if (showWork && showWork.render) parts.push(showWork.render(testType, ctx));
     if (checks && checks.renderFor) parts.push(checks.renderFor(testType));

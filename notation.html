@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notation Translator &mdash; Z-t-Chi Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <meta name="theme-color" content="#1976d2">
+    <script src="js/common.js" defer></script>
+    <script src="js/state.js" defer></script>
+    <script src="js/layout.js" defer></script>
+</head>
+
+<body>
+    <nav>
+        <ul class="nav-bar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="z_calculator.html">Z Calculator</a></li>
+            <li><a href="t_calculator.html">t Calculator</a></li>
+            <li><a href="chi_square.html">Chi-Square Calculator</a></li>
+            <li><a href="compare.html">Compare</a></li>
+            <li><a href="simulate.html">Simulate</a></li>
+            <li><a href="epidemiology.html">Epi 2&times;2</a></li>
+            <li><a href="datasets.html">Datasets</a></li>
+            <li><a href="assumption.html">Assumption Coach</a></li>
+            <li><a href="guide.html">Guide</a></li>
+            <li><a href="notation.html" class="active">Notation</a></li>
+        </ul>
+    </nav>
+
+    <div class="header-container">
+        <h1>Notation Translator</h1>
+        <p>The same statistical quantity has different names in your textbook, in SPSS or R output, and in the manuscript you submit to <em>JAMA</em>. This page lines them up.</p>
+        <div class="info-box">
+            <p>
+                <strong>How to read the table:</strong>
+                <span class="info-content">
+                    Each row is one concept. Columns show the symbol you write with a pencil, what textbook it comes from, what a plain-English sentence for it looks like, what SPSS calls it when you run a test, what R's output labels it, and how it appears in APA manuscript prose. Use your browser's find (Ctrl+F) to jump to a symbol.
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <main role="main">
+        <section class="section">
+            <h2>Population parameters <small>(Greek letters, always referring to the true population value)</small></h2>
+            <div class="notation-table-wrap">
+                <table class="notation-table">
+                    <thead>
+                        <tr><th>Symbol</th><th>Name</th><th>Plain English</th><th>SPSS label</th><th>R output</th><th>APA reporting</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="sym">&mu;</td><td>mu</td><td>Population mean &mdash; the true average of the whole population</td><td>(not directly reported; appears in "Test Value" for one-sample t)</td><td>(implicit in <code>mu = ...</code> argument of <code>t.test</code>)</td><td><em>M</em> = X if you actually know it; otherwise report <em>x̄</em></td></tr>
+                        <tr><td class="sym">&sigma;</td><td>sigma</td><td>Population standard deviation</td><td>rare (used mostly in Z-test macros)</td><td><code>sd</code> argument in <code>pnorm</code>, <code>rnorm</code></td><td>&sigma; = X (italicised Greek)</td></tr>
+                        <tr><td class="sym">&sigma;&sup2;</td><td>sigma-squared</td><td>Population variance</td><td>&mdash;</td><td>&mdash;</td><td>&sigma;&sup2; = X</td></tr>
+                        <tr><td class="sym">&pi;</td><td>pi</td><td>Population proportion</td><td>&mdash;</td><td>&mdash;</td><td>&pi; (Greek; lowercase)</td></tr>
+                        <tr><td class="sym">&rho;</td><td>rho</td><td>Population correlation coefficient</td><td>&mdash;</td><td>&mdash;</td><td>&rho; = X</td></tr>
+                        <tr><td class="sym">&beta;</td><td>beta</td><td>Population regression slope OR Type II error rate (context-dependent!)</td><td>"Beta" (coef), "Power" settings</td><td>coefficient estimates; <code>power</code> in <code>pwr</code> package</td><td>&beta; = X (regression); 1 &minus; &beta; = power</td></tr>
+                        <tr><td class="sym">&alpha;</td><td>alpha</td><td>Type I error rate / significance level (chosen in advance; usually 0.05)</td><td>"Alpha" in Confidence Interval options</td><td>argument in most test functions</td><td>&alpha; = .05 (no leading zero in APA)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Sample statistics <small>(Roman letters, computed from your data)</small></h2>
+            <div class="notation-table-wrap">
+                <table class="notation-table">
+                    <thead>
+                        <tr><th>Symbol</th><th>Name</th><th>Plain English</th><th>SPSS label</th><th>R output</th><th>APA reporting</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="sym">n</td><td>n</td><td>Sample size (one group)</td><td>"N" per group</td><td><code>length(x)</code>, <code>n</code></td><td><em>n</em> = X (italicised, lowercase)</td></tr>
+                        <tr><td class="sym">N</td><td>big-N</td><td>Total sample size across all groups</td><td>"N" overall</td><td><code>nrow()</code> / <code>sum()</code></td><td><em>N</em> = X (italicised, uppercase)</td></tr>
+                        <tr><td class="sym">x&#772;</td><td>x-bar</td><td>Sample mean &mdash; your best estimate of &mu;</td><td>"Mean"</td><td><code>mean(x)</code></td><td><em>M</em> = X (APA uses M; some journals use x&#772;)</td></tr>
+                        <tr><td class="sym">s</td><td>s</td><td>Sample standard deviation &mdash; estimate of &sigma;</td><td>"Std. Deviation"</td><td><code>sd(x)</code></td><td><em>SD</em> = X</td></tr>
+                        <tr><td class="sym">s&sup2;</td><td>s-squared</td><td>Sample variance</td><td>"Variance"</td><td><code>var(x)</code></td><td>Report <em>SD</em> not <em>SD&sup2;</em> unless specifically asked</td></tr>
+                        <tr><td class="sym">SE or s<sub>x&#772;</sub></td><td>standard error (of the mean)</td><td>How much x&#772; varies from sample to sample: <code>s / &radic;n</code></td><td>"Std. Error Mean"</td><td><code>sd(x)/sqrt(length(x))</code></td><td><em>SE</em> = X or <em>SEM</em> = X</td></tr>
+                        <tr><td class="sym">p&#770;</td><td>p-hat</td><td>Sample proportion &mdash; estimate of &pi;</td><td>"Proportion"</td><td><code>mean(x == 1)</code></td><td><em>p</em> = X (often; context must distinguish from p-value!)</td></tr>
+                        <tr><td class="sym">r</td><td>r</td><td>Pearson correlation (sample estimate of &rho;)</td><td>"Pearson Correlation"</td><td><code>cor(x, y)</code></td><td><em>r</em> = .XX (no leading zero when bounded &#x00b1;1)</td></tr>
+                        <tr><td class="sym">Q1, Q3</td><td>first / third quartile</td><td>25th and 75th percentiles</td><td>"Percentiles 25 / 75"</td><td><code>quantile(x, c(.25, .75))</code></td><td>Report as median [Q1, Q3] in skewed-data contexts</td></tr>
+                        <tr><td class="sym">IQR</td><td>interquartile range</td><td>Q3 &minus; Q1 &mdash; robust spread measure</td><td>"Interquartile Range"</td><td><code>IQR(x)</code></td><td><em>IQR</em> = X</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Test statistics</h2>
+            <div class="notation-table-wrap">
+                <table class="notation-table">
+                    <thead>
+                        <tr><th>Symbol</th><th>Name</th><th>Plain English</th><th>SPSS label</th><th>R output</th><th>APA reporting</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="sym">Z</td><td>Z or z-score</td><td>Distance from mean in standard deviations; follows the standard normal</td><td>"Z" in Z-test output</td><td><code>pnorm</code> / <code>qnorm</code></td><td><em>z</em> = 1.96 (italics, lowercase)</td></tr>
+                        <tr><td class="sym">t</td><td>t or t-statistic</td><td>Like Z but accounting for sample-based s instead of &sigma;</td><td>"t"</td><td><code>t.test</code> output <code>statistic</code></td><td><em>t</em>(29) = 2.11 (italicised t, df in parens)</td></tr>
+                        <tr><td class="sym">&chi;&sup2;</td><td>chi-square</td><td>Sum of squared, normalized deviations from expected counts</td><td>"Chi-Square"</td><td><code>chisq.test</code> output <code>statistic</code></td><td>&chi;&sup2;(1, <em>N</em> = 100) = 0.79</td></tr>
+                        <tr><td class="sym">F</td><td>F-statistic</td><td>Ratio of two variances; used in ANOVA and regression</td><td>"F"</td><td><code>anova()</code> output</td><td><em>F</em>(df1, df2) = X</td></tr>
+                        <tr><td class="sym">df</td><td>degrees of freedom</td><td>How many values are "free to vary" after constraints</td><td>"df"</td><td><code>parameter</code> field in test output</td><td>Always report: <em>t</em>(<strong>29</strong>), <em>F</em>(<strong>2, 27</strong>)</td></tr>
+                        <tr><td class="sym">U, W</td><td>Mann-Whitney U / Wilcoxon W</td><td>Non-parametric test statistics (rank-based)</td><td>"Mann-Whitney U" / "Wilcoxon W"</td><td><code>wilcox.test</code></td><td><em>U</em> = X or <em>W</em> = X</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Probabilities and inference</h2>
+            <div class="notation-table-wrap">
+                <table class="notation-table">
+                    <thead>
+                        <tr><th>Symbol</th><th>Name</th><th>Plain English</th><th>SPSS label</th><th>R output</th><th>APA reporting</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="sym">P(&middot;)</td><td>probability</td><td>Capital P, a probability in general</td><td>"Sig."</td><td><code>p.value</code></td><td>Use <em>p</em> for the p-value specifically</td></tr>
+                        <tr><td class="sym">p</td><td>p-value</td><td>P(data this extreme | H&#x2080; is true). <strong>NOT</strong> P(H&#x2080; is true).</td><td>"Sig." or "Sig. (2-tailed)"</td><td><code>p.value</code></td><td><em>p</em> = .043 (no leading zero); <em>p</em> &lt; .001 for very small</td></tr>
+                        <tr><td class="sym">H&#x2080;</td><td>H-zero / null hypothesis</td><td>The "no effect" claim you start out assuming</td><td>stated in test-specific dialog</td><td>stated in documentation</td><td>H<sub>0</sub>: &mu; = 0 (subscript zero)</td></tr>
+                        <tr><td class="sym">H&#x2081; or H<sub>a</sub></td><td>H-one / alternative hypothesis</td><td>What you'd believe if you reject H&#x2080;</td><td>&mdash;</td><td>&mdash;</td><td>H<sub>1</sub>: &mu; &ne; 0</td></tr>
+                        <tr><td class="sym">CI</td><td>confidence interval</td><td>A range that, under repeated sampling, contains the true parameter X% of the time</td><td>"Confidence Interval"</td><td><code>conf.int</code></td><td>95% CI [1.2, 3.4] &mdash; square brackets, no equals sign</td></tr>
+                        <tr><td class="sym">1 &minus; &beta;</td><td>power</td><td>Probability of correctly rejecting a false H&#x2080;</td><td>"Power"</td><td><code>pwr</code> package output</td><td>"power = 0.80" or in a sample-size calculation</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Effect sizes</h2>
+            <div class="notation-table-wrap">
+                <table class="notation-table">
+                    <thead>
+                        <tr><th>Symbol</th><th>Name</th><th>Plain English</th><th>SPSS label</th><th>R output</th><th>APA reporting</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="sym">d</td><td>Cohen's d</td><td>Standardised mean difference: (x&#772;&#x2081; &minus; x&#772;&#x2082;) / s<sub>pooled</sub>. 0.2 small, 0.5 medium, 0.8 large.</td><td>available via dialog "Effect size"</td><td><code>effsize::cohen.d</code></td><td><em>d</em> = 0.53</td></tr>
+                        <tr><td class="sym">V</td><td>Cramer's V</td><td>&chi;&sup2; effect size, 0-1. Uses &chi;&sup2;/(N&middot;df*) where df* = min(r&minus;1, c&minus;1).</td><td>"Cramer's V"</td><td><code>vcd::assocstats</code></td><td>Cramer's <em>V</em> = .17</td></tr>
+                        <tr><td class="sym">&phi;</td><td>phi</td><td>Same as Cramer's V for 2&times;2 tables; &radic;(&chi;&sup2;/N)</td><td>"Phi"</td><td><code>vcd::assocstats</code></td><td>&phi; = .21</td></tr>
+                        <tr><td class="sym">&eta;&sup2;</td><td>eta-squared</td><td>Proportion of variance explained in ANOVA (like R&sup2; for a factor)</td><td>"Eta Squared"</td><td><code>effectsize::eta_squared</code></td><td>&eta;&sup2; = .14</td></tr>
+                        <tr><td class="sym">R&sup2;</td><td>R-squared</td><td>Proportion of variance in Y explained by the regression model</td><td>"R Square"</td><td><code>summary(lm)$r.squared</code></td><td><em>R&sup2;</em> = .57</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Epidemiology measures</h2>
+            <div class="notation-table-wrap">
+                <table class="notation-table">
+                    <thead>
+                        <tr><th>Symbol</th><th>Name</th><th>Plain English</th><th>SPSS label</th><th>R output</th><th>APA / AMA reporting</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="sym">OR</td><td>odds ratio</td><td>Ratio of odds in exposed to odds in unexposed; 1 = no effect</td><td>"Odds Ratio"</td><td><code>epitools::oddsratio</code></td><td>OR = 2.1 (95% CI [1.4, 3.3])</td></tr>
+                        <tr><td class="sym">RR</td><td>relative risk / risk ratio</td><td>Ratio of risk in exposed to risk in unexposed; 1 = no effect</td><td>"Risk Ratio"</td><td><code>epitools::riskratio</code></td><td>RR = 1.8 (95% CI [1.2, 2.7])</td></tr>
+                        <tr><td class="sym">NNT</td><td>number needed to treat</td><td>1 / |risk difference| &mdash; how many to treat to prevent one event</td><td>derived via crosstabs</td><td><code>Epi::NNT</code></td><td>NNT = 25</td></tr>
+                        <tr><td class="sym">PPV / NPV</td><td>positive / negative predictive value</td><td>P(disease | test+); P(no disease | test&minus;)</td><td>diagnostic test dialog</td><td><code>epiR::epi.tests</code></td><td>PPV 0.82, NPV 0.96</td></tr>
+                        <tr><td class="sym">LR+, LR&minus;</td><td>likelihood ratios</td><td>Change in odds of disease given test result; prevalence-independent</td><td>"Likelihood Ratio"</td><td><code>epiR::epi.tests</code></td><td>LR+ = 12, LR&minus; = 0.08</td></tr>
+                        <tr><td class="sym">sens</td><td>sensitivity</td><td>P(test+ | disease). Property of the test, not the population.</td><td>"Sensitivity"</td><td><code>epiR::epi.tests</code></td><td>Sensitivity 89%</td></tr>
+                        <tr><td class="sym">spec</td><td>specificity</td><td>P(test&minus; | no disease)</td><td>"Specificity"</td><td><code>epiR::epi.tests</code></td><td>Specificity 97%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>A few translation traps</h2>
+            <div class="info-box">
+                <p><strong>"p" is overloaded.</strong> Lowercase <em>p</em> can mean the p-value OR a sample proportion. Read the surrounding sentence, or the unit: a proportion is 0-1 and always has the same interpretation; a p-value is 0-1 but interpreted as "how surprising is the data under H<sub>0</sub>."</p>
+                <p><strong>"M" vs "x̄".</strong> APA style uses <em>M</em> and <em>SD</em> in-line (italicised Roman). Most textbooks use <em>x̄</em> and <em>s</em>. Both mean the same thing; match the convention of your venue.</p>
+                <p><strong>"Beta" is also overloaded.</strong> In regression, &beta; is a coefficient (what you estimate). In power analysis, &beta; is the Type II error rate (what you don't want). SPSS's "Beta" column in regression output means the <em>standardised</em> regression coefficient, not the raw one &mdash; that's in the "B" column. Three uses of beta in one screen is entirely normal.</p>
+                <p><strong>"Sig." in SPSS.</strong> SPSS displays "Sig." in output tables &mdash; this is the two-tailed p-value by default. Always check whether the test is one- or two-tailed before reporting.</p>
+                <p><strong>"95% CI" assumes two-tailed.</strong> A 95% CI corresponds to &alpha; = .05 <em>two-tailed</em>. If your hypothesis is directional, the one-sided 95% upper bound is a different (and typically wider) calculation.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer-container">
+        <p>&copy; 2024 Z-t-Chi Calculator by Hadiza Galadima, PhD. All rights reserved.</p>
+        <p>For educational purposes only. Always double-check statistical calculations.</p>
+    </footer>
+</body>
+
+</html>

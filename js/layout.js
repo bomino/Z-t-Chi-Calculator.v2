@@ -19,6 +19,8 @@
         { href: 'datasets.html', label: 'Datasets' },
         { href: 'assumption.html', label: 'Assumption Coach' },
         { href: 'guide.html', label: 'Guide' },
+        { href: 'notation.html', label: 'Notation' },
+        { href: 'error-traps.html', label: 'Error Traps' },
     ];
 
     function currentPage() {

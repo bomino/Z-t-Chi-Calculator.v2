@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'ztchi-v1';
+const CACHE_VERSION = 'ztchi-v2';
 
 const APP_SHELL = [
   './',
@@ -25,6 +25,8 @@ const APP_SHELL = [
   './datasets.html',
   './assumption.html',
   './guide.html',
+  './notation.html',
+  './error-traps.html',
   './styles.css',
   './manifest.webmanifest',
   './icon.svg',
@@ -35,6 +37,7 @@ const APP_SHELL = [
   './js/predict.js',
   './js/checks.js',
   './js/show-work.js',
+  './js/three-level.js',
   './js/z_calculator.js',
   './js/t_calculator.js',
   './js/chi_square.js',
