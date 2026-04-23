@@ -1518,6 +1518,104 @@ input:invalid+.input-help {
     line-height: 1.5;
 }
 
+/* ===== Compare page ===== */
+.compare-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.compare-summary {
+    padding: 15px;
+    background: #fbfbfd;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+}
+
+.compare-summary h3 {
+    margin: 0 0 10px 0;
+    color: #1976d2;
+}
+
+.compare-meta {
+    margin: 10px 0 0 0;
+    font-size: 0.93em;
+    color: #444;
+}
+
+.compare-tests {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 15px;
+}
+
+.compare-card {
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.compare-card h4 {
+    margin: 0 0 8px 0;
+    color: #1976d2;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.compare-card p {
+    margin: 5px 0;
+    line-height: 1.45;
+    color: #333;
+}
+
+.compare-card .compare-note {
+    margin-top: 10px;
+    font-size: 0.88em;
+    color: #666;
+    border-top: 1px dashed #e0e0e0;
+    padding-top: 8px;
+}
+
+.verdict {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
+.verdict.reject {
+    background: #e8f5e9;
+    color: #1b5e20;
+    border: 1px solid #a5d6a7;
+}
+
+.verdict.fail {
+    background: #fff3e0;
+    color: #bf360c;
+    border: 1px solid #ffcc80;
+}
+
+.compare-divergence {
+    padding: 14px 16px;
+    background: #f1f8ff;
+    border-left: 4px solid #1976d2;
+    border-radius: 0 8px 8px 0;
+}
+
+.compare-divergence h3 {
+    margin: 0 0 8px 0;
+    color: #1565c0;
+    font-size: 1.05em;
+}
+
+.compare-divergence p {
+    margin: 8px 0;
+    line-height: 1.55;
+    color: #333;
+}
+
 /* Warning banner for low expected frequencies (chi-square assumption) */
 .warning-message {
     margin-top: 15px;

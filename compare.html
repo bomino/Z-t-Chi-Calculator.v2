@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare Tests — 2&times;2 Table</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.5/jstat.min.js"
+            integrity="sha384-G0LNImWgCl2Dv94gWHL462179lItxVdMl0mIkiGu4HaUYuC4jZlAVdyqTZxTKRTs"
+            crossorigin="anonymous"></script>
+    <script src="js/common.js" defer></script>
+    <script src="js/state.js" defer></script>
+    <script src="js/layout.js" defer></script>
+    <script src="js/reports.js" defer></script>
+    <script src="js/predict.js" defer></script>
+    <script src="js/checks.js" defer></script>
+    <script src="js/show-work.js" defer></script>
+    <script async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+            integrity="sha384-Wuix6BuhrWbjDBs24bXrjf4ZQ5aFeFWBuKkFekO2t8xFU0iNaLQfp2K6/1Nxveei"
+            crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <nav>
+        <ul class="nav-bar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="z_calculator.html">Z Calculator</a></li>
+            <li><a href="t_calculator.html">t Calculator</a></li>
+            <li><a href="chi_square.html">Chi-Square Calculator</a></li>
+            <li><a href="compare.html" class="active">Compare</a></li>
+        </ul>
+    </nav>
+
+    <div class="header-container">
+        <h1>Compare Tests on One 2&times;2 Table</h1>
+        <p>Run &chi;<sup>2</sup>, Fisher's exact, and the Z-test for two proportions on the same data &mdash; see where they agree and where they diverge.</p>
+        <div class="info-box">
+            <p>
+                <strong>Why compare?</strong>
+                <span class="info-content">
+                    All three tests answer the same question ("is there an association between the two variables?"), but they make different assumptions.
+                    &chi;<sup>2</sup> uses a large-sample approximation; Fisher's enumerates exact probabilities; the Z-test frames the question in terms of the difference of proportions.
+                    For large, balanced tables they agree. For small or sparse tables they can diverge &mdash; that's the teaching moment.
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <main role="main">
+        <section class="section">
+            <h2>Step 1: Enter a 2&times;2 table</h2>
+            <div class="instruction-panel">
+                <h3>Instructions:</h3>
+                <ul>
+                    <li>Think of a categorical comparison: exposure vs outcome, treatment vs response, etc.</li>
+                    <li>Enter the observed counts in each cell (non-negative whole numbers).</li>
+                    <li>Labels are optional &mdash; editing them changes the display but not the math.</li>
+                </ul>
+            </div>
+
+            <div class="table-container">
+                <table class="compact-results-table" id="compare-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th><input type="text" id="col-label-0" value="Outcome +" aria-label="Column 1 label"></th>
+                            <th><input type="text" id="col-label-1" value="Outcome &minus;" aria-label="Column 2 label"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" id="row-label-0" value="Group A" aria-label="Row 1 label"></td>
+                            <td><input type="number" id="cmp-0-0" value="10" min="0" step="1" aria-label="Row 1, Column 1 count"></td>
+                            <td><input type="number" id="cmp-0-1" value="20" min="0" step="1" aria-label="Row 1, Column 2 count"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" id="row-label-1" value="Group B" aria-label="Row 2 label"></td>
+                            <td><input type="number" id="cmp-1-0" value="30" min="0" step="1" aria-label="Row 2, Column 1 count"></td>
+                            <td><input type="number" id="cmp-1-1" value="40" min="0" step="1" aria-label="Row 2, Column 2 count"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="input-group">
+                <label for="cmp-alpha">Significance level (&alpha;):</label>
+                <input type="number" id="cmp-alpha" value="0.05" min="0.001" max="0.999" step="0.001">
+                <small class="input-help">Used only for the reject/fail-to-reject verdict.</small>
+            </div>
+
+            <div class="button-group">
+                <button id="cmp-calculate-btn" class="primary-button">Run All Three Tests</button>
+                <button id="cmp-load-example-btn" class="secondary-button" title="Small-count example where Fisher and chi-square diverge">Try small-N example</button>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Results</h2>
+            <div id="cmp-results" class="results-container"></div>
+        </section>
+
+        <section class="section">
+            <h2>How to read this</h2>
+            <div class="info-box">
+                <p><strong>When they agree:</strong> in tables with all expected counts &ge; 5 and moderate-to-large N, all three tests typically give very similar p-values. Any of them is fine to report.</p>
+                <p><strong>When they diverge:</strong> for small or sparse tables, the &chi;<sup>2</sup> approximation becomes unreliable (Cochran, 1954), and Fisher's exact test is preferred. The Z-test for proportions shares the &chi;<sup>2</sup> large-sample framing and will also be off; in fact for a 2&times;2 table, Z<sup>2</sup> equals &chi;<sup>2</sup> exactly.</p>
+                <p><strong>What to report:</strong> pick the test that matches your sample size and assumptions, report its p-value with the effect size (odds ratio or Cramer's V), and mention which you chose and why.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer-container">
+        <p>&copy; 2024 Z-t-Chi Calculator by Hadiza Galadima, PhD. All rights reserved.</p>
+        <p>For educational purposes only. Always double-check statistical calculations.</p>
+    </footer>
+
+    <script src="js/compare.js" defer></script>
+</body>
+
+</html>

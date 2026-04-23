@@ -13,6 +13,7 @@
         { href: 'z_calculator.html', label: 'Z Calculator' },
         { href: 't_calculator.html', label: 't Calculator' },
         { href: 'chi_square.html', label: 'Chi-Square Calculator' },
+        { href: 'compare.html', label: 'Compare' },
     ];
 
     function currentPage() {

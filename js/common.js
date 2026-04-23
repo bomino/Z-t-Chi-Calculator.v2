@@ -88,6 +88,118 @@
     };
 
     /**
+     * Log-gamma from jStat, with a small-integer lookup for stability at n = 0, 1.
+     */
+    function logGamma(x) {
+        if (x === 1 || x === 2) return 0;
+        if (typeof jStat !== 'undefined' && typeof jStat.gammaln === 'function') {
+            return jStat.gammaln(x);
+        }
+        // Stirling fallback — not expected to run when jStat is present
+        return (x - 0.5) * Math.log(x) - x + 0.5 * Math.log(2 * Math.PI);
+    }
+
+    /**
+     * log C(n, k) = log n! - log k! - log (n-k)!
+     */
+    function logBinomial(n, k) {
+        if (k < 0 || k > n) return -Infinity;
+        return logGamma(n + 1) - logGamma(k + 1) - logGamma(n - k + 1);
+    }
+
+    /**
+     * Hypergeometric probability of a 2x2 table [[a, b], [c, d]] conditional on
+     * its row and column marginals. Used by Fisher's exact test.
+     */
+    function hypergeometricProb(a, b, c, d) {
+        const n = a + b + c + d;
+        const logP = logBinomial(a + b, a) + logBinomial(c + d, c) - logBinomial(n, a + c);
+        return Math.exp(logP);
+    }
+
+    /**
+     * Fisher's exact test, two-tailed, for a 2x2 table.
+     * Enumerates every table with the same marginals; sums probabilities that
+     * are <= the probability of the observed table (the "method of small
+     * p-values" — Fisher's original formulation; matches R's fisher.test default).
+     *
+     * Returns { pTwoTailed, oddsRatio, logOddsRatio, se }.
+     */
+    ZtChi.fishersExact = function fishersExact(a, b, c, d) {
+        if (![a, b, c, d].every((v) => Number.isFinite(v) && v >= 0 && Number.isInteger(v))) {
+            throw new Error("Fisher's exact test requires four non-negative integer cell counts.");
+        }
+        const r1 = a + b;   // row 1 total
+        const r2 = c + d;   // row 2 total
+        const c1 = a + c;   // col 1 total
+        const n = r1 + r2;
+        if (n === 0) return { pTwoTailed: NaN, oddsRatio: NaN };
+
+        const pObs = hypergeometricProb(a, b, c, d);
+        const tol = pObs * (1 + 1e-7);
+
+        const aMin = Math.max(0, c1 - r2);
+        const aMax = Math.min(r1, c1);
+
+        let pTwo = 0;
+        for (let ai = aMin; ai <= aMax; ai++) {
+            const bi = r1 - ai;
+            const ci = c1 - ai;
+            const di = r2 - ci;
+            const p = hypergeometricProb(ai, bi, ci, di);
+            if (p <= tol) pTwo += p;
+        }
+
+        // Sample odds ratio with Haldane-Anscombe correction for zero cells
+        const adj = (a === 0 || b === 0 || c === 0 || d === 0) ? 0.5 : 0;
+        const or = ((a + adj) * (d + adj)) / ((b + adj) * (c + adj));
+        const logOr = Math.log(or);
+        const se = Math.sqrt(1 / (a + adj) + 1 / (b + adj) + 1 / (c + adj) + 1 / (d + adj));
+
+        return {
+            pTwoTailed: Math.min(1, pTwo),
+            oddsRatio: or,
+            logOddsRatio: logOr,
+            se,
+        };
+    };
+
+    /**
+     * Z-test for the difference of two independent proportions, using the
+     * pooled standard error (standard textbook version).
+     *
+     * Returns { z, pTwoTailed, p1, p2, diff, pooled, se, ciLow, ciHigh }
+     * where the CI is for the difference using unpooled SE (Wald 95%).
+     */
+    ZtChi.zTestTwoProportions = function zTestTwoProportions(a, b, c, d) {
+        const n1 = a + b;
+        const n2 = c + d;
+        if (n1 === 0 || n2 === 0) {
+            return { z: NaN, pTwoTailed: NaN };
+        }
+        const p1 = a / n1;
+        const p2 = c / n2;
+        const pooled = (a + c) / (n1 + n2);
+        const sePooled = Math.sqrt(pooled * (1 - pooled) * (1 / n1 + 1 / n2));
+        const z = sePooled === 0 ? 0 : (p1 - p2) / sePooled;
+        const pTwo = 2 * (1 - (typeof jStat !== 'undefined' ? jStat.normal.cdf(Math.abs(z), 0, 1) : 0.5));
+        const seUnpooled = Math.sqrt((p1 * (1 - p1)) / n1 + (p2 * (1 - p2)) / n2);
+        const diff = p1 - p2;
+        const crit = 1.959963984540054;
+        return {
+            z,
+            pTwoTailed: pTwo,
+            p1,
+            p2,
+            diff,
+            pooled,
+            se: sePooled,
+            ciLow: diff - crit * seUnpooled,
+            ciHigh: diff + crit * seUnpooled,
+        };
+    };
+
+    /**
      * Effect-size helpers.
      * Cramer's V: sqrt(χ² / (N * min(r-1, c-1)))  — ranges 0 to 1.
      * phi:        sqrt(χ² / N)                    — equivalent to V for 2x2 tables.
