@@ -217,6 +217,26 @@
         showNotification('Loaded small-N example (8,2 / 1,5). Click "Run All Three Tests" to see the divergence.', 'info');
     }
 
+    function hydrateFromDataset() {
+        try {
+            const raw = sessionStorage.getItem('ZtChi.datasetHandoff');
+            if (!raw) return;
+            const p = JSON.parse(raw);
+            if (!p || p.calculator !== 'compare') return;
+            sessionStorage.removeItem('ZtChi.datasetHandoff');
+            if (p.a != null) document.getElementById('cmp-0-0').value = p.a;
+            if (p.b != null) document.getElementById('cmp-0-1').value = p.b;
+            if (p.c != null) document.getElementById('cmp-1-0').value = p.c;
+            if (p.d != null) document.getElementById('cmp-1-1').value = p.d;
+            if (p.rowLabelA) document.getElementById('row-label-0').value = p.rowLabelA;
+            if (p.rowLabelB) document.getElementById('row-label-1').value = p.rowLabelB;
+            if (p.colLabel0) document.getElementById('col-label-0').value = p.colLabel0;
+            if (p.colLabel1) document.getElementById('col-label-1').value = p.colLabel1;
+            if (p.alpha != null) document.getElementById('cmp-alpha').value = p.alpha;
+            if (p.datasetName) showNotification(`Loaded dataset: ${p.datasetName}`, 'info', { duration: 4000 });
+        } catch (_) { /* quiet */ }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('cmp-calculate-btn').addEventListener('click', () => {
             try {
@@ -227,6 +247,8 @@
             }
         });
         document.getElementById('cmp-load-example-btn').addEventListener('click', loadSmallExample);
+
+        hydrateFromDataset();
 
         // Initial render with the default table so the page isn't empty on load
         try {

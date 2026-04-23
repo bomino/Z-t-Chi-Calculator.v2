@@ -1656,6 +1656,83 @@ input:invalid+.input-help {
     line-height: 1.4;
 }
 
+/* Dataset library cards */
+.dataset-list {
+    display: grid;
+    gap: 20px;
+}
+
+.dataset-card {
+    padding: 18px 20px;
+    background: #fbfbfd;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dataset-card h3 {
+    margin: 0 0 4px 0;
+    color: #1976d2;
+    font-size: 1.08em;
+}
+
+.ds-year {
+    color: #888;
+    font-weight: 400;
+    font-size: 0.9em;
+    margin-left: 6px;
+}
+
+.ds-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    background: #fff3e0;
+    color: #bf360c;
+    font-size: 0.75em;
+    font-weight: 600;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+
+.ds-citation {
+    color: #666;
+    font-size: 0.9em;
+    margin: 4px 0 10px 0;
+}
+
+.ds-context {
+    color: #333;
+    line-height: 1.55;
+    margin: 8px 0;
+}
+
+.ds-learn {
+    margin: 10px 0;
+    padding: 8px 12px;
+    background: #f1f8ff;
+    border-left: 3px solid #1976d2;
+    border-radius: 0 4px 4px 0;
+    color: #1565c0;
+    font-size: 0.95em;
+}
+
+.dataset-card .button-group {
+    margin-top: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* CI-first banner on the t-calculator when raw data is provided */
+.ci-banner {
+    background: #e8f5e9;
+    border-left: 4px solid #2e7d32;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+    color: #1b5e20;
+}
+
 .sim-plot {
     padding: 10px;
     background: #fff;

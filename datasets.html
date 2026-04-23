@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curated Biostatistics Datasets</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="js/common.js" defer></script>
+    <script src="js/state.js" defer></script>
+    <script src="js/layout.js" defer></script>
+    <script src="js/datasets.js" defer></script>
+</head>
+
+<body>
+    <nav>
+        <ul class="nav-bar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="z_calculator.html">Z Calculator</a></li>
+            <li><a href="t_calculator.html">t Calculator</a></li>
+            <li><a href="chi_square.html">Chi-Square Calculator</a></li>
+            <li><a href="compare.html">Compare</a></li>
+            <li><a href="simulate.html">Simulate</a></li>
+            <li><a href="epidemiology.html">Epi 2&times;2</a></li>
+            <li><a href="datasets.html" class="active">Datasets</a></li>
+        </ul>
+    </nav>
+
+    <div class="header-container">
+        <h1>Curated Biostatistics Datasets</h1>
+        <p>Classic and illustrative data, one click away from any relevant calculator.</p>
+        <div class="info-box">
+            <p>
+                <strong>How this works:</strong>
+                <span class="info-content">
+                    Click a "Load into …" button on any dataset. The data is written to your browser session (no server, no tracking) and the destination calculator hydrates itself on load. Use this for lecture demonstrations, homework walkthroughs, or just to play.
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <main role="main">
+        <section class="section">
+            <div id="dataset-list" class="dataset-list"></div>
+        </section>
+    </main>
+
+    <footer class="footer-container">
+        <p>&copy; 2024 Z-t-Chi Calculator by Hadiza Galadima, PhD. All rights reserved.</p>
+        <p>For educational purposes only. Always double-check statistical calculations.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const list = document.getElementById('dataset-list');
+            const labels = { t: 't Calculator', compare: 'Compare', epi: 'Epi 2×2', simulate: 'Simulate', z: 'Z Calculator', chi: 'Chi-Square' };
+
+            function render() {
+                list.innerHTML = window.ZtChi.datasets.all.map((ds) => {
+                    const targets = Object.keys(ds.targets || {});
+                    const btns = targets.map((t) =>
+                        `<button type="button" class="primary-button" data-load="${ds.id}" data-target="${t}">Load into ${labels[t] || t}</button>`
+                    ).join(' ');
+                    const yearText = ds.year ? `<span class="ds-year">${ds.year}</span>` : '';
+                    const syntheticTag = ds.isSynthetic ? ` <span class="ds-tag">illustrative</span>` : '';
+                    return `
+                        <article class="dataset-card">
+                            <h3>${ZtChi.escapeHtml(ds.title)}${syntheticTag} ${yearText}</h3>
+                            <p class="ds-citation"><em>${ZtChi.escapeHtml(ds.citation)}</em></p>
+                            <p class="ds-context">${ZtChi.escapeHtml(ds.context)}</p>
+                            <p class="ds-learn"><strong>What to look for:</strong> ${ZtChi.escapeHtml(ds.whatToLearn)}</p>
+                            <div class="button-group">${btns}</div>
+                        </article>`;
+                }).join('');
+            }
+
+            render();
+
+            list.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-load]');
+                if (!btn) return;
+                try {
+                    window.ZtChi.datasets.loadInto(btn.getAttribute('data-load'), btn.getAttribute('data-target'));
+                } catch (err) {
+                    window.ZtChi.showNotification(err.message, 'error', { duration: 5000 });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

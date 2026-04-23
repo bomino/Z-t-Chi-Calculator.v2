@@ -199,6 +199,27 @@
         render();
     }
 
+    function hydrateFromDataset() {
+        try {
+            const raw = sessionStorage.getItem('ZtChi.datasetHandoff');
+            if (!raw) return;
+            const p = JSON.parse(raw);
+            if (!p || p.calculator !== 'epi') return;
+            sessionStorage.removeItem('ZtChi.datasetHandoff');
+            if (p.mode) {
+                const r = document.querySelector(`input[name="epi-mode"][value="${p.mode}"]`);
+                if (r) { r.checked = true; applyLabelsForMode(); }
+            }
+            if (p.a != null) document.getElementById('epi-a').value = p.a;
+            if (p.b != null) document.getElementById('epi-b').value = p.b;
+            if (p.c != null) document.getElementById('epi-c').value = p.c;
+            if (p.d != null) document.getElementById('epi-d').value = p.d;
+            if (p.conf != null) document.getElementById('epi-conf').value = p.conf;
+            updateTotals();
+            if (p.datasetName) showNotification(`Loaded dataset: ${p.datasetName}`, 'info', { duration: 4000 });
+        } catch (_) { /* quiet */ }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('input[name="epi-mode"]').forEach((el) =>
             el.addEventListener('change', () => { applyLabelsForMode(); render(); }));
@@ -208,6 +229,7 @@
         document.getElementById('epi-calculate-btn').addEventListener('click', render);
         document.getElementById('epi-example-screen-btn').addEventListener('click', loadScreeningExample);
         document.getElementById('epi-example-cohort-btn').addEventListener('click', loadCohortExample);
+        hydrateFromDataset();
         updateTotals();
         render();
     });

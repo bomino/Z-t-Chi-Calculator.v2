@@ -16,6 +16,7 @@
         { href: 'compare.html', label: 'Compare' },
         { href: 'simulate.html', label: 'Simulate' },
         { href: 'epidemiology.html', label: 'Epi 2×2' },
+        { href: 'datasets.html', label: 'Datasets' },
     ];
 
     function currentPage() {

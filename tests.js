@@ -350,6 +350,69 @@
         });
     });
 
+    describe('One-sample / paired / Welch t (ZtChi.oneSampleT / pairedT / welchT)', () => {
+        test('One-sample t on known data matches manual calc', () => {
+            // Known: xs = [2, 4, 6, 8, 10], μ0 = 5, x̄=6, s=3.162, SE=1.414
+            // t = (6-5)/1.414 = 0.707, df=4
+            const r = ZtChi.oneSampleT([2, 4, 6, 8, 10], 5);
+            assertClose(r.mean, 6, 1e-9, 'mean');
+            assertClose(r.sd, Math.sqrt(10), 1e-9, 'sd = sqrt(10)');
+            assertClose(r.t, 1 / (Math.sqrt(10) / Math.sqrt(5)), 1e-6, 't');
+            assertEqual(r.df, 4, 'df');
+        });
+        test('One-sample t CI contains μ when null is true', () => {
+            // x̄ very close to μ0 → CI should contain μ0
+            const r = ZtChi.oneSampleT([98, 100, 102, 99, 101], 100);
+            assert(r.ciLow <= 100 && r.ciHigh >= 100, `CI [${r.ciLow.toFixed(2)}, ${r.ciHigh.toFixed(2)}] should contain 100`);
+        });
+        test('Paired t reduces to one-sample t on differences', () => {
+            const xs = [120, 118, 135, 128, 122];
+            const ys = [115, 112, 128, 120, 118];
+            const paired = ZtChi.pairedT(xs, ys);
+            const diffs = xs.map((x, i) => x - ys[i]);
+            const oneSample = ZtChi.oneSampleT(diffs, 0);
+            assertClose(paired.t, oneSample.t, 1e-12, 't');
+            assertClose(paired.meanDiff, oneSample.mean, 1e-12, 'mean difference');
+            assertEqual(paired.df, oneSample.df, 'df');
+        });
+        test('Paired t rejects when pairs have consistent difference', () => {
+            // After is systematically lower than before (e.g., BP after treatment)
+            const xs = [140, 138, 145, 150, 142, 137, 148, 144, 141, 139];
+            const ys = [132, 130, 138, 144, 135, 131, 140, 137, 133, 132];
+            const r = ZtChi.pairedT(xs, ys);
+            assert(r.twoTailP < 0.001, `paired t should reject strongly, got p=${r.twoTailP}`);
+            assert(r.ciLow > 0, 'CI for mean diff (x-y) should be strictly positive');
+        });
+        test('Welch t handles unequal sample sizes and variances', () => {
+            const a = [10, 12, 11, 13, 12, 11, 10, 12];  // n=8, small variance
+            const b = [8, 15, 5, 18, 11, 14];            // n=6, large variance
+            const r = ZtChi.welchT(a, b);
+            assertEqual(r.nA, 8);
+            assertEqual(r.nB, 6);
+            // Welch df should be between min(n1-1, n2-1) and n1+n2-2
+            assert(r.df >= 5 && r.df <= 12, `Welch df should be reasonable, got ${r.df}`);
+            // Means are close here, should not reject
+            assert(r.twoTailP > 0.1, `should not reject, got p=${r.twoTailP}`);
+        });
+        test('Welch t gives same result as pooled t when variances are equal', () => {
+            // With equal variances, Welch and pooled t should nearly match
+            // (exactly equal only when n1=n2 AND equal variances; close otherwise)
+            const a = [100, 102, 98, 101, 99, 103, 97, 100];
+            const b = [108, 110, 106, 109, 107, 111, 105, 108];
+            const r = ZtChi.welchT(a, b);
+            // Hand: mean diff = -8, pooled SD = 2.07 (from each group's SD ≈ 2.07),
+            // SE ≈ 1.035, t ≈ -7.73, df ≈ 14 (Welch)
+            assertClose(r.diff, -8, 1e-9, 'mean diff');
+            assert(Math.abs(r.t) > 7, `|t| should be large, got ${r.t}`);
+            assert(r.ciHigh < 0, 'CI should be strictly negative (A < B)');
+        });
+        test('Paired t rejects mismatched lengths', () => {
+            let threw = false;
+            try { ZtChi.pairedT([1, 2, 3], [4, 5]); } catch (_) { threw = true; }
+            assert(threw, 'should reject length mismatch');
+        });
+    });
+
     describe('Wilson score CI (ZtChi.wilsonCi)', () => {
         test('Standard 95% CI for 50/100 is approximately (0.40, 0.60)', () => {
             const ci = ZtChi.wilsonCi(50, 100, 0.95);

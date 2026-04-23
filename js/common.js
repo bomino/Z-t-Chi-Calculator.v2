@@ -200,6 +200,104 @@
     };
 
     /**
+     * Summary statistics for a numeric array.
+     */
+    ZtChi.summaryStats = function summaryStats(xs) {
+        const n = xs.length;
+        if (n === 0) return { n: 0 };
+        const mean = xs.reduce((a, b) => a + b, 0) / n;
+        const ss = xs.reduce((a, b) => a + (b - mean) * (b - mean), 0);
+        const sd = n > 1 ? Math.sqrt(ss / (n - 1)) : 0;
+        const sorted = xs.slice().sort((a, b) => a - b);
+        return {
+            n, mean, sd,
+            se: n > 1 ? sd / Math.sqrt(n) : 0,
+            min: sorted[0], max: sorted[n - 1],
+            median: n % 2 === 1 ? sorted[(n - 1) / 2] : 0.5 * (sorted[n / 2 - 1] + sorted[n / 2]),
+        };
+    };
+
+    /**
+     * One-sample t-test: H0: μ = μ0.
+     * Returns t statistic, df = n − 1, SE, two-tailed p, and a CI for μ.
+     */
+    ZtChi.oneSampleT = function oneSampleT(xs, mu0, conf = 0.95) {
+        if (!Array.isArray(xs) || xs.length < 2) {
+            throw new Error('One-sample t-test needs at least 2 observations.');
+        }
+        const s = ZtChi.summaryStats(xs);
+        const se = s.sd / Math.sqrt(s.n);
+        const df = s.n - 1;
+        const t = se === 0 ? 0 : (s.mean - mu0) / se;
+        const left = jStat.studentt.cdf(t, df);
+        const twoTail = 2 * Math.min(left, 1 - left);
+        const alpha = 1 - conf;
+        const tCrit = jStat.studentt.inv(1 - alpha / 2, df);
+        return {
+            mean: s.mean, sd: s.sd, n: s.n, se, t, df, mu0,
+            leftTailP: left, rightTailP: 1 - left, twoTailP: twoTail,
+            tCrit,
+            ciLow: s.mean - tCrit * se,
+            ciHigh: s.mean + tCrit * se,
+            conf,
+        };
+    };
+
+    /**
+     * Paired t-test: H0: mean of (x − y) = 0.
+     * Requires paired observations of equal length.
+     */
+    ZtChi.pairedT = function pairedT(xs, ys, conf = 0.95) {
+        if (!Array.isArray(xs) || !Array.isArray(ys)) {
+            throw new Error('Paired t-test needs two arrays.');
+        }
+        if (xs.length !== ys.length) {
+            throw new Error(`Paired t-test requires equal-length samples (got ${xs.length} and ${ys.length}).`);
+        }
+        if (xs.length < 2) {
+            throw new Error('Paired t-test needs at least 2 pairs.');
+        }
+        const diffs = xs.map((x, i) => x - ys[i]);
+        const result = ZtChi.oneSampleT(diffs, 0, conf);
+        return { ...result, diffs, meanDiff: result.mean };
+    };
+
+    /**
+     * Welch's two-sample t-test: H0: μ1 = μ2, without assuming equal variances.
+     * Uses the Welch-Satterthwaite approximation for df.
+     */
+    ZtChi.welchT = function welchT(xs, ys, conf = 0.95) {
+        if (!Array.isArray(xs) || !Array.isArray(ys)) {
+            throw new Error("Welch's t-test needs two arrays.");
+        }
+        if (xs.length < 2 || ys.length < 2) {
+            throw new Error("Welch's t-test needs at least 2 observations in each group.");
+        }
+        const a = ZtChi.summaryStats(xs);
+        const b = ZtChi.summaryStats(ys);
+        const varA = a.sd * a.sd / a.n;
+        const varB = b.sd * b.sd / b.n;
+        const se = Math.sqrt(varA + varB);
+        const t = se === 0 ? 0 : (a.mean - b.mean) / se;
+        const df = Math.pow(varA + varB, 2) /
+            (Math.pow(varA, 2) / (a.n - 1) + Math.pow(varB, 2) / (b.n - 1));
+        const left = jStat.studentt.cdf(t, df);
+        const twoTail = 2 * Math.min(left, 1 - left);
+        const alpha = 1 - conf;
+        const tCrit = jStat.studentt.inv(1 - alpha / 2, df);
+        const diff = a.mean - b.mean;
+        return {
+            meanA: a.mean, meanB: b.mean, sdA: a.sd, sdB: b.sd,
+            nA: a.n, nB: b.n, diff, se, t, df,
+            leftTailP: left, rightTailP: 1 - left, twoTailP: twoTail,
+            tCrit,
+            ciLow: diff - tCrit * se,
+            ciHigh: diff + tCrit * se,
+            conf,
+        };
+    };
+
+    /**
      * Wilson score confidence interval for a single proportion.
      * More accurate than Wald, especially for small n or extreme proportions.
      * Reference: Wilson (1927); Agresti & Coull (1998).

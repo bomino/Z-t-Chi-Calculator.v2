@@ -420,6 +420,25 @@
         showNotification('Loaded example B: roughly N(113, 7), n=30', 'info');
     }
 
+    function hydrateFromDataset() {
+        try {
+            const raw = sessionStorage.getItem('ZtChi.datasetHandoff');
+            if (!raw) return;
+            const p = JSON.parse(raw);
+            if (!p || p.calculator !== 'simulate') return;
+            sessionStorage.removeItem('ZtChi.datasetHandoff');
+            if (p.mode) {
+                const r = document.querySelector(`input[name="sim-mode"][value="${p.mode}"]`);
+                if (r) { r.checked = true; updateModeUi(); }
+            }
+            if (p.dataA) document.getElementById('sim-data-a').value = p.dataA;
+            if (p.dataB) document.getElementById('sim-data-b').value = p.dataB;
+            if (p.iterations != null) document.getElementById('sim-iterations').value = p.iterations;
+            if (p.ciLevel != null) document.getElementById('sim-ci').value = p.ciLevel;
+            if (p.datasetName) showNotification(`Loaded dataset: ${p.datasetName}`, 'info', { duration: 4000 });
+        } catch (_) { /* quiet */ }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('input[name="sim-mode"]').forEach((el) => el.addEventListener('change', updateModeUi));
         updateModeUi();
@@ -434,5 +453,6 @@
                 showNotification(err.message, 'error', { duration: 5000 });
             }
         });
+        hydrateFromDataset();
     });
 })();
