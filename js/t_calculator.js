@@ -178,6 +178,19 @@ function renderPostResult(testType, ctx) {
 
     if (reports && reports.setLatestContext) reports.setLatestContext(testType, ctx);
     if (showWork && showWork.typeset) showWork.typeset(container);
+
+    const { ai } = window.ZtChi || {};
+    if (ai && ai.mount) {
+        ai.mount(container, {
+            test: testType,
+            statistic: ctx.t,
+            df: ctx.df,
+            pValue: ctx.pValue,
+            alpha: ctx.alpha || 0.05,
+            tails: ctx.tails,
+            method: 'one-sample t',
+        });
+    }
 }
 
 function hydrateFromDataset() {

@@ -185,6 +185,18 @@ function renderPostResult(testType, ctx) {
     // setLatestContext AFTER insertion so it can update the freshly-inserted preview pane
     if (reports && reports.setLatestContext) reports.setLatestContext(testType, ctx);
     if (showWork && showWork.typeset) showWork.typeset(container);
+
+    const { ai } = window.ZtChi || {};
+    if (ai && ai.mount) {
+        ai.mount(container, {
+            test: testType,
+            statistic: ctx.z,
+            pValue: ctx.probability,
+            twoTailed: ctx.twoTail,
+            alpha: ctx.alpha || 0.05,
+            method: 'one-sample Z',
+        });
+    }
 }
 
 function createNormalCurveVisualization(zScore, type) {

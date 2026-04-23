@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{var t=localStorage.getItem('ZtChi.theme')||'auto';if(t==='auto')t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}}());</script>
+    <title>Instructor Mode &mdash; Z-t-Chi Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <meta name="theme-color" content="#1976d2">
+    <script src="js/common.js" defer></script>
+    <script src="js/state.js" defer></script>
+    <script src="js/backend.js" defer></script>
+    <script src="js/theme.js" defer></script>
+    <script src="js/layout.js" defer></script>
+    <script src="js/instructor.js" defer></script>
+    <script src="js/instructor-builder.js" defer></script>
+</head>
+
+<body>
+    <nav>
+        <ul class="nav-bar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="instructor.html" class="active">Instructor</a></li>
+        </ul>
+    </nav>
+
+    <div class="header-container">
+        <h1>Instructor Mode</h1>
+        <p>Build a signed problem link your students can open. They see the prompt, use the calculator, and get immediate feedback on whether their answer matches yours.</p>
+        <div class="info-box">
+            <p>
+                <strong>How it works:</strong>
+                <span class="info-content">
+                    You describe the problem below, set the expected answer, and click <em>Generate link</em>. If this deployment has a backend configured, the link is cryptographically signed so students can't silently edit the expected answer. If no backend is configured, the link still works but carries an <em>unsigned</em> badge &mdash; fine for low-stakes practice, not recommended for graded assignments.
+                </span>
+            </p>
+        </div>
+        <p class="status-line" id="backend-status">Backend status: <span>checking&hellip;</span></p>
+    </div>
+
+    <main role="main">
+        <section class="section">
+            <h2>Step 1 &mdash; Describe the problem</h2>
+            <div class="input-group">
+                <label for="problemTitle">Title (shown to student):</label>
+                <input type="text" id="problemTitle" placeholder="Problem 3 — One-sample t" maxlength="120">
+            </div>
+
+            <div class="input-group">
+                <label for="problemPrompt">Prompt text:</label>
+                <textarea id="problemPrompt" rows="4" maxlength="800" placeholder="Compute the two-tailed p-value for a sample with t = 2.31 and df = 18. Report your answer to three decimals."></textarea>
+            </div>
+
+            <div class="input-group">
+                <label for="problemCalc">Target calculator:</label>
+                <select id="problemCalc">
+                    <option value="z">Z calculator</option>
+                    <option value="t" selected>t calculator</option>
+                    <option value="chi">Chi-square calculator</option>
+                    <option value="corrections">Multiple-comparisons corrections</option>
+                    <option value="epi">Epidemiology 2&times;2</option>
+                </select>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Step 2 &mdash; Prefill inputs (optional)</h2>
+            <p class="section-intro">Any values you put here get dropped into the student's calculator fields automatically. Use the DOM <code>id</code> of the field (e.g. <code>tValue</code>, <code>degreesOfFreedom</code>).</p>
+            <div class="input-group">
+                <label for="problemInputs">Prefills (one per line, <code>field_id = value</code>):</label>
+                <textarea id="problemInputs" rows="4" placeholder="t-stat = 2.31&#10;df = 18"></textarea>
+                <p class="viz-caption" id="fieldHint"></p>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Step 3 &mdash; Expected answer</h2>
+            <div class="input-row">
+                <div class="input-group input-group-inline">
+                    <label for="answerField">Field:</label>
+                    <select id="answerField"></select>
+                </div>
+                <div class="input-group input-group-inline">
+                    <label for="answerValue">Value:</label>
+                    <input type="number" step="any" id="answerValue" placeholder="0.032">
+                </div>
+                <div class="input-group input-group-inline">
+                    <label for="answerTolerance">Tolerance (&plusmn;):</label>
+                    <input type="number" step="any" id="answerTolerance" value="0.001" min="0">
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="feedbackCorrect">Feedback if correct:</label>
+                    <input type="text" id="feedbackCorrect" placeholder="Nice work! Move on to Problem 4." maxlength="200">
+                </div>
+                <div class="input-group">
+                    <label for="feedbackIncorrect">Feedback if incorrect:</label>
+                    <input type="text" id="feedbackIncorrect" placeholder="Check whether you ran the two-tailed or one-tailed version." maxlength="200">
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Step 4 &mdash; Generate link</h2>
+            <div class="button-row">
+                <button type="button" class="primary-button" id="btnGenerate">Generate link</button>
+                <button type="button" class="secondary-button" id="btnExample">Load example</button>
+                <button type="button" class="secondary-button" id="btnCopy">Copy link</button>
+                <button type="button" class="secondary-button" id="btnOpen">Open as student</button>
+            </div>
+            <div class="input-group">
+                <label for="outputLink">Shareable link:</label>
+                <textarea id="outputLink" rows="3" readonly placeholder="Click Generate link to produce a shareable URL."></textarea>
+            </div>
+            <p class="viz-caption" id="signStatus">Not yet generated.</p>
+        </section>
+    </main>
+
+    <footer class="footer-container">
+        <div class="footer-content">
+            <div class="footer-main">
+                <div class="footer-notes">
+                    <span class="footer-title">Instructor notes:</span>
+                    <ul class="compact-list">
+                        <li>Students see the prompt and a "check" box</li>
+                        <li>Calculator pre-fills with your chosen inputs</li>
+                        <li>Signed links resist URL tampering</li>
+                        <li>Unsigned fallback still works offline</li>
+                    </ul>
+                </div>
+                <div class="footer-copyright">
+                    <p>© 2024 Z-t-Chi Calculator by Hadiza Galadima, PhD. All rights reserved.</p>
+                    <p>For educational purposes only. Always double-check statistical calculations.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

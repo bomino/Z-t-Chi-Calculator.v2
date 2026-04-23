@@ -22,6 +22,7 @@
         { href: 'guide.html', label: 'Guide' },
         { href: 'notation.html', label: 'Notation' },
         { href: 'error-traps.html', label: 'Error Traps' },
+        { href: 'instructor.html', label: 'Instructor' },
     ];
 
     function currentPage() {

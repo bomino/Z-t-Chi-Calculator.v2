@@ -355,6 +355,19 @@ function renderPostResult(testType, ctx) {
 
     if (reports && reports.setLatestContext) reports.setLatestContext(testType, ctx);
     if (showWork && showWork.typeset) showWork.typeset(container);
+
+    const { ai } = window.ZtChi || {};
+    if (ai && ai.mount) {
+        ai.mount(container, {
+            test: testType,
+            chiSquare: ctx.chiSquare,
+            df: ctx.degreesOfFreedom,
+            pValue: ctx.pValue,
+            cramersV: ctx.cramersV,
+            alpha: ctx.alpha || 0.05,
+            method: 'chi-square test of independence',
+        });
+    }
 }
 
 function getCriticalValue(degreesOfFreedom, alpha) {
