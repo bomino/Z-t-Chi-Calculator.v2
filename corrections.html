@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{var t=localStorage.getItem('ZtChi.theme')||'auto';if(t==='auto')t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}}());</script>
+    <title>Multiple-Comparisons Corrections &mdash; Z-t-Chi Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <meta name="theme-color" content="#1976d2">
+    <script src="js/common.js" defer></script>
+    <script src="js/state.js" defer></script>
+    <script src="js/theme.js" defer></script>
+    <script src="js/layout.js" defer></script>
+    <script src="js/corrections.js" defer></script>
+</head>
+
+<body>
+    <nav>
+        <ul class="nav-bar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="z_calculator.html">Z Calculator</a></li>
+            <li><a href="t_calculator.html">t Calculator</a></li>
+            <li><a href="chi_square.html">Chi-Square Calculator</a></li>
+            <li><a href="corrections.html" class="active">Corrections</a></li>
+        </ul>
+    </nav>
+
+    <div class="header-container">
+        <h1>Multiple-Comparisons Corrections</h1>
+        <p>When you run many tests, some will look significant by chance alone. This page corrects for that &mdash; and shows you exactly how fast the error inflates.</p>
+        <div class="info-box">
+            <p>
+                <strong>Why this matters:</strong>
+                <span class="info-content">
+                    Running 20 independent tests at &alpha; = 0.05 gives you roughly a 64% chance of at least one false positive. Bonferroni, Holm, and Benjamini-Hochberg are three standard ways to rein that in. They differ in how conservative they are and what error they control (FWER vs FDR) &mdash; the table below runs all three so you can compare side by side.
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <main role="main">
+        <section class="section">
+            <h2>Step 1 &mdash; Enter your p-values</h2>
+            <div class="instruction-panel">
+                <h3>Instructions:</h3>
+                <ul>
+                    <li>Paste one p-value per line. Optionally prefix with a label and a comma (e.g. <code>Outcome A, 0.017</code>).</li>
+                    <li>Values must be in <code>[0, 1]</code>. Scientific notation (<code>1.2e-4</code>) is fine.</li>
+                    <li>Or click <strong>Load recent results</strong> to pull p-values from tests you ran earlier in this session.</li>
+                </ul>
+            </div>
+
+            <div class="input-group">
+                <label for="pvalInput">P-values (one per line; optional label + comma prefix):</label>
+                <textarea id="pvalInput" rows="10" placeholder="Systolic BP, 0.012&#10;Diastolic BP, 0.048&#10;Heart rate, 0.031&#10;Cholesterol, 0.24&#10;HbA1c, 0.008"></textarea>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group input-group-inline">
+                    <label for="alphaSelect">Significance threshold (&alpha;):</label>
+                    <select id="alphaSelect">
+                        <option value="0.01">0.01 (stringent)</option>
+                        <option value="0.05" selected>0.05 (conventional)</option>
+                        <option value="0.10">0.10 (exploratory)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="button-row">
+                <button type="button" id="btnCompute" class="primary-button">Compute corrections</button>
+                <button type="button" id="btnLoadRecent" class="secondary-button">Load recent results</button>
+                <button type="button" id="btnLoadExample" class="secondary-button">Load example</button>
+                <button type="button" id="btnClear" class="secondary-button">Clear</button>
+            </div>
+        </section>
+
+        <section class="section" id="resultsSection" style="display:none;">
+            <h2>Step 2 &mdash; Adjusted p-values</h2>
+            <p class="section-intro">Rows are sorted by raw p-value ascending. Cells shaded <span class="legend-chip legend-sig">green</span> reject the null under that method at the chosen &alpha;.</p>
+            <div class="table-container">
+                <table class="corrections-table" id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th scope="col">Rank</th>
+                            <th scope="col">Label</th>
+                            <th scope="col">Raw <em>p</em></th>
+                            <th scope="col" title="Bonferroni adjusted p-value">Bonferroni</th>
+                            <th scope="col" title="Holm-Bonferroni adjusted p-value">Holm</th>
+                            <th scope="col" title="Benjamini-Hochberg adjusted p-value (FDR)">BH (FDR)</th>
+                            <th scope="col">Reject under</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody"></tbody>
+                </table>
+            </div>
+            <p class="section-summary" id="resultsSummary"></p>
+        </section>
+
+        <section class="section" id="vizSection" style="display:none;">
+            <h2>Step 3 &mdash; Visualize the inflation</h2>
+            <p class="section-intro">
+                Family-wise error rate (FWER) for <em>k</em> independent tests at level &alpha;:
+                <span class="inline-math">FWER = 1 &minus; (1 &minus; &alpha;)<sup><em>k</em></sup></span>.
+                Bonferroni flattens this by testing each individual hypothesis at &alpha; / <em>k</em>.
+            </p>
+            <div class="viz-controls">
+                <label for="vizAlpha">&alpha; for chart:</label>
+                <input type="range" id="vizAlpha" min="0.005" max="0.20" step="0.005" value="0.05">
+                <output id="vizAlphaLabel">0.050</output>
+                <span class="viz-legend">
+                    <span class="legend-chip legend-uncorrected"></span> Uncorrected
+                    <span class="legend-chip legend-bonf"></span> Bonferroni
+                    <span class="legend-chip legend-marker"></span> Your <em>k</em>
+                </span>
+            </div>
+            <div class="viz-chart-wrap">
+                <svg id="inflationChart" viewBox="0 0 640 380" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Family-wise error rate inflation as a function of the number of tests"></svg>
+            </div>
+            <p class="viz-caption" id="vizCaption"></p>
+        </section>
+
+        <section class="section">
+            <h2>Which correction should I use?</h2>
+            <div class="method-cards">
+                <div class="method-card">
+                    <h3>Bonferroni</h3>
+                    <p class="method-formula"><em>p<sub>adj</sub></em> = min(1, <em>p</em> &times; <em>k</em>)</p>
+                    <p><strong>Controls:</strong> FWER (family-wise error rate).</p>
+                    <p><strong>Use when:</strong> you want a simple, universally understood correction and you can afford to lose power. Safe default for a small number of pre-planned confirmatory tests.</p>
+                    <p><strong>Downside:</strong> very conservative when <em>k</em> is large or tests are correlated.</p>
+                </div>
+                <div class="method-card">
+                    <h3>Holm-Bonferroni</h3>
+                    <p class="method-formula"><em>p<sub>adj(i)</sub></em> = max<sub><em>j</em>&le;<em>i</em></sub> [(<em>k</em> &minus; <em>j</em> + 1) &middot; <em>p<sub>(j)</sub></em>]</p>
+                    <p><strong>Controls:</strong> FWER, uniformly more powerful than Bonferroni.</p>
+                    <p><strong>Use when:</strong> you want strict FWER control but don't want Bonferroni's power loss. No reason not to prefer it over plain Bonferroni.</p>
+                    <p><strong>Interpretation:</strong> sequentially rejective &mdash; the smallest <em>p</em> is tested at &alpha;/<em>k</em>, the next at &alpha;/(<em>k</em>&minus;1), etc.</p>
+                </div>
+                <div class="method-card">
+                    <h3>Benjamini-Hochberg</h3>
+                    <p class="method-formula"><em>p<sub>adj(i)</sub></em> = min<sub><em>j</em>&ge;<em>i</em></sub> [<em>p<sub>(j)</sub></em> &middot; <em>k</em> / <em>j</em>]</p>
+                    <p><strong>Controls:</strong> FDR (false discovery rate &mdash; expected proportion of rejected nulls that are false).</p>
+                    <p><strong>Use when:</strong> you have many tests (screening, omics, exploratory epi) and can tolerate a small rate of false positives among your discoveries.</p>
+                    <p><strong>Downside:</strong> a discovery can be &ldquo;approximately true&rdquo; &mdash; not the right tool when one false positive is catastrophic.</p>
+                </div>
+            </div>
+            <div class="info-box">
+                <p>
+                    <strong>Biostats rule of thumb:</strong>
+                    <span class="info-content">
+                        Confirmatory trials with pre-registered endpoints &rarr; Holm. Screening across many candidate biomarkers or SNPs &rarr; BH. Regulatory / primary-endpoint analysis that must not leak a single false positive &rarr; Bonferroni (or a formal gatekeeping procedure).
+                    </span>
+                </p>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Worked example &mdash; five endpoints in a clinical trial</h2>
+            <p>
+                A small RCT tests five secondary endpoints against placebo. The raw p-values come back as
+                <em>p</em><sub>1</sub> = 0.003, <em>p</em><sub>2</sub> = 0.013, <em>p</em><sub>3</sub> = 0.018,
+                <em>p</em><sub>4</sub> = 0.041, <em>p</em><sub>5</sub> = 0.120.
+                At &alpha; = 0.05, how many &ldquo;survive&rdquo; a correction?
+            </p>
+            <ul>
+                <li><strong>Uncorrected:</strong> four significant (<em>p</em><sub>1</sub>&ndash;<em>p</em><sub>4</sub>). But the expected number of false positives under the null is <em>k</em>&middot;&alpha; = 0.25.</li>
+                <li><strong>Bonferroni</strong> (&alpha;/<em>k</em> = 0.010): only <em>p</em><sub>1</sub> clears the bar.</li>
+                <li><strong>Holm:</strong> <em>p</em><sub>1</sub> vs 0.010 &#x2713;, <em>p</em><sub>2</sub> vs 0.0125 &#x2717; &mdash; stops there. One discovery.</li>
+                <li><strong>BH at <em>q</em> = 0.05:</strong> <em>p</em><sub>3</sub> &le; (3/5)(0.05) = 0.030 &#x2713;, so everything up to rank 3 is discovered. Three discoveries.</li>
+            </ul>
+            <p>Click <strong>Load example</strong> above to see the full table and the inflation curve for this scenario.</p>
+        </section>
+    </main>
+
+    <footer class="footer-container">
+        <div class="footer-content">
+            <div class="footer-main">
+                <div class="footer-notes">
+                    <span class="footer-title">Why this page exists:</span>
+                    <ul class="compact-list">
+                        <li>FWER control (Bonferroni, Holm)</li>
+                        <li>FDR control (Benjamini-Hochberg)</li>
+                        <li>Interactive inflation visualization</li>
+                        <li>Biostats-first worked example</li>
+                    </ul>
+                </div>
+                <div class="footer-copyright">
+                    <p>© 2024 Z-t-Chi Calculator by Hadiza Galadima, PhD. All rights reserved.</p>
+                    <p>For educational purposes only. Always double-check statistical calculations.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
