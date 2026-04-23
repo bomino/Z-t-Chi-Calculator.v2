@@ -45,15 +45,18 @@ Then visit `http://localhost:8000/`.
 
 ## Deploying to GitHub Pages
 
-A GitHub Actions workflow at `.github/workflows/deploy.yml` is preconfigured. To enable deployment on your fork:
+A GitHub Actions workflow at `.github/workflows/deploy.yml` is preconfigured. It uses `actions/configure-pages@v5` with `enablement: true`, which attempts to turn Pages on automatically when the workflow first runs. In most cases the first push will enable and deploy Pages in one go.
 
-1. Push this repo to GitHub (see below if you're starting from a clone).
-2. Open your repo on github.com.
-3. Go to **Settings → Pages**.
-4. Under *Source*, choose **GitHub Actions**.
-5. That's it — every push to `main` now redeploys. The live URL appears in the Actions tab and at **Settings → Pages** once the first deployment finishes.
+**If the workflow fails with `Get Pages site failed … HttpError: Not Found`**, Pages couldn't be auto-enabled (common on org-restricted or brand-new repos). Enable it manually, then re-run the workflow:
 
-The workflow uploads the repo root as the Pages artifact, so `index.html` becomes the landing page at `https://<user>.github.io/<repo>/`.
+1. Open your repo on github.com.
+2. Go to **Settings → Pages** (left sidebar).
+3. Under *Build and deployment → Source*, choose **GitHub Actions**.
+4. Go to the **Actions** tab, open the failed run, and click **Re-run all jobs**.
+
+Every subsequent push to `main` redeploys automatically. The live URL appears at **Settings → Pages** and in each workflow run summary — it will look like `https://<user>.github.io/<repo>/`. For this repo specifically: <https://bomino.github.io/Z-t-Chi-Calculator.v2/>.
+
+The workflow uploads the repo root as the Pages artifact, so `index.html` becomes the landing page.
 
 ### First-time push from a local clone
 

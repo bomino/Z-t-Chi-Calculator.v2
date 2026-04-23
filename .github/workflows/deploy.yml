@@ -25,7 +25,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
+        with:
+          # Attempt to enable Pages automatically if the repo admin hasn't
+          # done it manually yet. If this fails (e.g., org restricts it),
+          # enable Pages manually at Settings → Pages → Source: GitHub
+          # Actions, then re-run the workflow.
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
