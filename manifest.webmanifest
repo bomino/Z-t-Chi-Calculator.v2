@@ -1,0 +1,20 @@
+{
+  "name": "Z-t-Chi Calculator",
+  "short_name": "Z-t-Chi",
+  "description": "Browser-native statistical calculator suite for biostatistics education: Z, t, chi-square, Fisher's exact, bootstrap, permutation, and epidemiology 2x2 measures.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "categories": ["education", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

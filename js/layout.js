@@ -51,13 +51,26 @@
         }
     }
 
+    function registerServiceWorker() {
+        // Only register when the browser supports SW and we're served over
+        // http(s) (GitHub Pages, localhost). Skipped for file:// and in
+        // environments where SW isn't supported. Failures are silent.
+        if (!('serviceWorker' in navigator)) return;
+        if (window.location.protocol === 'file:') return;
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').catch(() => { /* silent */ });
+        });
+    }
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             applyEmbedMode();
             injectNav();
+            registerServiceWorker();
         });
     } else {
         applyEmbedMode();
         injectNav();
+        registerServiceWorker();
     }
 })();

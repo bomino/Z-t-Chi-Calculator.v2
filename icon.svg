@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Z-t-Chi Calculator">
+  <rect width="512" height="512" rx="96" fill="#1976d2"/>
+  <text x="256" y="292" font-family="Georgia, 'Times New Roman', serif" font-size="260" fill="#ffffff" text-anchor="middle" font-weight="700">χ²</text>
+  <text x="256" y="430" font-family="Georgia, 'Times New Roman', serif" font-size="78" fill="#e3f2fd" text-anchor="middle" font-weight="500">Z · t</text>
+</svg>

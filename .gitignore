@@ -1,0 +1,22 @@
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code session artifacts
+.claude/
+
+# Playwright MCP artifacts
+.playwright-mcp/
+
+# Node / npm (not used by the app itself, but keeps clones tidy)
+node_modules/
+npm-debug.log*
+
+# Local server artifacts
+*.log
