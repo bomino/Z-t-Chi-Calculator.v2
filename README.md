@@ -75,6 +75,12 @@ Once deployed (or served over `localhost`):
 
 The service worker is versioned via `CACHE_VERSION` in `sw.js`; bumping this value invalidates the old cache on the next visit so new deployments take effect.
 
+## Optional backend (Instructor Mode signing + AI interpreter)
+
+Two features live behind an optional Cloudflare Worker backend: HMAC-signed instructor problem links, and the opt-in "Explain in plain English (AI)" button on calculator results. Both degrade silently when no backend is configured — the main app is unaffected.
+
+See [`backend/DEPLOY.md`](./backend/DEPLOY.md) for the full step-by-step walkthrough (prerequisites, CLI install, secret generation, origin allowlist, deployment, browser verification, monitoring, rotation, custom domains, cost estimates, and troubleshooting). Total first-time setup is ~20 minutes; estimated semester cost for a 50-student class is ~$2.
+
 ## Embedding in an LMS
 
 Append `?embed=1` to any calculator URL to hide the navigation and footer:

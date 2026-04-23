@@ -13,7 +13,13 @@ Cloudflare Workers defined here:
 Both endpoints live in a single Worker (`worker.js`) behind a path
 router so you only need one deployment.
 
-## Deploy
+**For full step-by-step deployment instructions see [`DEPLOY.md`](./DEPLOY.md)** — that file covers
+prerequisites, CLI install, secret generation, origin allowlist,
+deployment, browser verification, monitoring, rotation, custom
+domains, cost estimates, and troubleshooting. The section below is a
+quick reference only.
+
+## Deploy (quick reference)
 
 You need a Cloudflare account (free tier is fine) and `wrangler` CLI.
 
