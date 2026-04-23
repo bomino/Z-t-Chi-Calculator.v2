@@ -444,23 +444,101 @@ footer {
     visibility: visible;
 }
 
-/* Print styles */
+/* Print styles — produce a clean homework-submission view */
 @media print {
-    .no-print {
-        display: none;
-    }
-
-    .results-table {
-        page-break-inside: avoid;
+    .no-print,
+    nav,
+    .button-group,
+    .loading-spinner,
+    .notification,
+    .predict-panel,
+    .self-check-card .check-reveal,
+    .show-work-toggle,
+    .instruction-panel,
+    .info-box,
+    .input-help {
+        display: none !important;
     }
 
     body {
         padding: 0;
         margin: 0;
+        color: #000;
+        background: #fff;
+        font-size: 11pt;
     }
 
-    .results-summary {
-        page-break-before: always;
+    main {
+        padding: 0 10mm;
+    }
+
+    h1, h2, h3, h4 {
+        color: #000;
+        page-break-after: avoid;
+    }
+
+    .header-container {
+        border-bottom: 1px solid #000;
+        padding-bottom: 5mm;
+        margin-bottom: 5mm;
+    }
+
+    .results-table,
+    .compact-results-table,
+    .expected-table,
+    .stats-grid,
+    .result-box,
+    .summary-stats-container,
+    .interpretation-details,
+    .show-work,
+    .totals-section {
+        page-break-inside: avoid;
+    }
+
+    .show-work {
+        border: 1px solid #000;
+        padding: 3mm;
+        margin-top: 3mm;
+        background: #f9f9f9;
+    }
+
+    .results-flex-container {
+        display: block;
+    }
+
+    .visualization-box,
+    .probability-group {
+        box-shadow: none;
+        border: 1px solid #999;
+        background: #fff;
+    }
+
+    .normal-curve {
+        max-width: 90mm;
+    }
+
+    .footer-container {
+        border-top: 1px solid #000;
+        margin-top: 10mm;
+        padding-top: 3mm;
+        font-size: 9pt;
+    }
+
+    a {
+        color: #000;
+        text-decoration: none;
+    }
+
+    /* Print URL after external links only */
+    a[href^="http"]::after {
+        content: " (" attr(href) ")";
+        font-size: 9pt;
+    }
+
+    .warning-message {
+        border: 1px solid #e65100;
+        background: #fff3e0;
+        page-break-inside: avoid;
     }
 }
 
@@ -621,16 +699,6 @@ footer {
 
 .secondary-button:hover {
     background: #e3f2fd;
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
 }
 
 /* Styles for contingency info display */
@@ -795,33 +863,6 @@ footer {
 
 .cell-data .contribution {
     font-size: 0.85em;
-    color: #1976d2;
-}
-
-/* Stats grid layout */
-.stats-grid {
-    display: grid;
-    gap: 10px;
-    margin: 15px 0;
-}
-
-.stat-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px;
-    background-color: white;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.stat-label {
-    font-weight: 500;
-    color: #666;
-}
-
-.stat-value {
-    font-weight: bold;
     color: #1976d2;
 }
 
@@ -1001,14 +1042,6 @@ footer {
     margin-top: 20px;
 }
 
-/* Result box styles */
-.result-box {
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 6px;
-    margin-top: 15px;
-}
-
 .result-value {
     font-size: 1.5em;
     font-weight: bold;
@@ -1091,7 +1124,9 @@ input:invalid+.input-help {
     border-radius: 4px;
     margin: 10px auto;
     display: block;
-    /* Ensures center alignment */
+    width: 100%;
+    max-width: 400px;
+    height: auto;
 }
 
 /* Container for each visualization group */
@@ -1402,9 +1437,7 @@ input:invalid+.input-help {
 .calc-card h2 {
     color: #1976d2;
     margin: 0 0 15px 0;
-    /* Reduced from 20px */
     font-size: 1.2em;
-    /* Reduced from 1.4em *
 }
 
 .calc-card p {
@@ -1448,32 +1481,6 @@ input:invalid+.input-help {
     }
 }
 
-.feature-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.feature-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-align: left;
-}
-
-.feature-icon {
-    font-size: 1.2em;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 8px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 35px;
-    height: 35px;
-}
-
 /* Add these styles to your existing info-box section */
 .info-box .key-features {
     margin-top: 15px;
@@ -1509,4 +1516,348 @@ input:invalid+.input-help {
     margin-bottom: 12px;
     color: #666;
     line-height: 1.5;
+}
+
+/* Warning banner for low expected frequencies (chi-square assumption) */
+.warning-message {
+    margin-top: 15px;
+    padding: 12px 15px;
+    background-color: #fff3e0;
+    border-left: 4px solid #e65100;
+    border-radius: 4px;
+    color: #5a2a00;
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+.warning-message strong {
+    color: #e65100;
+}
+
+/* Embed mode — hide chrome when loaded inside an LMS iframe (?embed=1) */
+body.embed-mode nav,
+body.embed-mode > footer,
+body.embed-mode .footer-container,
+body.embed-mode .header-container {
+    display: none;
+}
+
+body.embed-mode main {
+    padding-top: 10px;
+}
+
+/* ===== Phase 1: Learning Mode toggle ===== */
+.learning-mode-toggle {
+    display: inline-block;
+    margin: 10px 0;
+    padding: 8px 12px;
+    background: #f1f8ff;
+    border: 1px solid #b5d4fb;
+    border-radius: 6px;
+    font-size: 0.95em;
+}
+
+.learning-mode-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #1565c0;
+}
+
+.learning-mode-switch input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* ===== Phase 1: Predict-Then-Reveal dialog ===== */
+dialog.predict-dialog {
+    border: none;
+    border-radius: 10px;
+    padding: 0;
+    max-width: 520px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+    color: #222;
+}
+
+dialog.predict-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.predict-form {
+    padding: 22px 24px;
+}
+
+.predict-form h3 {
+    margin: 0 0 10px 0;
+    color: #1976d2;
+}
+
+.predict-form p {
+    margin: 8px 0;
+    color: #333;
+    line-height: 1.45;
+}
+
+.predict-question {
+    background: #f7faff;
+    border-left: 3px solid #1976d2;
+    padding: 10px 12px;
+    border-radius: 0 4px 4px 0;
+}
+
+.predict-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 16px 0 8px 0;
+}
+
+.predict-footnote {
+    font-size: 0.85em;
+    color: #666;
+    margin-top: 14px;
+    border-top: 1px dashed #ddd;
+    padding-top: 10px;
+}
+
+.predict-reveal {
+    margin: 12px 0;
+    padding: 12px 14px;
+    border-radius: 6px;
+    border-left: 4px solid transparent;
+}
+
+.predict-reveal.matched {
+    background: #e8f5e9;
+    border-left-color: #2e7d32;
+}
+
+.predict-reveal.mismatched {
+    background: #fff3e0;
+    border-left-color: #e65100;
+}
+
+.predict-reveal p {
+    margin: 4px 0;
+}
+
+.predict-prompt {
+    color: #555;
+    font-style: italic;
+}
+
+/* ===== Phase 1: Formative self-check cards ===== */
+.self-checks {
+    margin-top: 24px;
+    padding: 16px 18px;
+    background: #fafbfd;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+}
+
+.self-checks h3 {
+    margin: 0 0 6px 0;
+    color: #1976d2;
+    font-size: 1.05em;
+}
+
+.self-check-intro {
+    margin: 0 0 14px 0;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.self-check-card {
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+}
+
+.self-check-card:last-child {
+    margin-bottom: 0;
+}
+
+.self-check-card.correct {
+    border-color: #a5d6a7;
+    background: #f1f8f2;
+}
+
+.self-check-card.incorrect {
+    border-color: #ffcc80;
+    background: #fff8f1;
+}
+
+.check-question {
+    margin: 0 0 10px 0;
+    color: #333;
+    line-height: 1.45;
+}
+
+.check-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.check-buttons button {
+    min-width: 90px;
+}
+
+.check-buttons button.is-correct-answer {
+    border-color: #2e7d32 !important;
+    background: #c8e6c9 !important;
+    color: #1b5e20;
+}
+
+.check-buttons button.is-wrong-answer {
+    border-color: #e65100 !important;
+    background: #ffccbc !important;
+    color: #bf360c;
+}
+
+.check-reveal {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #ddd;
+    color: #333;
+    font-size: 0.93em;
+    line-height: 1.5;
+}
+
+.check-reveal p {
+    margin: 4px 0;
+}
+
+.check-source {
+    color: #777;
+    font-size: 0.85em;
+}
+
+/* ===== Phase 1: Show-Work mode ===== */
+details.show-work {
+    margin-top: 18px;
+    padding: 0;
+    background: #fbfbfd;
+    border: 1px solid #d8d8e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+details.show-work[open] {
+    background: #fff;
+}
+
+.show-work-toggle {
+    cursor: pointer;
+    padding: 10px 14px;
+    background: #eef2f9;
+    color: #1976d2;
+    font-weight: 600;
+    user-select: none;
+    list-style: none;
+}
+
+.show-work-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.show-work-toggle::before {
+    content: "▶ ";
+    display: inline-block;
+    transform: rotate(0deg);
+    transition: transform 0.2s ease;
+}
+
+details[open] .show-work-toggle::before {
+    transform: rotate(90deg);
+}
+
+.show-work-body {
+    padding: 14px 18px;
+}
+
+.show-work-body h4 {
+    color: #1976d2;
+    margin: 14px 0 6px 0;
+    font-size: 1em;
+}
+
+.show-work-body h4:first-child {
+    margin-top: 0;
+}
+
+.show-work-body p {
+    margin: 6px 0;
+    line-height: 1.55;
+    color: #333;
+}
+
+.show-work-math {
+    margin: 10px 0;
+    padding: 6px 10px;
+    background: #f5f5f8;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 1.05em;
+}
+
+.show-work-list {
+    margin: 6px 0 10px 20px;
+}
+
+.show-work-note {
+    margin-top: 12px;
+    padding: 8px 10px;
+    background: #fff9e6;
+    border-left: 3px solid #ffb300;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.93em;
+    color: #5a4400;
+}
+
+/* ===== Phase 1: Report (APA / AMA) buttons ===== */
+.report-buttons {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.report-preview {
+    flex: 1 1 100%;
+    margin-top: 6px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.report-preview summary {
+    cursor: pointer;
+    color: #1976d2;
+}
+
+.report-preview-text {
+    white-space: pre-wrap;
+    background: #f5f5f8;
+    padding: 10px;
+    border-radius: 4px;
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    margin-top: 6px;
+    line-height: 1.5;
+}
+
+@media (max-width: 520px) {
+    .predict-choices {
+        flex-direction: column;
+    }
+
+    .check-buttons {
+        flex-direction: column;
+    }
 }

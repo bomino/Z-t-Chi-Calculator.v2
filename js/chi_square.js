@@ -1,9 +1,33 @@
+const { escapeHtml, parsePositiveInt, csvEscape, showNotification } = window.ZtChi;
+
+function getDimension(id, fieldName) {
+    const raw = document.getElementById(id).value;
+    const n = parsePositiveInt(raw, fieldName);
+    if (n < 2) {
+        throw new Error(`${fieldName} must be at least 2.`);
+    }
+    return n;
+}
+
+function collectObserved(rows, cols) {
+    const observed = Array(rows).fill(null).map(() => Array(cols).fill(0));
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            const cell = document.getElementById(`cell-${i}-${j}`);
+            if (!cell) {
+                throw new Error('Table cells not found. Click "Generate Table" first.');
+            }
+            observed[i][j] = parsePositiveInt(cell.value || '0', `Cell (row ${i + 1}, col ${j + 1})`);
+        }
+    }
+    return observed;
+}
+
 function calculateExpectedFrequencies(rows, cols, observed) {
-    let rowTotals = Array(rows).fill(0);
-    let colTotals = Array(cols).fill(0);
+    const rowTotals = Array(rows).fill(0);
+    const colTotals = Array(cols).fill(0);
     let total = 0;
 
-    // Calculate row totals, column totals, and overall total
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
             rowTotals[i] += observed[i][j];
@@ -12,49 +36,81 @@ function calculateExpectedFrequencies(rows, cols, observed) {
         }
     }
 
-    // Calculate expected frequencies
-    let expected = Array(rows).fill(null).map(() => Array(cols).fill(0));
+    if (total === 0) {
+        throw new Error('Grand total is zero. Enter at least one non-zero observed count.');
+    }
+
+    const expected = Array(rows).fill(null).map(() => Array(cols).fill(0));
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
             expected[i][j] = (rowTotals[i] * colTotals[j]) / total;
         }
     }
-    return expected;
+    return { expected, rowTotals, colTotals, grandTotal: total };
 }
 
 function calculateChiSquare(observed, expected, rows, cols) {
     let chiSquare = 0;
-    let contributions = Array(rows).fill(null).map(() => Array(cols).fill(0));
+    const contributions = Array(rows).fill(null).map(() => Array(cols).fill(0));
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
-            const observedValue = observed[i][j];
-            const expectedValue = expected[i][j];
-            contributions[i][j] = Math.pow(observedValue - expectedValue, 2) / expectedValue;
+            const e = expected[i][j];
+            if (e <= 0) {
+                throw new Error(`Expected frequency at row ${i + 1}, column ${j + 1} is ${e}. The chi-square test requires all row and column totals to be greater than zero.`);
+            }
+            const diff = observed[i][j] - e;
+            contributions[i][j] = (diff * diff) / e;
             chiSquare += contributions[i][j];
         }
     }
     return { chiSquare, contributions };
 }
 
-function generateTable() {
-    const rows = parseInt(document.getElementById('num-rows').value);
-    const cols = parseInt(document.getElementById('num-cols').value);
-    let tableHtml = '<tr><th></th>';
-    for (let j = 0; j < cols; j++) {
-        tableHtml += `<th><input type="text" id="category-${j}" value="Column ${j + 1}"></th>`;
-    }
-    tableHtml += '</tr>';
+function getLowExpectedWarning(expected, rows, cols) {
+    const lowCells = [];
     for (let i = 0; i < rows; i++) {
-        tableHtml += `<tr><td><input type="text" id="group-${i}" value="Row ${i + 1}"></td>`;
         for (let j = 0; j < cols; j++) {
-            tableHtml += `<td><input type="number" id="cell-${i}-${j}" value="0" min="0"></td>`;
+            if (expected[i][j] < 5) {
+                lowCells.push({ i, j, value: expected[i][j] });
+            }
         }
-        tableHtml += '</tr>';
     }
-    document.getElementById('input-table').innerHTML = tableHtml;
+    if (lowCells.length === 0) return '';
+    const pct = ((lowCells.length / (rows * cols)) * 100).toFixed(1);
+    return `
+        <div class="warning-message" role="alert">
+            <strong>Warning:</strong> ${lowCells.length} expected frequency cell(s) (${pct}%) are below 5. The chi-square approximation may be unreliable. Consider Fisher's exact test for small expected counts.
+        </div>
+    `;
 }
 
-// Function to toggle contingency info visibility
+function getLabel(id, fallback) {
+    const el = document.getElementById(id);
+    return escapeHtml(el && el.value ? el.value : fallback);
+}
+
+function generateTable() {
+    try {
+        const rows = getDimension('num-rows', 'Number of rows');
+        const cols = getDimension('num-cols', 'Number of columns');
+        let tableHtml = '<tr><th></th>';
+        for (let j = 0; j < cols; j++) {
+            tableHtml += `<th><input type="text" id="category-${j}" value="Column ${j + 1}"></th>`;
+        }
+        tableHtml += '</tr>';
+        for (let i = 0; i < rows; i++) {
+            tableHtml += `<tr><td><input type="text" id="group-${i}" value="Row ${i + 1}"></td>`;
+            for (let j = 0; j < cols; j++) {
+                tableHtml += `<td><input type="number" id="cell-${i}-${j}" data-row="${i}" data-col="${j}" value="0" min="0" step="1"></td>`;
+            }
+            tableHtml += '</tr>';
+        }
+        document.getElementById('input-table').innerHTML = tableHtml;
+    } catch (error) {
+        showNotification(error.message, 'error', { duration: 5000 });
+    }
+}
+
 function toggleContingencyInfo() {
     const infoPanel = document.getElementById('contingency-info');
     const button = document.querySelector('.show-info-button');
@@ -69,267 +125,235 @@ function toggleContingencyInfo() {
     }
 }
 
-// Updated showContingencyInfo function
 function showContingencyInfo() {
-    const rows = parseInt(document.getElementById('num-rows').value);
-    const cols = parseInt(document.getElementById('num-cols').value);
-    let observed = Array(rows).fill(null).map(() => Array(cols).fill(0));
+    try {
+        const rows = getDimension('num-rows', 'Number of rows');
+        const cols = getDimension('num-cols', 'Number of columns');
+        const observed = collectObserved(rows, cols);
 
-    // Collect observed values
-    for (let i = 0; i < rows; i++) {
+        const { expected, rowTotals, colTotals, grandTotal } = calculateExpectedFrequencies(rows, cols, observed);
+        const degreesOfFreedom = (rows - 1) * (cols - 1);
+
+        let html = `
+            <div class="info-section">
+                <p class="highlight">Contingency Table Information:</p>
+                <p>Dimensions: ${rows} &times; ${cols}</p>
+                <p>Degrees of Freedom: ${degreesOfFreedom}</p>
+            </div>
+
+            <div class="expected-frequencies">
+                <h3>Expected Frequencies</h3>
+                <div class="table-wrapper">
+                    <table class="expected-table">
+                        <thead>
+                            <tr><th></th>`;
+
         for (let j = 0; j < cols; j++) {
-            const cellValue = document.getElementById(`cell-${i}-${j}`).value;
-            if (isNaN(cellValue) || cellValue < 0) {
-                alert("Please enter only positive numbers for observed values.");
-                return;
+            html += `<th>${getLabel(`category-${j}`, `Column ${j + 1}`)}</th>`;
+        }
+        html += '</tr></thead><tbody>';
+
+        for (let i = 0; i < rows; i++) {
+            html += `<tr><td><strong>${getLabel(`group-${i}`, `Row ${i + 1}`)}</strong></td>`;
+            for (let j = 0; j < cols; j++) {
+                html += `<td>${expected[i][j].toFixed(4)}</td>`;
             }
-            observed[i][j] = parseInt(cellValue) || 0; // Use 0 if value is empty or NaN
+            html += '</tr>';
         }
-    }
+        html += '</tbody></table></div></div>';
 
-    // Calculate expected frequencies
-    const expected = calculateExpectedFrequencies(rows, cols, observed);
-
-    // Calculate degrees of freedom
-    const degreesOfFreedom = (rows - 1) * (cols - 1);
-
-    // Display contingency table info and expected frequencies
-    let contingencyInfoHtml = `
-        <div class="info-section">
-            <p class="highlight">Contingency Table Information:</p>
-            <p>Dimensions: ${rows} × ${cols}</p>
-            <p>Degrees of Freedom: ${degreesOfFreedom}</p>
-        </div>
-        
-        <div class="expected-frequencies">
-            <h3>Expected Frequencies</h3>
-            <div class="table-wrapper">
-                <table class="expected-table">
-                    <thead>
-                        <tr>
-                            <th></th>`;
-
-    // Add column headers
-    for (let j = 0; j < cols; j++) {
-        const categoryName = document.getElementById(`category-${j}`)?.value || `Column ${j + 1}`;
-        contingencyInfoHtml += `<th>${categoryName}</th>`;
-    }
-    contingencyInfoHtml += '</tr></thead><tbody>';
-
-    // Add row data
-    for (let i = 0; i < rows; i++) {
-        const groupName = document.getElementById(`group-${i}`)?.value || `Row ${i + 1}`;
-        contingencyInfoHtml += `<tr><td><strong>${groupName}</strong></td>`;
+        html += `
+            <div class="totals-section">
+                <h3>Observed Totals</h3>
+                <p>Grand Total: ${grandTotal}</p>
+                <div class="totals-grid">
+                    <div class="row-totals">
+                        <h4>Row Totals:</h4>
+                        <ul>`;
+        for (let i = 0; i < rows; i++) {
+            html += `<li>${getLabel(`group-${i}`, `Row ${i + 1}`)}: ${rowTotals[i]}</li>`;
+        }
+        html += `
+                        </ul>
+                    </div>
+                    <div class="column-totals">
+                        <h4>Column Totals:</h4>
+                        <ul>`;
         for (let j = 0; j < cols; j++) {
-            contingencyInfoHtml += `<td>${expected[i][j].toFixed(4)}</td>`;
+            html += `<li>${getLabel(`category-${j}`, `Column ${j + 1}`)}: ${colTotals[j]}</li>`;
         }
-        contingencyInfoHtml += '</tr>';
+        html += `
+                        </ul>
+                    </div>
+                </div>
+            </div>`;
+
+        html += getLowExpectedWarning(expected, rows, cols);
+
+        document.getElementById('contingency-info').innerHTML = html;
+    } catch (error) {
+        showNotification(error.message, 'error', { duration: 5000 });
     }
-    contingencyInfoHtml += '</tbody></table></div>';
+}
 
-    // Add row and column totals
-    let rowTotals = Array(rows).fill(0);
-    let colTotals = Array(cols).fill(0);
-    let grandTotal = 0;
+function performChiSquareTest() {
+    if (window.ZtChi && window.ZtChi.predict && window.ZtChi.predict.isEnabled()) {
+        window.ZtChi.predict.prompt('chi', doChiSquareCompute);
+    } else {
+        doChiSquareCompute();
+    }
+}
 
-    for (let i = 0; i < rows; i++) {
+function doChiSquareCompute() {
+    try {
+        const rows = getDimension('num-rows', 'Number of rows');
+        const cols = getDimension('num-cols', 'Number of columns');
+        const observed = collectObserved(rows, cols);
+
+        const { expected, grandTotal } = calculateExpectedFrequencies(rows, cols, observed);
+        const { chiSquare, contributions } = calculateChiSquare(observed, expected, rows, cols);
+
+        const rawAlpha = document.getElementById('significance-level').value;
+        const significanceLevel = parseFloat(rawAlpha);
+        if (isNaN(significanceLevel) || significanceLevel <= 0 || significanceLevel >= 1) {
+            throw new Error('Please enter a valid significance level strictly between 0 and 1 (e.g., 0.05 for 5%).');
+        }
+
+        const degreesOfFreedom = (rows - 1) * (cols - 1);
+        const criticalValue = getCriticalValue(degreesOfFreedom, significanceLevel);
+        const pValue = getPValue(chiSquare, degreesOfFreedom);
+        const conclusion = chiSquare > criticalValue
+            ? 'Reject the null hypothesis.'
+            : 'Fail to reject the null hypothesis.';
+
+        const es = (window.ZtChi && window.ZtChi.effectSize) ? window.ZtChi.effectSize : null;
+        const dfStar = Math.max(1, Math.min(rows - 1, cols - 1));
+        const cramersV = es ? es.cramersV(chiSquare, grandTotal, rows, cols) : NaN;
+        const cramersLabel = es ? es.interpretCramersV(cramersV, dfStar) : '';
+        const is2x2 = rows === 2 && cols === 2;
+        const phi = is2x2 && es ? es.phi(chiSquare, grandTotal) : null;
+
+        let resultHtml = `
+            <div class="results-flex-container">
+                <div class="results-table-container">
+                    <h3>Results Table</h3>
+                    <table class="compact-results-table">
+                        <thead>
+                            <tr><th>Row</th>`;
+
         for (let j = 0; j < cols; j++) {
-            const value = observed[i][j];
-            rowTotals[i] += value;
-            colTotals[j] += value;
-            grandTotal += value;
+            resultHtml += `<th>${getLabel(`category-${j}`, `Col ${j + 1}`)}</th>`;
         }
-    }
+        resultHtml += '</tr></thead><tbody>';
 
-    contingencyInfoHtml += `
-        <div class="totals-section">
-            <h3>Observed Totals</h3>
-            <p>Grand Total: ${grandTotal}</p>
-            <div class="totals-grid">
-                <div class="row-totals">
-                    <h4>Row Totals:</h4>
-                    <ul>`;
+        for (let i = 0; i < rows; i++) {
+            resultHtml += `<tr><td><strong>${getLabel(`group-${i}`, `R${i + 1}`)}</strong></td>`;
+            for (let j = 0; j < cols; j++) {
+                resultHtml += `
+                    <td class="cell-data">
+                        <div class="observed">${observed[i][j]}</div>
+                        <div class="expected">(${expected[i][j].toFixed(2)})</div>
+                    </td>`;
+            }
+            resultHtml += '</tr>';
+        }
+        resultHtml += `</tbody></table></div>`;
 
-    for (let i = 0; i < rows; i++) {
-        const groupName = document.getElementById(`group-${i}`)?.value || `Row ${i + 1}`;
-        contingencyInfoHtml += `<li>${groupName}: ${rowTotals[i]}</li>`;
-    }
-
-    contingencyInfoHtml += `
-                    </ul>
+        resultHtml += `
+            <div class="summary-stats-container">
+                <h3>Statistical Summary</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">&chi;&sup2; Statistic:</span>
+                        <span class="stat-value">${chiSquare.toFixed(4)}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Degrees of Freedom:</span>
+                        <span class="stat-value">${degreesOfFreedom}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Significance Level:</span>
+                        <span class="stat-value">${significanceLevel}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Critical Value:</span>
+                        <span class="stat-value">${criticalValue.toFixed(4)}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">P-Value:</span>
+                        <span class="stat-value">${pValue.toFixed(4)}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Effect size (Cramer's V):</span>
+                        <span class="stat-value">${Number.isFinite(cramersV) ? cramersV.toFixed(4) : '—'}${cramersLabel ? ` <small>(${cramersLabel})</small>` : ''}</span>
+                    </div>
+                    ${phi != null ? `
+                    <div class="stat-item">
+                        <span class="stat-label">&phi; (2&times;2 only):</span>
+                        <span class="stat-value">${phi.toFixed(4)}</span>
+                    </div>` : ''}
                 </div>
-                <div class="column-totals">
-                    <h4>Column Totals:</h4>
-                    <ul>`;
-
-    for (let j = 0; j < cols; j++) {
-        const categoryName = document.getElementById(`category-${j}`)?.value || `Column ${j + 1}`;
-        contingencyInfoHtml += `<li>${categoryName}: ${colTotals[j]}</li>`;
-    }
-
-    contingencyInfoHtml += `
-                    </ul>
+                <div class="conclusion-box">
+                    <strong>Conclusion:</strong> ${conclusion}
                 </div>
+                <p class="effect-size-note no-print"><small>Significance tells you whether an association <em>exists</em>; Cramer's V tells you how strong it is. Cohen's (1988) bands for df* = ${dfStar}: ${dfStar === 1 ? 'small .10, medium .30, large .50' : dfStar === 2 ? 'small .07, medium .21, large .35' : dfStar === 3 ? 'small .06, medium .17, large .29' : 'small .05, medium .15, large .25'}.</small></p>
+                ${getLowExpectedWarning(expected, rows, cols)}
             </div>
         </div>`;
 
-    document.getElementById('contingency-info').innerHTML = contingencyInfoHtml;
+        document.getElementById('results').innerHTML = resultHtml;
+
+        renderPostResult('chi', {
+            rows,
+            cols,
+            observed,
+            expected,
+            contributions,
+            chiSquare,
+            df: degreesOfFreedom,
+            criticalValue,
+            pValue,
+            alpha: significanceLevel,
+            grandTotal,
+            n: grandTotal,
+            cramersV,
+            cramersLabel,
+            phi,
+            dfStar,
+        });
+
+        if (window.ZtChi && window.ZtChi.predict && window.ZtChi.predict.reveal) {
+            window.ZtChi.predict.reveal('chi', chiSquare > criticalValue ? 'reject' : 'fail-to-reject', '#results');
+        }
+    } catch (error) {
+        showNotification(error.message, 'error', { duration: 5000 });
+    }
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////
+function renderPostResult(testType, ctx) {
+    const { reports, showWork, checks } = window.ZtChi || {};
+    if (reports && reports.setLatestContext) reports.setLatestContext(testType, ctx);
 
-function performChiSquareTest() {
-    const rows = parseInt(document.getElementById('num-rows').value);
-    const cols = parseInt(document.getElementById('num-cols').value);
-    let observed = Array(rows).fill(null).map(() => Array(cols).fill(0));
+    const parts = [];
+    if (reports && reports.buildReportButtons) parts.push(reports.buildReportButtons(testType));
+    if (showWork && showWork.render) parts.push(showWork.render(testType, ctx));
+    if (checks && checks.renderFor) parts.push(checks.renderFor(testType));
+    if (parts.length === 0) return;
 
-    // Collect observed values
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-            const cellValue = document.getElementById(`cell-${i}-${j}`).value;
-            if (isNaN(cellValue) || cellValue < 0) {
-                alert("Please enter only positive numbers for observed values.");
-                return;
-            }
-            observed[i][j] = parseInt(cellValue);
-        }
+    const existing = document.getElementById('post-result');
+    if (existing) existing.remove();
+
+    const container = document.createElement('div');
+    container.id = 'post-result';
+    container.className = 'post-result';
+    container.innerHTML = parts.join('\n');
+
+    const host = document.getElementById('results');
+    if (host && host.parentNode) {
+        host.parentNode.insertBefore(container, host.nextSibling);
     }
 
-    // Calculate expected frequencies
-    const expected = calculateExpectedFrequencies(rows, cols, observed);
-
-    // Calculate chi-square statistic and contributions
-    const { chiSquare, contributions } = calculateChiSquare(observed, expected, rows, cols);
-
-    // Get and validate significance level
-    const significanceLevel = parseFloat(document.getElementById('significance-level').value);
-    if (isNaN(significanceLevel) || significanceLevel <= 0 || significanceLevel >= 1) {
-        alert("Please enter a valid significance level between 0 and 1 (e.g., 0.05 for 5%)");
-        return;
-    }
-
-    // Determine critical value and conclusion
-    const degreesOfFreedom = (rows - 1) * (cols - 1);
-    const criticalValue = getCriticalValue(degreesOfFreedom, significanceLevel);
-    const conclusion = chiSquare > criticalValue
-        ? "Reject the null hypothesis."
-        : "Fail to reject the null hypothesis.";
-
-    // Calculate P-value
-    const pValue = getPValue(chiSquare, degreesOfFreedom);
-
-    // Generate results with side-by-side layout
-    let resultHtml = `
-        <div class="results-flex-container">
-            <div class="results-table-container">
-                <h3>Results Table</h3>
-                <table class="compact-results-table">
-                    <thead>
-                        <tr>
-                            <th>Row</th>`;
-
-    // Add column headers
-    for (let j = 0; j < cols; j++) {
-        const categoryName = document.getElementById(`category-${j}`).value || `Col ${j + 1}`;
-        resultHtml += `<th>${categoryName}</th>`;
-    }
-    resultHtml += '</tr></thead><tbody>';
-
-    // Add data rows with compact display
-    for (let i = 0; i < rows; i++) {
-        const groupName = document.getElementById(`group-${i}`).value || `R${i + 1}`;
-        resultHtml += `<tr><td><strong>${groupName}</strong></td>`;
-        for (let j = 0; j < cols; j++) {
-            resultHtml += `
-                <td class="cell-data">
-                    <div class="observed">${observed[i][j]}</div>
-                    <div class="expected">(${expected[i][j].toFixed(2)})</div>
-                   
-                </td>`;
-        }
-        resultHtml += '</tr>';
-    }
-    resultHtml += `</tbody></table></div>`;
-
-    // Add summary statistics side by side
-    resultHtml += `
-        <div class="summary-stats-container">
-            <h3>Statistical Summary</h3>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <span class="stat-label">χ² Statistic:</span>
-                    <span class="stat-value">${chiSquare.toFixed(4)}</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Degrees of Freedom:</span>
-                    <span class="stat-value">${degreesOfFreedom}</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Significance Level:</span>
-                    <span class="stat-value">${significanceLevel}</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Critical Value:</span>
-                    <span class="stat-value">${criticalValue.toFixed(4)}</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">P-Value:</span>
-                    <span class="stat-value">${pValue.toFixed(4)}</span>
-                </div>
-            </div>
-            <div class="conclusion-box">
-                <strong>Conclusion:</strong> ${conclusion}
-            </div>
-        </div>
-    </div>`;
-
-    document.getElementById('results').innerHTML = resultHtml;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-// Update the showContingencyInfo function to also use 4 decimal points
-function showContingencyInfo() {
-    const rows = parseInt(document.getElementById('num-rows').value);
-    const cols = parseInt(document.getElementById('num-cols').value);
-    let observed = Array(rows).fill(null).map(() => Array(cols).fill(0));
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-            const cellValue = document.getElementById(`cell-${i}-${j}`).value;
-            if (isNaN(cellValue) || cellValue < 0) {
-                alert("Please enter only positive numbers for observed values.");
-                return;
-            }
-            observed[i][j] = parseInt(cellValue);
-        }
-    }
-
-    // Calculate expected frequencies
-    const expected = calculateExpectedFrequencies(rows, cols, observed);
-
-    // Calculate degrees of freedom
-    const degreesOfFreedom = (rows - 1) * (cols - 1);
-
-    // Display contingency table info and expected frequencies
-    let contingencyInfoHtml = `<p class="highlight">Contingency Table Dimensions: ${rows}x${cols}</p>`;
-    contingencyInfoHtml += `<p class="highlight">Degrees of Freedom: ${degreesOfFreedom}</p>`;
-    contingencyInfoHtml += '<h2 class="expected-frequencies-header">Expected Frequencies</h2>';
-    contingencyInfoHtml += '<table id="expected-frequencies-table"><tr><th></th>';
-    for (let j = 0; j < cols; j++) {
-        contingencyInfoHtml += `<th>${document.getElementById(`category-${j}`).value}</th>`;
-    }
-    contingencyInfoHtml += '</tr>';
-    for (let i = 0; i < rows; i++) {
-        contingencyInfoHtml += `<tr><td>${document.getElementById(`group-${i}`).value}</td>`;
-        for (let j = 0; j < cols; j++) {
-            contingencyInfoHtml += `<td>${expected[i][j].toFixed(4)}</td>`;
-        }
-        contingencyInfoHtml += '</tr>';
-    }
-    contingencyInfoHtml += '</table>';
-
-    document.getElementById('contingency-info').innerHTML = contingencyInfoHtml;
+    if (showWork && showWork.typeset) showWork.typeset(container);
 }
 
 function getCriticalValue(degreesOfFreedom, alpha) {
@@ -340,159 +364,124 @@ function getPValue(chiSquare, degreesOfFreedom) {
     return 1 - jStat.chisquare.cdf(chiSquare, degreesOfFreedom);
 }
 
-// Add input validation function
-function validateInput(value, fieldName) {
-    if (value === '') {
-        throw new Error(`${fieldName} cannot be empty`);
-    }
-    if (isNaN(value)) {
-        throw new Error(`${fieldName} must be a number`);
-    }
-    if (value < 0) {
-        throw new Error(`${fieldName} cannot be negative`);
-    }
-    return true;
-}
-
-// Add data export functionality
 function exportToCSV() {
-    const rows = parseInt(document.getElementById('num-rows').value);
-    const cols = parseInt(document.getElementById('num-cols').value);
-    let csvContent = "data:text/csv;charset=utf-8,";
-
-    // Add headers
-    let headers = ["Group"];
-    for (let j = 0; j < cols; j++) {
-        headers.push(document.getElementById(`category-${j}`).value);
-    }
-    csvContent += headers.join(",") + "\n";
-
-    // Add data
-    for (let i = 0; i < rows; i++) {
-        let row = [document.getElementById(`group-${i}`).value];
+    try {
+        const rows = getDimension('num-rows', 'Number of rows');
+        const cols = getDimension('num-cols', 'Number of columns');
+        const headers = ['Group'];
         for (let j = 0; j < cols; j++) {
-            row.push(document.getElementById(`cell-${i}-${j}`).value);
+            headers.push(document.getElementById(`category-${j}`).value);
         }
-        csvContent += row.join(",") + "\n";
-    }
-
-    // Create download link
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "chi_square_data.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-// Add save state functionality
-function saveState() {
-    const state = {
-        rows: document.getElementById('num-rows').value,
-        cols: document.getElementById('num-cols').value,
-        data: [],
-        categories: [],
-        groups: []
-    };
-
-    for (let i = 0; i < state.rows; i++) {
-        state.groups.push(document.getElementById(`group-${i}`).value);
-        const rowData = [];
-        for (let j = 0; j < state.cols; j++) {
-            if (i === 0) {
-                state.categories.push(document.getElementById(`category-${j}`).value);
+        const lines = [headers.map(csvEscape).join(',')];
+        for (let i = 0; i < rows; i++) {
+            const row = [document.getElementById(`group-${i}`).value];
+            for (let j = 0; j < cols; j++) {
+                row.push(document.getElementById(`cell-${i}-${j}`).value);
             }
-            rowData.push(document.getElementById(`cell-${i}-${j}`).value);
+            lines.push(row.map(csvEscape).join(','));
         }
-        state.data.push(rowData);
+        const csvContent = lines.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'chi_square_data.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showNotification('Exported to chi_square_data.csv');
+    } catch (error) {
+        showNotification(error.message, 'error', { duration: 5000 });
     }
-
-    localStorage.setItem('chiSquareState', JSON.stringify(state));
-    showNotification('Data saved successfully!');
 }
 
-// Add load state functionality
+function saveState() {
+    try {
+        const rows = getDimension('num-rows', 'Number of rows');
+        const cols = getDimension('num-cols', 'Number of columns');
+        const state = { rows, cols, data: [], categories: [], groups: [] };
+
+        for (let j = 0; j < cols; j++) {
+            state.categories.push(document.getElementById(`category-${j}`).value);
+        }
+        for (let i = 0; i < rows; i++) {
+            state.groups.push(document.getElementById(`group-${i}`).value);
+            const rowData = [];
+            for (let j = 0; j < cols; j++) {
+                rowData.push(document.getElementById(`cell-${i}-${j}`).value);
+            }
+            state.data.push(rowData);
+        }
+
+        localStorage.setItem('chiSquareState', JSON.stringify(state));
+        showNotification('Data saved successfully!');
+    } catch (error) {
+        showNotification(error.message, 'error', { duration: 5000 });
+    }
+}
+
 function loadState() {
     const savedState = localStorage.getItem('chiSquareState');
-    if (savedState) {
+    if (!savedState) {
+        showNotification('No saved data found!', 'warning');
+        return;
+    }
+    try {
         const state = JSON.parse(savedState);
         document.getElementById('num-rows').value = state.rows;
         document.getElementById('num-cols').value = state.cols;
         generateTable();
 
-        // Restore saved data
+        state.categories.forEach((label, j) => {
+            const el = document.getElementById(`category-${j}`);
+            if (el) el.value = label;
+        });
         state.data.forEach((row, i) => {
-            document.getElementById(`group-${i}`).value = state.groups[i];
+            const groupEl = document.getElementById(`group-${i}`);
+            if (groupEl) groupEl.value = state.groups[i];
             row.forEach((cell, j) => {
-                document.getElementById(`cell-${i}-${j}`).value = cell;
-                if (i === 0) {
-                    document.getElementById(`category-${j}`).value = state.categories[j];
-                }
+                const cellEl = document.getElementById(`cell-${i}-${j}`);
+                if (cellEl) cellEl.value = cell;
             });
         });
         showNotification('Data loaded successfully!');
-    } else {
-        showNotification('No saved data found!', 'warning');
+    } catch (error) {
+        showNotification('Saved data was corrupted and could not be loaded.', 'warning');
     }
 }
 
-// Add notification system
-function showNotification(message, type = 'success') {
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => {
-            document.body.removeChild(notification);
-        }, 300);
-    }, 3000);
-}
-
-// Add keyboard navigation
 function setupKeyboardNavigation() {
     const table = document.getElementById('input-table');
     if (!table) return;
 
     table.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT') {
-            const currentCell = e.target;
-            const row = parseInt(currentCell.getAttribute('data-row'));
-            const col = parseInt(currentCell.getAttribute('data-col'));
+        if (e.target.tagName !== 'INPUT') return;
+        const row = parseInt(e.target.getAttribute('data-row'), 10);
+        const col = parseInt(e.target.getAttribute('data-col'), 10);
+        if (Number.isNaN(row) || Number.isNaN(col)) return;
 
-            switch (e.key) {
-                case 'ArrowRight':
-                    focusCell(row, col + 1);
-                    break;
-                case 'ArrowLeft':
-                    focusCell(row, col - 1);
-                    break;
-                case 'ArrowUp':
-                    focusCell(row - 1, col);
-                    break;
-                case 'ArrowDown':
-                    focusCell(row + 1, col);
-                    break;
-                case 'Enter':
-                    focusCell(row + 1, col);
-                    break;
-                case 'Tab':
-                    if (!e.shiftKey) {
-                        focusCell(row, col + 1);
-                    } else {
-                        focusCell(row, col - 1);
-                    }
-                    e.preventDefault();
-                    break;
-            }
+        switch (e.key) {
+            case 'ArrowRight':
+                focusCell(row, col + 1);
+                break;
+            case 'ArrowLeft':
+                focusCell(row, col - 1);
+                break;
+            case 'ArrowUp':
+                focusCell(row - 1, col);
+                break;
+            case 'ArrowDown':
+                focusCell(row + 1, col);
+                break;
+            case 'Enter':
+                focusCell(row + 1, col);
+                e.preventDefault();
+                break;
         }
     });
 }
 
-// Helper function for keyboard navigation
 function focusCell(row, col) {
     const nextCell = document.querySelector(`input[data-row="${row}"][data-col="${col}"]`);
     if (nextCell) {
@@ -500,26 +489,33 @@ function focusCell(row, col) {
     }
 }
 
-// Add form reset confirmation
 function resetForm() {
-    if (confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
-        document.getElementById('num-rows').value = '';
-        document.getElementById('num-cols').value = '';
-        document.getElementById('input-table').innerHTML = '';
-        document.getElementById('results').innerHTML = '';
-        document.getElementById('contingency-info').innerHTML = '';
+    if (!confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
+        return;
     }
+    document.getElementById('num-rows').value = '2';
+    document.getElementById('num-cols').value = '2';
+    document.getElementById('significance-level').value = '0.05';
+    document.getElementById('input-table').innerHTML = '';
+    document.getElementById('results').innerHTML = '';
+    const info = document.getElementById('contingency-info');
+    info.innerHTML = '';
+    info.style.display = 'none';
+    const showButton = document.querySelector('.show-info-button');
+    if (showButton) showButton.textContent = 'Show Contingency Table Info';
 }
 
-// Initialize enhancements
 document.addEventListener('DOMContentLoaded', () => {
     setupKeyboardNavigation();
 
-    // Add event listeners for new buttons
-    document.getElementById('export-btn').addEventListener('click', exportToCSV);
-    document.getElementById('save-btn').addEventListener('click', saveState);
-    document.getElementById('load-btn').addEventListener('click', loadState);
-    document.getElementById('reset-btn').addEventListener('click', resetForm);
+    const bindings = [
+        ['export-btn', exportToCSV],
+        ['save-btn', saveState],
+        ['load-btn', loadState],
+        ['reset-btn', resetForm],
+    ];
+    for (const [id, handler] of bindings) {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('click', handler);
+    }
 });
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////

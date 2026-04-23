@@ -1,95 +1,77 @@
 # Z-t-Chi Calculator
 
-A comprehensive statistical calculator for Z-scores, t-tests, and Chi-square analyses with interactive visualizations.
+A browser-based statistical calculator suite covering Z-scores, t-tests, and chi-square tests of independence. Developed for MPHO 605: Introduction to Biostatistics.
 
 ## Features
 
-### Z-Score Calculator
-- Calculate probabilities and areas under the normal curve
-- Find Z-scores for given percentiles
-- Interactive normal distribution visualizations
-- Comprehensive statistical interpretations
+### Z Calculator
+- Left-, right-, and two-tailed probabilities for a Z-score
+- Z-score lookup for a target probability (percentile)
+- Interactive normal-curve visualizations with shaded regions
+- Detailed interpretation block with percentile, CI, and hypothesis-testing context
 
-### t-Test Calculator
-- Calculate critical values and p-values
-- Adjustable degrees of freedom
-- Left-tailed, right-tailed, and two-tailed tests
-- Detailed statistical summaries
+### t Calculator
+- P-values and critical values for left-, right-, and two-tailed tests
+- Adjustable significance level and degrees of freedom
+- Per-tail reject / fail-to-reject conclusion
 
 ### Chi-Square Calculator
-- Test of independence calculations
-- Expected frequency computations
-- Contingency table analysis
-- Clear result interpretations
+- Test of independence for r x c contingency tables (up to 5 x 5)
+- Observed and expected frequencies shown side-by-side
+- Automatic warning when any expected count is below 5
+- Save / load current table in browser storage
+- Export current table to CSV
+- Keyboard navigation between cells (arrow keys, Enter)
 
-## Technologies Used
-- HTML5
-- CSS3
-- JavaScript (ES6+)
-- jStat.js for statistical computations
+## Technologies
+- HTML5, CSS3, vanilla JavaScript (no build step)
+- [jStat](https://github.com/jstat/jstat) 1.9.5 for distribution functions (normal, t, chi-square)
 
 ## Project Structure
 ```
-stattrio-pro/
-│
-├── src/
-│   ├── css/
-│   │   └── styles.css
-│   ├── js/
-│   │   ├── z_calculator.js
-│   │   ├── t_calculator.js
-│   │   └── chi_square.js
-│   └── pages/
-│       ├── index.html
-│       ├── z_calculator.html
-│       ├── t_calculator.html
-│       └── chi_square.html
-│
-├── assets/
-│   └── images/
-│
-├── docs/
-│   └── documentation.md
-│
+Z-t-Chi-Calculator/
+├── index.html               # Landing page linking to the three calculators
+├── z_calculator.html        # Z-score calculator
+├── t_calculator.html        # t-test calculator
+├── chi_square.html          # Chi-square calculator
+├── styles.css               # Shared stylesheet
+├── js/
+│   ├── z_calculator.js
+│   ├── t_calculator.js
+│   └── chi_square.js
+├── documentation.md         # Technical and API documentation
+├── LICENSE
 └── README.md
 ```
 
-## Installation
+## Running Locally
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/stattrio-pro.git
-```
+No build step is required. Open any of the HTML files directly, or serve the folder with a local web server:
 
-2. Open any of the HTML files in a modern web browser, or use a local server:
 ```bash
-# Using Python
+# Python 3
 python -m http.server 8000
 
-# Using Node.js
+# Node.js
 npx http-server
 ```
 
+Then visit `http://localhost:8000/` in a modern browser.
+
 ## Usage
-
-1. Select the appropriate calculator for your needs:
-   - Z-Score Calculator for normal distribution analyses
-   - t-Test Calculator for comparing means
-   - Chi-Square Calculator for categorical data analysis
-
-2. Enter your data according to the calculator's requirements
-
-3. Click calculate to get instant results with visualizations
+1. Open the landing page (`index.html`) and pick a calculator.
+2. Enter your inputs according to the on-page instructions.
+3. Click the calculate button to see results and (for Z) visualizations.
 
 ## Dependencies
-- [jStat.js](https://github.com/jstat/jstat) - Statistical computations
+- [jStat](https://github.com/jstat/jstat) - Statistical computations, loaded from a CDN.
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome. For significant changes please open an issue first so we can discuss the direction.
 
 ## License
-[MIT](https://choosealicense.com/licenses/mit/)
+Released under the [MIT License](./LICENSE).
 
 ## Acknowledgments
-- Statistical formulas and methodologies based on standard statistical practices
-- Visualizations inspired by educational statistical resources
+- Statistical formulas follow standard references for the normal, Student's t, and chi-square distributions.
+- Visualizations inspired by introductory biostatistics teaching materials.

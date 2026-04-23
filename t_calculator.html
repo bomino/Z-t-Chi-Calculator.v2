@@ -6,7 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>t Calculator: Critical Value and P-value Calculator</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.5/jstat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.5/jstat.min.js"
+            integrity="sha384-G0LNImWgCl2Dv94gWHL462179lItxVdMl0mIkiGu4HaUYuC4jZlAVdyqTZxTKRTs"
+            crossorigin="anonymous"></script>
+    <script src="js/common.js" defer></script>
+    <script src="js/state.js" defer></script>
+    <script src="js/layout.js" defer></script>
+    <script src="js/reports.js" defer></script>
+    <script src="js/predict.js" defer></script>
+    <script src="js/checks.js" defer></script>
+    <script src="js/show-work.js" defer></script>
+    <script async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+            integrity="sha384-Wuix6BuhrWbjDBs24bXrjf4ZQ5aFeFWBuKkFekO2t8xFU0iNaLQfp2K6/1Nxveei"
+            crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -30,6 +43,8 @@
     </div>
 
     <main role="main">
+        <div data-ztchi-learning-toggle class="no-print"></div>
+
         <section class="section">
             <h2>Step 1: Enter Test Parameters</h2>
             <div class="instruction-panel">
@@ -140,7 +155,7 @@
         </div>
     </footer>
 
-    <script src="js/t_calculator.js"></script>
+    <script src="js/t_calculator.js" defer></script>
 </body>
 
 </html>
