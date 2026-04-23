@@ -98,8 +98,14 @@
 
             <div class="button-group">
                 <button id="epi-calculate-btn" class="primary-button">Calculate All Measures</button>
-                <button id="epi-example-screen-btn" class="secondary-button">Example: screening test</button>
-                <button id="epi-example-cohort-btn" class="secondary-button">Example: cohort study</button>
+                <button id="epi-example-screen-btn" class="secondary-button"
+                        title="Rare-disease screening: watch PPV collapse despite sens/spec both ~98%. Classic base-rate fallacy.">
+                    Example: screening test <small>(base-rate fallacy)</small>
+                </button>
+                <button id="epi-example-cohort-btn" class="secondary-button"
+                        title="Physicians' Health Study aspirin vs placebo (1989, NEJM): watch RR, OR, and NNT.">
+                    Example: cohort study <small>(aspirin &amp; MI)</small>
+                </button>
             </div>
         </section>
 
@@ -113,7 +119,7 @@
             <div class="info-box">
                 <p><strong>Sensitivity &amp; Specificity</strong> are properties of the test itself &mdash; they don't depend on how common the disease is.</p>
                 <p><strong>PPV &amp; NPV</strong> depend on prevalence. The same test applied to a low-prevalence population yields a lower PPV (more false positives among the positives).</p>
-                <p><strong>Likelihood ratios</strong> combine the above and don't change with prevalence. LR+ &gt; 10 is strong positive evidence; LR&minus; &lt; 0.1 is strong negative evidence.</p>
+                <p><strong>Likelihood ratios</strong> combine the above and don't change with prevalence. Rules of thumb (Jaeschke, Guyatt &amp; Sackett, 1994, <em>JAMA</em> 271(9):703-707): LR+ &gt; 10 is strong positive evidence, LR+ 5-10 is moderate, LR+ 2-5 is weak; LR&minus; &lt; 0.1 is strong negative evidence, LR&minus; 0.1-0.2 is moderate, LR&minus; 0.2-0.5 is weak.</p>
                 <p><strong>RR, OR, NNT</strong> are effect-size measures for the cohort-study framing. RR compares the risk in exposed vs unexposed; OR the odds. NNT is the inverse absolute risk difference &mdash; how many patients you need to treat (or expose) to see one more event.</p>
                 <p><strong>CIs</strong>: proportions use the Wilson score interval (Wilson, 1927); RR and OR use log-Wald CIs with Haldane-Anscombe correction for zero cells.</p>
             </div>

@@ -1650,6 +1650,12 @@ input:invalid+.input-help {
     font-style: italic;
 }
 
+.sim-note {
+    margin: 4px 0 10px 0;
+    color: #555;
+    line-height: 1.4;
+}
+
 .sim-plot {
     padding: 10px;
     background: #fff;

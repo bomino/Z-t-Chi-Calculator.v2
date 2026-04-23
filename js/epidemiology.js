@@ -95,7 +95,7 @@
                     <p>Prevalence-independent test performance.</p>
                     <p class="epi-value">LR+ = ${fmt(r.lrPos)}</p>
                     <p class="epi-value">LR− = ${fmt(r.lrNeg)}</p>
-                    <p class="epi-note">Rule of thumb: LR+ &gt; 10 = strong positive evidence; LR− &lt; 0.1 = strong negative evidence.</p>
+                    <p class="epi-note">Rules of thumb (Jaeschke, Guyatt &amp; Sackett, 1994, <em>JAMA</em>): LR+ &gt; 10 = strong, 5-10 = moderate, 2-5 = weak. LR− &lt; 0.1 = strong, 0.1-0.2 = moderate, 0.2-0.5 = weak.</p>
                 </div>
             </div>
         `;
@@ -104,11 +104,16 @@
     function renderCohort(r) {
         const confPct = (r.conf * 100).toFixed(0);
         const nntLabel = Number.isFinite(r.nnt) ? fmt(r.nnt, 2) : '∞';
-        const nntNote = r.riskDiff > 0
-            ? 'More events in exposed: "number needed to harm" (NNH).'
+        // NNT/NNH labeling depends on which row carries more events, NOT on
+        // which row the user put first. Be explicit so swapping row order
+        // doesn't invert the pedagogical message.
+        const risk1 = r.a / (r.a + r.b);
+        const risk2 = r.c / (r.c + r.d);
+        const nntNote = Math.abs(r.riskDiff) < 1e-12
+            ? 'Risks are equal in the two groups &mdash; NNT is undefined.'
             : r.riskDiff < 0
-                ? 'Fewer events in exposed: "number needed to treat" (NNT) for a benefit.'
-                : 'No risk difference.';
+                ? `Row 1 (top) has the lower risk (${pct(risk1)} vs ${pct(risk2)}). Interpreted as a <strong>number needed to treat</strong> (NNT): ~${nntLabel} people moved from the Row 2 condition to the Row 1 condition to prevent one event.`
+                : `Row 1 (top) has the higher risk (${pct(risk1)} vs ${pct(risk2)}). Interpreted as a <strong>number needed to harm</strong> (NNH): ~${nntLabel} people moved from the Row 2 condition to the Row 1 condition to cause one extra event.`;
         return `
             <div class="epi-grid">
                 <div class="epi-card">
@@ -139,7 +144,7 @@
                     <p class="epi-note">risk(exposed) − risk(unexposed)</p>
                 </div>
                 <div class="epi-card">
-                    <h4>${r.riskDiff < 0 ? 'NNT (treat)' : r.riskDiff > 0 ? 'NNH (harm)' : 'NNT / NNH'}</h4>
+                    <h4>Number needed to ${r.riskDiff < 0 ? 'treat (NNT)' : r.riskDiff > 0 ? 'harm (NNH)' : 'treat / harm'}</h4>
                     <p class="epi-value">${nntLabel}</p>
                     <p class="epi-note">${nntNote}</p>
                 </div>

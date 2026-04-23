@@ -190,7 +190,7 @@
 
         const crossesAlpha = (p) => Number.isFinite(p) && ((p < alpha) !== (pRaw < alpha));
         if (crossesAlpha(pYates) || crossesAlpha(pFisher)) {
-            parts.push(`<p>&#9888; <strong>Tests disagree about significance at &alpha; = ${alpha}</strong>. Uncorrected &chi;<sup>2</sup> p = ${pFmt(pRaw)}; Yates' p = ${pFmt(pYates)}; Fisher's p = ${pFmt(pFisher)}. When methods straddle the threshold for small samples, Fisher's is the conservative choice.</p>`);
+            parts.push(`<p>&#9888; <strong>Tests disagree about significance at &alpha; = ${alpha}</strong>. Uncorrected &chi;<sup>2</sup> p = ${pFmt(pRaw)}; Yates' p = ${pFmt(pYates)}; Fisher's p = ${pFmt(pFisher)}. When methods straddle the threshold for small samples, Fisher's exact is the standard reference because its actual Type I error is bounded at &alpha; (though some argue it's over-conservative due to discreteness; mid-p corrections and Barnard's unconditional test are alternatives not covered here).</p>`);
         } else if (spread < 0.02) {
             parts.push(`<p>The tests agree closely (p-value spread &lt; .02). This is expected when N is moderate-to-large and expected counts are healthy.</p>`);
         } else if (spread < 0.1) {

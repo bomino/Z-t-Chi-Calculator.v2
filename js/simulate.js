@@ -295,7 +295,28 @@
         const tCi = tCiForMean(data, ciLevel);
         const bootWidth = result.ciHigh - result.ciLow;
         const tCiWidth = tCi ? tCi.high - tCi.low : NaN;
-        const agreesWithFormula = tCi && Math.abs(bootWidth - tCiWidth) / tCiWidth < 0.15;
+        // Thresholds below are heuristic for pedagogical feedback, not
+        // derived from a specific published criterion. 15% width tolerance
+        // catches gross mismatch; 10% skew catches a shifted percentile CI
+        // even when widths happen to match.
+        const widthRelDiff = tCi ? Math.abs(bootWidth - tCiWidth) / tCiWidth : NaN;
+        const widthsAgree = Number.isFinite(widthRelDiff) && widthRelDiff < 0.15;
+        // Asymmetry of the bootstrap CI around the sample mean. The t-CI is
+        // symmetric by construction; a percentile CI from skewed data is not.
+        const leftHalf = s.mean - result.ciLow;
+        const rightHalf = result.ciHigh - s.mean;
+        const totalHalf = rightHalf + leftHalf;
+        const skew = totalHalf > 0 ? (rightHalf - leftHalf) / totalHalf : 0;
+        const symmetric = Math.abs(skew) < 0.10;
+
+        let agreementHtml;
+        if (widthsAgree && symmetric) {
+            agreementHtml = `<p>&check; Bootstrap CI and t-based CI agree in both width (within 15%) and center (bootstrap is roughly symmetric around the mean, |skew| = ${Math.abs(skew).toFixed(2)}). Your data are behaving the way the t-interval assumes &mdash; either CI is fine to report.</p>`;
+        } else if (widthsAgree && !symmetric) {
+            agreementHtml = `<p>&#9888; Widths are similar but the bootstrap CI is noticeably asymmetric around the sample mean (skew = ${skew.toFixed(2)}; longer on the ${skew > 0 ? 'upper' : 'lower'} side). This usually means the data are skewed. The t-CI is symmetric by construction and may be systematically off-center; the bootstrap CI is more trustworthy here.</p>`;
+        } else {
+            agreementHtml = `<p>&#9888; Bootstrap CI and t-based CI widths differ by ${(widthRelDiff * 100).toFixed(0)}%. This usually means the data are skewed or have outliers. The bootstrap CI is robust to both; the t-based CI may be misleading.</p>`;
+        }
 
         const html = `
             <div class="sim-result">
@@ -305,16 +326,15 @@
                         <div class="stat-item"><span class="stat-label">n</span><span class="stat-value">${s.n}</span></div>
                         <div class="stat-item"><span class="stat-label">observed mean</span><span class="stat-value">${fmt(s.mean)}</span></div>
                         <div class="stat-item"><span class="stat-label">sample SD</span><span class="stat-value">${fmt(s.sd)}</span></div>
-                        <div class="stat-item"><span class="stat-label">${(ciLevel * 100).toFixed(0)}% bootstrap CI</span><span class="stat-value">[${fmt(result.ciLow)}, ${fmt(result.ciHigh)}]</span></div>
+                        <div class="stat-item"><span class="stat-label">${(ciLevel * 100).toFixed(0)}% bootstrap CI (percentile method)</span><span class="stat-value">[${fmt(result.ciLow)}, ${fmt(result.ciHigh)}]</span></div>
                         <div class="stat-item"><span class="stat-label">${(ciLevel * 100).toFixed(0)}% t-based CI</span><span class="stat-value">${tCi ? `[${fmt(tCi.low)}, ${fmt(tCi.high)}]` : '—'}</span></div>
                         <div class="stat-item"><span class="stat-label">resamples</span><span class="stat-value">${result.stats.length.toLocaleString()}</span></div>
                     </div>
-                    <p class="sim-runtime">${runtimeMs.toFixed(0)} ms in worker.</p>
+                    <p class="sim-runtime">${runtimeMs.toFixed(0)} ms in worker. Each run differs by ~Monte Carlo noise (this is expected, not a bug).</p>
+                    <p class="sim-note"><small>This is the <em>percentile method</em> bootstrap CI. More accurate variants (BCa, studentized) exist; for approximately-symmetric distributions the percentile method agrees with them closely.</small></p>
                     <div class="compare-divergence">
                         <h3>Agreement with the formula-based CI</h3>
-                        ${agreesWithFormula
-                            ? `<p>&check; The bootstrap CI and t-based CI widths agree within 15%. Your data are behaving the way the t-interval assumes &mdash; either of them is fine to report.</p>`
-                            : `<p>&#9888; The bootstrap CI and t-based CI differ by more than 15% in width. This usually means the data are skewed or have outliers. The bootstrap CI is robust to this; the t-based CI may be misleading.</p>`}
+                        ${agreementHtml}
                     </div>
                 </div>
                 <div class="sim-plot">
@@ -343,6 +363,9 @@
 
         const permP = result.pTwoTailed;
         const diff = Math.abs(permP - pFormula);
+        // Heuristic threshold: 30% relative difference for p > 0.01, absolute
+        // difference otherwise. Not derived from a published criterion; it's a
+        // rough "is the divergence worth talking about in class?" gate.
         const relDiff = pFormula > 0.01 ? diff / pFormula : diff;
         const agrees = relDiff < 0.30;
 

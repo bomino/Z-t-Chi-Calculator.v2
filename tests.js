@@ -24,6 +24,14 @@
         current.tests.push({ name, fn });
     }
     function assert(cond, msg) { if (!cond) throw new Error(msg || 'assertion failed'); }
+    // Tolerance policy:
+    //   1e-9 to 1e-6 : exact / near-machine-precision (algebraic identities,
+    //                  fixed-point values like z=0 → Φ(0)=0.5).
+    //   1e-3         : standard numerical accuracy (tabulated CDF values).
+    //   1e-2 to 0.02 : sampling-based or multi-step rounding (e.g., OR CI
+    //                  reference values, Monte Carlo estimates).
+    //   >= 0.1       : coarse sanity checks (stress tests, ball-parked
+    //                  reference values that were hand-computed).
     function assertClose(actual, expected, tol = 1e-3, label = '') {
         if (!Number.isFinite(actual) || !Number.isFinite(expected)) {
             throw new Error(`${label} expected finite, got actual=${actual} expected=${expected}`);

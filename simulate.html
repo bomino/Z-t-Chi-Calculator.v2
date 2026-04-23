@@ -107,9 +107,10 @@
         <section class="section">
             <h2>How to read this</h2>
             <div class="info-box">
-                <p><strong>Bootstrap CI:</strong> resample the data <em>with replacement</em> to approximate what the sampling distribution of the mean would look like. The CI is the middle X% of the resampled means.</p>
-                <p><strong>Permutation p-value:</strong> under H<sub>0</sub> of "no difference," the group labels are arbitrary. Randomly reshuffle the labels many times and see how often the resulting difference is as extreme as what you observed.</p>
-                <p><strong>Comparison to formula:</strong> for approximately-normal data with moderate n, the bootstrap CI matches the t-CI closely, and the permutation p-value matches the t-test p-value closely. Divergence is informative.</p>
+                <p><strong>Bootstrap CI (percentile method):</strong> resample the data <em>with replacement</em> to approximate the sampling distribution of the mean. The CI is the middle X% of the resampled means. More accurate variants (BCa, studentized) exist; for approximately symmetric data they agree closely with the percentile method.</p>
+                <p><strong>Permutation p-value:</strong> under H<sub>0</sub> of "<em>the two distributions are identical</em>" (so group labels are interchangeable), randomly reshuffle the labels many times and see how often the resulting difference is as extreme as what you observed. Note: strictly, this tests distributional equality, not just equality of means &mdash; when variances or shapes differ under a "same-mean" H<sub>0</sub>, the permutation test becomes a test of a stronger hypothesis.</p>
+                <p><strong>Comparison to formula:</strong> for approximately-normal, equal-variance data with moderate n, the bootstrap CI matches the t-CI closely and the permutation p matches the t-test p closely. Divergence is informative &mdash; it points to skew, outliers, or unequal variances.</p>
+                <p><strong>Reproducibility:</strong> each run uses fresh random seeds, so results differ by Monte Carlo noise. For 10,000 iterations this is about ~&plusmn;0.002 on a p-value or ~&plusmn;0.5% on a CI endpoint. That's expected, not a bug.</p>
             </div>
         </section>
     </main>
