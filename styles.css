@@ -1000,6 +1000,7 @@ textarea {
 
 [data-theme="dark"] .guide-case { border-left-color: var(--accent); }
 [data-theme="dark"] .ds-learn { background: var(--accent-bg); color: var(--accent-deep); }
+[data-theme="dark"] .ds-tag { background: rgba(255, 167, 38, 0.15); color: #ffb74d; }
 
 [data-theme="dark"] dialog.predict-dialog { background: var(--bg-card); color: var(--fg); }
 [data-theme="dark"] .predict-question { background: var(--bg-subtle); border-left-color: var(--accent); }
