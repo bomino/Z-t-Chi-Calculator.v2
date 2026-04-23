@@ -1020,6 +1020,169 @@ textarea {
 /* Keep MathJax rendering legible in dark mode */
 [data-theme="dark"] mjx-container { color: var(--fg); }
 
+/* ---- Dark mode: second pass catches remaining light backgrounds ---- */
+[data-theme="dark"] .section { background-color: var(--bg-card); color: var(--fg); }
+[data-theme="dark"] .example-box,
+[data-theme="dark"] .info-panel { background: var(--bg-subtle); color: var(--fg); }
+[data-theme="dark"] .info-panel.visible { background: var(--bg-subtle); }
+[data-theme="dark"] pre,
+[data-theme="dark"] .report-preview-text { background: var(--bg-code); color: var(--fg); border: 1px solid var(--border); }
+[data-theme="dark"] table { background: var(--bg-main); color: var(--fg); }
+[data-theme="dark"] table th { background: #2d3748; color: var(--fg-heading); }
+[data-theme="dark"] table td { color: var(--fg); }
+[data-theme="dark"] #input-table input { background: var(--bg-main); color: var(--fg); border: 1px solid var(--border-strong); }
+[data-theme="dark"] #input-table td,
+[data-theme="dark"] #input-table th { background: transparent; border-color: var(--border); }
+[data-theme="dark"] .results-table,
+[data-theme="dark"] .results-table th,
+[data-theme="dark"] .results-table td { background: var(--bg-card); color: var(--fg); border-color: var(--border); }
+[data-theme="dark"] .results-table-container,
+[data-theme="dark"] .summary-stats-container { background: var(--bg-card); }
+
+[data-theme="dark"] .input-group label { color: var(--fg); }
+[data-theme="dark"] .input-help { color: var(--fg-muted); }
+[data-theme="dark"] .stat-label { color: var(--fg-muted); }
+[data-theme="dark"] .stat-value { color: var(--fg-heading); }
+[data-theme="dark"] .result-value { color: var(--fg-heading); }
+[data-theme="dark"] .result-interpretation { color: var(--fg); }
+[data-theme="dark"] .result-title { color: var(--fg-heading); }
+[data-theme="dark"] .probability-result { color: var(--fg); }
+[data-theme="dark"] .probability-result .value { color: var(--fg-heading); }
+[data-theme="dark"] .interpretation-details { background: var(--bg-card); color: var(--fg); box-shadow: var(--shadow-sm); }
+[data-theme="dark"] .interpretation-section { border-bottom-color: var(--border); }
+[data-theme="dark"] .interpretation-section h4,
+[data-theme="dark"] .interpretation-section h5 { color: var(--fg-heading); }
+[data-theme="dark"] .applications-grid .application-item { background: var(--bg-subtle); border-left-color: var(--accent); color: var(--fg); }
+[data-theme="dark"] .application-item li { color: var(--fg); }
+[data-theme="dark"] .info-section { background: var(--bg-subtle); color: var(--fg); }
+[data-theme="dark"] .info-section .highlight { color: var(--fg-heading); }
+[data-theme="dark"] .expected-frequencies h3,
+[data-theme="dark"] .totals-section h3,
+[data-theme="dark"] .totals-section h4 { color: var(--fg-heading); }
+[data-theme="dark"] .totals-grid .row-totals,
+[data-theme="dark"] .totals-grid .column-totals { color: var(--fg); }
+[data-theme="dark"] .cell-data .observed { color: var(--fg); }
+[data-theme="dark"] .cell-data .expected { color: var(--fg-muted); }
+[data-theme="dark"] .cell-data .contribution { color: var(--accent); }
+[data-theme="dark"] .conclusion-box { background: var(--accent-bg); color: var(--fg); border: 1px solid var(--accent); }
+[data-theme="dark"] .reference-table th { background: #2d3748; color: var(--fg-heading); }
+[data-theme="dark"] .effect-size-note,
+[data-theme="dark"] .effect-size-note small { color: var(--fg-muted); }
+
+[data-theme="dark"] .header-container .info-box { background: rgba(255,255,255,0.08); color: #e6edf3; }
+[data-theme="dark"] .header-container .info-box p,
+[data-theme="dark"] .header-container .info-box .info-content { color: #e6edf3; }
+[data-theme="dark"] .header-container .info-box strong { color: #ffffff; }
+[data-theme="dark"] .info-box .key-features li { color: var(--fg); }
+[data-theme="dark"] .info-box .key-features li:before { color: var(--accent); }
+
+[data-theme="dark"] .intro-card { background: linear-gradient(135deg, #1a2332 0%, #273142 100%); }
+
+[data-theme="dark"] a { color: var(--accent); }
+[data-theme="dark"] a:hover { color: var(--accent-dark); }
+
+[data-theme="dark"] footer,
+[data-theme="dark"] .footer-container { background: var(--bg-card); color: var(--fg-muted); }
+[data-theme="dark"] .footer-container .footer-title { color: var(--fg); }
+
+[data-theme="dark"] .feature-icon { background: rgba(255,255,255,0.18); }
+
+[data-theme="dark"] .visualization-divider { background: linear-gradient(to right, transparent, var(--border), transparent); }
+
+[data-theme="dark"] .probability-group { background: var(--bg-subtle); border-left-color: var(--accent); }
+
+[data-theme="dark"] .predict-choices button { /* inherits from .primary-button etc. already overridden */ }
+
+[data-theme="dark"] .check-question { color: var(--fg); }
+[data-theme="dark"] .check-reveal { border-top-color: var(--border); color: var(--fg); }
+[data-theme="dark"] .check-explain { color: var(--fg); }
+
+[data-theme="dark"] .compare-tests .compare-card h4,
+[data-theme="dark"] .epi-card h4 { color: var(--fg-heading); }
+[data-theme="dark"] .compare-card .compare-note { color: var(--fg-muted); border-top-color: var(--border); }
+
+[data-theme="dark"] .show-work-body { color: var(--fg); }
+[data-theme="dark"] .show-work-body p { color: var(--fg); }
+[data-theme="dark"] .three-level-body { color: var(--fg); }
+[data-theme="dark"] .three-level-intro { color: var(--fg-muted); }
+
+[data-theme="dark"] .trap-filter { background: var(--bg-card); border-color: var(--border); }
+
+[data-theme="dark"] .guide-tree,
+[data-theme="dark"] .guide-walkthrough p,
+[data-theme="dark"] .guide-options li { color: var(--fg); }
+[data-theme="dark"] .guide-question { color: var(--fg-heading); }
+
+[data-theme="dark"] .compare-summary table td { color: var(--fg); border-bottom-color: var(--border); }
+[data-theme="dark"] .compare-summary table tr:hover td,
+[data-theme="dark"] .compare-summary table { background: var(--bg-card); }
+
+/* ---- High-contrast: second pass ---- */
+[data-theme="high-contrast"] .section,
+[data-theme="high-contrast"] .example-box,
+[data-theme="high-contrast"] .info-panel,
+[data-theme="high-contrast"] .report-preview-text,
+[data-theme="high-contrast"] pre,
+[data-theme="high-contrast"] table,
+[data-theme="high-contrast"] .interpretation-details,
+[data-theme="high-contrast"] .info-section,
+[data-theme="high-contrast"] .conclusion-box,
+[data-theme="high-contrast"] .probability-group,
+[data-theme="high-contrast"] .application-item,
+[data-theme="high-contrast"] .compare-summary table,
+[data-theme="high-contrast"] .results-table,
+[data-theme="high-contrast"] .results-table-container,
+[data-theme="high-contrast"] .summary-stats-container,
+[data-theme="high-contrast"] .trap-filter,
+[data-theme="high-contrast"] .feature-icon { background: #ffffff; color: #000000; border: 2px solid #000000; }
+
+[data-theme="high-contrast"] table th,
+[data-theme="high-contrast"] .reference-table th { background: #000000; color: #ffffff; }
+[data-theme="high-contrast"] table td { color: #000000; }
+
+[data-theme="high-contrast"] #input-table input { background: #ffffff; color: #000000; border: 2px solid #000000; }
+
+[data-theme="high-contrast"] .intro-card { background: #ffffff; color: #000000; border: 2px solid #000000; }
+[data-theme="high-contrast"] .intro-card h2,
+[data-theme="high-contrast"] .intro-card p { color: #000000; }
+
+[data-theme="high-contrast"] a { color: #0000cc; text-decoration: underline; }
+[data-theme="high-contrast"] a:hover { color: #000066; }
+
+[data-theme="high-contrast"] .stat-label,
+[data-theme="high-contrast"] .input-help,
+[data-theme="high-contrast"] .ds-citation,
+[data-theme="high-contrast"] .trap-citation,
+[data-theme="high-contrast"] .sim-runtime,
+[data-theme="high-contrast"] .sim-note,
+[data-theme="high-contrast"] .compare-note,
+[data-theme="high-contrast"] .three-level-intro { color: #000000; }
+
+[data-theme="high-contrast"] .stat-value,
+[data-theme="high-contrast"] .result-value,
+[data-theme="high-contrast"] .probability-result .value,
+[data-theme="high-contrast"] .interpretation-section h4,
+[data-theme="high-contrast"] .guide-question,
+[data-theme="high-contrast"] .result-title { color: #0000cc; }
+
+[data-theme="high-contrast"] .conclusion-box { background: #ffff99; border: 2px solid #000000; }
+[data-theme="high-contrast"] .cell-data .observed,
+[data-theme="high-contrast"] .cell-data .expected,
+[data-theme="high-contrast"] .cell-data .contribution { color: #000000; }
+
+[data-theme="high-contrast"] footer,
+[data-theme="high-contrast"] .footer-container { background: #000000; color: #ffffff; }
+[data-theme="high-contrast"] .footer-container a { color: #ffffff; }
+
+[data-theme="high-contrast"] .header-container .info-box { background: #ffff99; color: #000000; border: 2px solid #000000; }
+[data-theme="high-contrast"] .header-container .info-box * { color: #000000; }
+
+[data-theme="high-contrast"] .qq-plot circle { fill: #000000 !important; stroke: #000000 !important; }
+[data-theme="high-contrast"] .sim-histogram rect { fill: #000000 !important; stroke: #000000 !important; }
+[data-theme="high-contrast"] .qq-plot text,
+[data-theme="high-contrast"] .sim-histogram text,
+[data-theme="high-contrast"] .normal-curve text { fill: #000000; }
+
 /* ================================================================
    High-contrast overrides (WCAG AAA).
    Pure black/white + strong blue accent; no gradients; bold borders.

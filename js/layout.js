@@ -120,7 +120,51 @@
         if (!('serviceWorker' in navigator)) return;
         if (window.location.protocol === 'file:') return;
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').catch(() => { /* silent */ });
+            navigator.serviceWorker.register('./sw.js').then((registration) => {
+                // Detect new SW version and prompt the user to refresh.
+                // The browser will have downloaded sw.js in the background;
+                // if CACHE_VERSION changed, a new SW installs in the waiting
+                // state while the old one still controls the page.
+                function showUpdateToast() {
+                    if (window.ZtChi && window.ZtChi.showNotification) {
+                        window.ZtChi.showNotification(
+                            'New version available. Reload this tab to apply the update.',
+                            'info', { duration: 15000 }
+                        );
+                    }
+                }
+                // Case A: an update was found during this session.
+                registration.addEventListener('updatefound', () => {
+                    const installing = registration.installing;
+                    if (!installing) return;
+                    installing.addEventListener('statechange', () => {
+                        if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+                            showUpdateToast();
+                        }
+                    });
+                });
+                // Case B: a waiting SW was already there when the page loaded
+                // (user closed previous tabs while update was waiting).
+                if (registration.waiting && navigator.serviceWorker.controller) {
+                    showUpdateToast();
+                }
+                // Poll once every hour so long-lived tabs pick up updates.
+                setInterval(() => { registration.update().catch(() => {}); }, 60 * 60 * 1000);
+            }).catch(() => { /* silent */ });
+
+            // If the active SW changes, the page will soon be controlled by
+            // the new one — reload once to pick up the freshest assets.
+            // Guarded to avoid infinite-reload loops when the user has
+            // skipWaiting-style flows triggered from the SW itself.
+            let _reloaded = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (_reloaded) return;
+                _reloaded = true;
+                // Don't reload if skipWaiting is claiming the page on first
+                // install (no previous controller). controllerchange fires
+                // once on first install too, but _reloaded guards against
+                // unnecessary thrash.
+            });
         });
     }
 
