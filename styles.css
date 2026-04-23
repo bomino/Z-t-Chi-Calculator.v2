@@ -444,6 +444,315 @@ footer {
     visibility: visible;
 }
 
+/* ================================================================
+   Mobile-first polish.
+   Target: 375px viewport (iPhone SE). All pages must be usable.
+   WCAG 2.5.5 (AAA): interactive targets ≥ 44×44 CSS pixels.
+   ================================================================ */
+
+/* Prevent accidental horizontal scroll at the document level. Table-
+   containers manage their own horizontal overflow internally. */
+html, body {
+    overflow-x: hidden;
+}
+
+/* Base: ensure all interactive controls meet touch-target minimums.
+   On pointer devices this is invisible; on touch it prevents mis-taps. */
+button,
+.primary-button,
+.secondary-button,
+.action-button,
+.card-button,
+input[type="checkbox"] + span {
+    min-height: 44px;
+}
+
+input[type="number"],
+input[type="text"],
+select,
+textarea {
+    min-height: 44px;
+    font-size: 16px; /* prevents iOS Safari auto-zoom on focus */
+}
+
+/* Hamburger toggle for narrow viewports. Injected by layout.js. */
+.nav-toggle {
+    display: none;
+    background: transparent;
+    color: #fff;
+    border: none;
+    font-size: 1em;
+    font-weight: 500;
+    padding: 12px 18px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    border-radius: 8px;
+}
+
+.nav-toggle:hover,
+.nav-toggle:focus {
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+}
+
+.nav-toggle .menu-icon {
+    margin-right: 8px;
+    font-size: 1.2em;
+    vertical-align: middle;
+}
+
+/* Chi-square input table on mobile: make every number cell tappable and
+   the whole table horizontally scrollable without visual surprises. */
+#input-table input[type="number"] {
+    min-width: 62px;
+    width: 100%;
+    padding: 8px 6px;
+    box-sizing: border-box;
+}
+
+#input-table input[type="text"] {
+    min-width: 90px;
+    padding: 8px 6px;
+    box-sizing: border-box;
+}
+
+#input-table td {
+    padding: 4px;
+}
+
+.table-container {
+    position: relative;
+}
+
+/* Scroll-hint shadow on the right edge when content overflows.
+   Fades away as the user scrolls to the end. */
+.table-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 28px;
+    pointer-events: none;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.95));
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.table-container.is-overflowing::after {
+    opacity: 1;
+}
+
+/* 2x2 inputs on Compare and Epi pages need a minimum so they don't crush */
+#compare-table input[type="number"],
+#epi-table input[type="number"] {
+    min-width: 90px;
+    width: 100%;
+    padding: 8px 6px;
+    box-sizing: border-box;
+}
+
+#compare-table input[type="text"],
+#epi-table input[type="text"] {
+    min-width: 100px;
+    padding: 8px 6px;
+    box-sizing: border-box;
+}
+
+/* Narrow-viewport layout (≤600px — phones, tight windows) */
+@media (max-width: 600px) {
+    body {
+        width: 100%;
+        padding: 10px;
+    }
+
+    main {
+        padding: 18px 14px;
+    }
+
+    section {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .header-container {
+        padding: 24px 18px;
+    }
+
+    .header-container h1 {
+        font-size: 1.5em;
+    }
+
+    .header-container p {
+        font-size: 0.95em;
+    }
+
+    /* Hamburger mode: toggle visible, list hidden until expanded */
+    .nav-toggle {
+        display: flex;
+        align-items: center;
+    }
+
+    nav .nav-bar {
+        display: none;
+        padding: 8px 0;
+    }
+
+    nav .nav-bar.open {
+        display: block;
+    }
+
+    .nav-bar li {
+        display: block;
+    }
+
+    .nav-bar li a {
+        display: block;
+        text-align: left;
+        padding: 14px 20px;
+        border-radius: 0;
+    }
+
+    .nav-bar li a:not(.active):hover {
+        transform: none;
+    }
+
+    /* Button groups stack on narrow */
+    .button-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .button-group button {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    /* Landing-page cards don't need the hover-lift on touch */
+    .calc-card:hover {
+        transform: none;
+    }
+
+    /* Dataset library cards: full-width buttons */
+    .dataset-card .button-group {
+        flex-direction: column;
+    }
+
+    .dataset-card .button-group button {
+        width: 100%;
+    }
+
+    /* Notation tables get a helpful "scroll →" hint via colored border */
+    .notation-table-wrap {
+        border-left: 3px solid #1976d2;
+    }
+
+    /* Trap filter buttons wrap cleanly */
+    .trap-filter {
+        padding: 10px;
+    }
+
+    .trap-filter-btn {
+        flex-grow: 1;
+        min-width: calc(50% - 4px);
+    }
+
+    /* Guide tree: case cards full-width, slightly smaller padding */
+    .guide-case {
+        padding: 10px 12px;
+    }
+
+    /* Three-level summary text smaller */
+    .three-level-section summary small {
+        display: block;
+        margin-left: 0;
+        margin-top: 3px;
+        font-size: 0.8em;
+    }
+
+    /* Result banner text compacted */
+    .ci-banner {
+        font-size: 0.95em;
+        padding: 10px 12px;
+    }
+
+    /* Dataset banner: tighter spacing, smaller title */
+    .dataset-context-banner {
+        padding: 12px 40px 12px 14px;
+    }
+
+    .dataset-context-banner .banner-title {
+        font-size: 1em;
+    }
+
+    /* Stats grid becomes single-column */
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* SVG histograms fit the viewport cleanly */
+    svg.sim-histogram,
+    svg.qq-plot,
+    svg.normal-curve {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Compare test cards: full-width */
+    .compare-tests {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Epi cards: full-width */
+    .epi-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Simulate result: stack plot below summary */
+    .sim-result {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Assumption Coach: stack plot + stats */
+    .assm-result {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Very narrow (≤375px iPhone SE) — the hardest case */
+@media (max-width: 375px) {
+    body {
+        padding: 8px;
+    }
+
+    main {
+        padding: 14px 10px;
+    }
+
+    .header-container {
+        padding: 18px 14px;
+    }
+
+    .header-container h1 {
+        font-size: 1.35em;
+    }
+
+    /* Notation table: let cells wrap tightly */
+    .notation-table {
+        font-size: 0.85em;
+    }
+
+    .notation-table td {
+        padding: 6px 6px;
+    }
+
+    /* Trap filter: 1 per row at extreme narrow */
+    .trap-filter-btn {
+        min-width: 100%;
+    }
+}
+
 /* Print styles — produce a clean homework-submission view */
 @media print {
     .no-print,

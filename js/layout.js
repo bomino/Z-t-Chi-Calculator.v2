@@ -42,8 +42,61 @@
         const navs = document.querySelectorAll('nav[data-ztchi-nav], nav > ul.nav-bar');
         navs.forEach((el) => {
             const nav = el.tagName === 'NAV' ? el : el.parentElement;
-            if (nav) nav.innerHTML = renderNav();
+            if (!nav) return;
+            // Inject the mobile toggle + the nav list. CSS hides/shows the
+            // toggle based on viewport width.
+            nav.innerHTML =
+                `<button type="button" class="nav-toggle" aria-expanded="false" aria-controls="ztchi-nav-list">` +
+                `<span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span>` +
+                `</button>` +
+                renderNav();
+
+            const toggle = nav.querySelector('.nav-toggle');
+            const list = nav.querySelector('.nav-bar');
+            if (toggle && list) {
+                list.id = 'ztchi-nav-list';
+                toggle.addEventListener('click', () => {
+                    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+                    toggle.setAttribute('aria-expanded', String(!expanded));
+                    list.classList.toggle('open');
+                });
+                // Auto-close the menu when a link inside is clicked (mobile UX)
+                list.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'A') {
+                        list.classList.remove('open');
+                        toggle.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
         });
+    }
+
+    /**
+     * Toggle the `is-overflowing` class on each `.table-container` that
+     * currently has more horizontal content than it can show. Drives the
+     * right-edge scroll-hint gradient defined in styles.css.
+     */
+    function wireTableOverflowHints() {
+        const update = () => {
+            document.querySelectorAll('.table-container').forEach((el) => {
+                const overflowing = el.scrollWidth > el.clientWidth + 1 &&
+                    el.scrollLeft + el.clientWidth + 1 < el.scrollWidth;
+                el.classList.toggle('is-overflowing', overflowing);
+            });
+        };
+        update();
+        window.addEventListener('resize', update);
+        document.querySelectorAll('.table-container').forEach((el) => {
+            el.addEventListener('scroll', update);
+        });
+        // Re-check after any DOM mutation inside a container (e.g., chi-square
+        // regenerating the table with new dimensions).
+        if (window.MutationObserver) {
+            document.querySelectorAll('.table-container').forEach((el) => {
+                const mo = new MutationObserver(update);
+                mo.observe(el, { childList: true, subtree: true });
+            });
+        }
     }
 
     function applyEmbedMode() {
@@ -68,11 +121,13 @@
         document.addEventListener('DOMContentLoaded', () => {
             applyEmbedMode();
             injectNav();
+            wireTableOverflowHints();
             registerServiceWorker();
         });
     } else {
         applyEmbedMode();
         injectNav();
+        wireTableOverflowHints();
         registerServiceWorker();
     }
 })();

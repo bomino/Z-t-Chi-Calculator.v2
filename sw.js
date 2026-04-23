@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'ztchi-v2';
+const CACHE_VERSION = 'ztchi-v3';
 
 const APP_SHELL = [
   './',
