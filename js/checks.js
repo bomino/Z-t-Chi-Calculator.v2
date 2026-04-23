@@ -249,7 +249,8 @@
             const card = btn.closest('.self-check-card');
             if (!card || card.classList.contains('answered')) return;
             const answer = btn.getAttribute('data-check-answer');
-            const correct = card.querySelector('[data-check-correct]').value;
+            const correctHolder = card.querySelector('[data-check-correct]');
+            const correct = correctHolder ? correctHolder.getAttribute('data-check-correct') : '';
             const reveal = card.querySelector('.check-reveal');
             const verdict = card.querySelector('.check-verdict');
             const isRight = answer === correct;

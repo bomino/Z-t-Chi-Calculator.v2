@@ -83,7 +83,6 @@ function calculateT() {
 
 function renderPostResult(testType, ctx) {
     const { reports, showWork, checks } = window.ZtChi || {};
-    if (reports && reports.setLatestContext) reports.setLatestContext(testType, ctx);
 
     const parts = [];
     if (reports && reports.buildReportButtons) parts.push(reports.buildReportButtons(testType));
@@ -104,6 +103,7 @@ function renderPostResult(testType, ctx) {
         host.parentNode.insertBefore(container, host.nextSibling);
     }
 
+    if (reports && reports.setLatestContext) reports.setLatestContext(testType, ctx);
     if (showWork && showWork.typeset) showWork.typeset(container);
 }
 
