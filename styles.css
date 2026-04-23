@@ -1117,6 +1117,109 @@ textarea {
 [data-theme="dark"] .compare-summary table tr:hover td,
 [data-theme="dark"] .compare-summary table { background: var(--bg-card); }
 
+/* ---- Dark mode: third pass — specific containers with hardcoded #fff ---- */
+[data-theme="dark"] .calculator-container { background: var(--bg-card); color: var(--fg); box-shadow: var(--shadow-sm); }
+[data-theme="dark"] .probability-result { background: var(--bg-subtle); color: var(--fg); }
+[data-theme="dark"] .probability-result .label { color: var(--fg-muted); }
+[data-theme="dark"] .probability-result .value { color: var(--fg-heading); background: transparent; }
+[data-theme="dark"] .result-interpretation { background: transparent; color: var(--fg); }
+[data-theme="dark"] .visualization-wrapper { background: var(--bg-card); color: var(--fg); }
+[data-theme="dark"] .visualization-wrapper h3 { color: var(--fg-heading); }
+[data-theme="dark"] .visualization-box { background: var(--bg-main); }
+[data-theme="dark"] svg.normal-curve { background: var(--bg-card); }
+[data-theme="dark"] svg.normal-curve polyline { stroke: var(--fg); }
+[data-theme="dark"] svg.normal-curve path { fill: var(--accent); fill-opacity: 0.45; }
+[data-theme="dark"] svg.normal-curve line[stroke="black"] { stroke: var(--fg-muted); }
+[data-theme="dark"] svg.normal-curve text { fill: var(--fg); }
+[data-theme="dark"] svg.normal-curve text[fill="#1976d2"] { fill: var(--fg-heading); }
+[data-theme="dark"] svg.sim-histogram { background: var(--bg-card); }
+[data-theme="dark"] svg.sim-histogram line[stroke="#333"] { stroke: var(--fg); }
+[data-theme="dark"] svg.qq-plot { background: var(--bg-card); }
+[data-theme="dark"] svg.qq-plot line[stroke="#333"] { stroke: var(--fg); }
+
+[data-theme="high-contrast"] svg.normal-curve,
+[data-theme="high-contrast"] svg.sim-histogram,
+[data-theme="high-contrast"] svg.qq-plot { background: #ffffff; }
+[data-theme="high-contrast"] svg.normal-curve text { fill: #000000; }
+[data-theme="high-contrast"] svg.normal-curve line { stroke: #000000; }
+[data-theme="high-contrast"] svg.normal-curve polyline { stroke: #000000; }
+[data-theme="high-contrast"] svg.normal-curve path { fill: #0000cc; fill-opacity: 0.5; }
+
+/* Override card-prose text colours that were hardcoded to #333 */
+[data-theme="dark"] .compare-card p,
+[data-theme="dark"] .compare-divergence p,
+[data-theme="dark"] .epi-card p,
+[data-theme="dark"] .guide-case p,
+[data-theme="dark"] .guide-walkthrough p,
+[data-theme="dark"] .assm-verdict p,
+[data-theme="dark"] .predict-form p,
+[data-theme="dark"] .predict-reveal p,
+[data-theme="dark"] .error-trap p,
+[data-theme="dark"] .ds-context,
+[data-theme="dark"] .dataset-context-banner .banner-context,
+[data-theme="dark"] .three-level-body p,
+[data-theme="dark"] .show-work-body p,
+[data-theme="dark"] .dataset-card p,
+[data-theme="dark"] .self-check-card p,
+[data-theme="dark"] .check-question,
+[data-theme="dark"] .check-explain { color: var(--fg); }
+
+[data-theme="dark"] .compare-divergence h3,
+[data-theme="dark"] .epi-card h4,
+[data-theme="dark"] .compare-card h4,
+[data-theme="dark"] .guide-case h4,
+[data-theme="dark"] .guide-walkthrough h3,
+[data-theme="dark"] .dataset-card h3,
+[data-theme="dark"] .assm-verdict h3,
+[data-theme="dark"] .error-trap h3 { color: var(--fg-heading); }
+
+/* Error trap card tiles (scenario/looks-right/what's-wrong/fix) text */
+[data-theme="dark"] .error-trap .trap-scenario,
+[data-theme="dark"] .error-trap .trap-scenario strong,
+[data-theme="dark"] .error-trap .trap-looks-right,
+[data-theme="dark"] .error-trap .trap-looks-right strong,
+[data-theme="dark"] .error-trap .trap-whats-wrong,
+[data-theme="dark"] .error-trap .trap-whats-wrong strong,
+[data-theme="dark"] .error-trap .trap-fix,
+[data-theme="dark"] .error-trap .trap-fix strong { color: var(--fg); }
+
+/* Instruction panels (bulleted lists on each page) */
+[data-theme="dark"] .instruction-panel { background: var(--bg-subtle); color: var(--fg); border-left: 3px solid var(--accent); }
+[data-theme="dark"] .instruction-panel h3 { color: var(--fg-heading); }
+[data-theme="dark"] .instruction-panel li { color: var(--fg); }
+
+/* "How to read this" box-style info-boxes in main body */
+[data-theme="dark"] main .info-box { background: var(--bg-subtle); color: var(--fg); border-left: 3px solid var(--accent); }
+[data-theme="dark"] main .info-box p,
+[data-theme="dark"] main .info-box .info-content { color: var(--fg); }
+[data-theme="dark"] main .info-box strong { color: var(--fg-heading); }
+
+/* ---- High-contrast: third pass ---- */
+[data-theme="high-contrast"] .calculator-container,
+[data-theme="high-contrast"] .probability-result,
+[data-theme="high-contrast"] .result-interpretation,
+[data-theme="high-contrast"] .visualization-wrapper,
+[data-theme="high-contrast"] .visualization-box,
+[data-theme="high-contrast"] .instruction-panel,
+[data-theme="high-contrast"] main .info-box { background: #ffffff; color: #000000; border: 2px solid #000000; }
+
+[data-theme="high-contrast"] .probability-result .value { color: #0000cc; }
+
+[data-theme="high-contrast"] .compare-card p,
+[data-theme="high-contrast"] .compare-divergence p,
+[data-theme="high-contrast"] .compare-divergence h3,
+[data-theme="high-contrast"] .epi-card p,
+[data-theme="high-contrast"] .guide-case p,
+[data-theme="high-contrast"] .guide-walkthrough p,
+[data-theme="high-contrast"] .predict-form p,
+[data-theme="high-contrast"] .error-trap p,
+[data-theme="high-contrast"] .ds-context,
+[data-theme="high-contrast"] .three-level-body p,
+[data-theme="high-contrast"] .show-work-body p,
+[data-theme="high-contrast"] .dataset-card p,
+[data-theme="high-contrast"] .instruction-panel li,
+[data-theme="high-contrast"] main .info-box p { color: #000000; }
+
 /* ---- High-contrast: second pass ---- */
 [data-theme="high-contrast"] .section,
 [data-theme="high-contrast"] .example-box,
