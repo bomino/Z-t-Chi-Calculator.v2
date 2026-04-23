@@ -1666,6 +1666,54 @@ input:invalid+.input-help {
     margin: 0 auto;
 }
 
+/* ===== Epidemiology 2×2 page ===== */
+.epi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.epi-card {
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.epi-card h4 {
+    margin: 0 0 6px 0;
+    color: #1976d2;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.epi-card p {
+    margin: 4px 0;
+    color: #333;
+    line-height: 1.45;
+}
+
+.epi-card .epi-value {
+    font-weight: 600;
+    color: #1b5e20;
+    font-size: 1.05em;
+}
+
+.epi-card .epi-value small {
+    color: #666;
+    font-weight: 400;
+}
+
+.epi-card .epi-note {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px dashed #e0e0e0;
+    font-size: 0.88em;
+    color: #666;
+}
+
 /* Warning banner for low expected frequencies (chi-square assumption) */
 .warning-message {
     margin-top: 15px;

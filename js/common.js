@@ -200,6 +200,90 @@
     };
 
     /**
+     * Wilson score confidence interval for a single proportion.
+     * More accurate than Wald, especially for small n or extreme proportions.
+     * Reference: Wilson (1927); Agresti & Coull (1998).
+     */
+    ZtChi.wilsonCi = function wilsonCi(k, n, conf = 0.95) {
+        if (!Number.isFinite(k) || !Number.isFinite(n) || n <= 0 || k < 0 || k > n) {
+            return { p: NaN, low: NaN, high: NaN };
+        }
+        const z = typeof jStat !== 'undefined' ? jStat.normal.inv((1 + conf) / 2, 0, 1) : 1.959963984540054;
+        const p = k / n;
+        const z2 = z * z;
+        const denom = 1 + z2 / n;
+        const center = (p + z2 / (2 * n)) / denom;
+        const half = (z * Math.sqrt((p * (1 - p) + z2 / (4 * n)) / n)) / denom;
+        return { p, low: Math.max(0, center - half), high: Math.min(1, center + half) };
+    };
+
+    /**
+     * Epidemiology helpers for a 2x2 table. Convention for a diagnostic-test
+     * or cohort table:
+     *
+     *                      Disease +      Disease −
+     *   Test + / Exposed :    a              b
+     *   Test − / Unexposed:   c              d
+     *
+     * sens = a/(a+c), spec = d/(b+d), PPV = a/(a+b), NPV = d/(c+d),
+     * prevalence = (a+c)/N, LR+ = sens/(1-spec), LR- = (1-sens)/spec,
+     * risk ratio (exposed/unexposed) = [a/(a+b)] / [c/(c+d)],
+     * odds ratio = (a*d)/(b*c), NNT = 1/|risk_exposed - risk_unexposed|.
+     *
+     * CIs: proportions use Wilson; RR and OR use log-transform Wald.
+     */
+    ZtChi.epidemiology = function epidemiology(a, b, c, d, conf = 0.95) {
+        if (![a, b, c, d].every((v) => Number.isFinite(v) && v >= 0 && Number.isInteger(v))) {
+            throw new Error('Epidemiology calculator requires four non-negative integer cell counts.');
+        }
+        const n = a + b + c + d;
+        if (n === 0) throw new Error('Total must be > 0.');
+
+        const sens = ZtChi.wilsonCi(a, a + c, conf);
+        const spec = ZtChi.wilsonCi(d, b + d, conf);
+        const ppv  = ZtChi.wilsonCi(a, a + b, conf);
+        const npv  = ZtChi.wilsonCi(d, c + d, conf);
+        const prev = ZtChi.wilsonCi(a + c, n, conf);
+
+        // Likelihood ratios
+        const lrPos = (sens.p) / (1 - spec.p);
+        const lrNeg = (1 - sens.p) / (spec.p);
+
+        // Risk ratio, log-Wald CI. Uses Haldane continuity if any cell is 0.
+        const adj = (a === 0 || b === 0 || c === 0 || d === 0) ? 0.5 : 0;
+        const aAdj = a + adj, bAdj = b + adj, cAdj = c + adj, dAdj = d + adj;
+        const risk1 = aAdj / (aAdj + bAdj);    // row 1 risk (exposed)
+        const risk2 = cAdj / (cAdj + dAdj);    // row 2 risk (unexposed)
+        const rr = risk1 / risk2;
+        const seLogRr = Math.sqrt(1 / aAdj - 1 / (aAdj + bAdj) + 1 / cAdj - 1 / (cAdj + dAdj));
+        const zCrit = typeof jStat !== 'undefined' ? jStat.normal.inv((1 + conf) / 2, 0, 1) : 1.959963984540054;
+        const logRr = Math.log(rr);
+        const rrLow = Math.exp(logRr - zCrit * seLogRr);
+        const rrHigh = Math.exp(logRr + zCrit * seLogRr);
+
+        // Odds ratio, log-Wald CI (Haldane-corrected when needed).
+        const or = (aAdj * dAdj) / (bAdj * cAdj);
+        const seLogOr = Math.sqrt(1 / aAdj + 1 / bAdj + 1 / cAdj + 1 / dAdj);
+        const logOr = Math.log(or);
+        const orLow = Math.exp(logOr - zCrit * seLogOr);
+        const orHigh = Math.exp(logOr + zCrit * seLogOr);
+
+        // Absolute risk difference and NNT
+        const riskDiff = risk1 - risk2;
+        const nnt = riskDiff === 0 ? Infinity : 1 / Math.abs(riskDiff);
+
+        return {
+            n, a, b, c, d,
+            sens, spec, ppv, npv, prev,
+            lrPos, lrNeg,
+            rr, rrLow, rrHigh,
+            or, orLow, orHigh,
+            riskDiff, nnt,
+            conf,
+        };
+    };
+
+    /**
      * Effect-size helpers.
      * Cramer's V: sqrt(χ² / (N * min(r-1, c-1)))  — ranges 0 to 1.
      * phi:        sqrt(χ² / N)                    — equivalent to V for 2x2 tables.

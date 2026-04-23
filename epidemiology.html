@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epidemiology &mdash; 2&times;2 Measures</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.5/jstat.min.js"
+            integrity="sha384-G0LNImWgCl2Dv94gWHL462179lItxVdMl0mIkiGu4HaUYuC4jZlAVdyqTZxTKRTs"
+            crossorigin="anonymous"></script>
+    <script src="js/common.js" defer></script>
+    <script src="js/state.js" defer></script>
+    <script src="js/layout.js" defer></script>
+</head>
+
+<body>
+    <nav>
+        <ul class="nav-bar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="z_calculator.html">Z Calculator</a></li>
+            <li><a href="t_calculator.html">t Calculator</a></li>
+            <li><a href="chi_square.html">Chi-Square Calculator</a></li>
+            <li><a href="compare.html">Compare</a></li>
+            <li><a href="simulate.html">Simulate</a></li>
+            <li><a href="epidemiology.html" class="active">Epi 2&times;2</a></li>
+        </ul>
+    </nav>
+
+    <div class="header-container">
+        <h1>Epidemiology &mdash; 2&times;2 Measures</h1>
+        <p>Sensitivity, specificity, PPV, NPV, likelihood ratios, risk ratio, odds ratio, and NNT &mdash; all from one 2&times;2 table, all with 95% CIs.</p>
+        <div class="info-box">
+            <p>
+                <strong>Two common framings:</strong>
+                <span class="info-content">
+                    A 2&times;2 epidemiology table serves two related purposes. In a <em>diagnostic test</em> context the rows are test results and the columns are true disease status. In a <em>cohort study</em> context the rows are exposure groups and the columns are outcomes. The math is the same; only the interpretation of each measure changes.
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <main role="main">
+        <section class="section">
+            <h2>Step 1: Pick a framing</h2>
+            <div class="input-group">
+                <label>
+                    <input type="radio" name="epi-mode" value="diagnostic" checked>
+                    <strong>Diagnostic test</strong> &mdash; rows = test result, columns = truth
+                </label>
+                <br>
+                <label>
+                    <input type="radio" name="epi-mode" value="cohort">
+                    <strong>Cohort study</strong> &mdash; rows = exposure, columns = outcome
+                </label>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Step 2: Enter a 2&times;2 table</h2>
+            <div class="table-container">
+                <table class="compact-results-table" id="epi-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th id="epi-col-0-hdr">Disease +</th>
+                            <th id="epi-col-1-hdr">Disease &minus;</th>
+                            <th>Row total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="epi-row-0-lbl"><strong>Test +</strong></td>
+                            <td><input type="number" id="epi-a" value="80" min="0" step="1" aria-label="Row 1 Col 1 (a)"></td>
+                            <td><input type="number" id="epi-b" value="20" min="0" step="1" aria-label="Row 1 Col 2 (b)"></td>
+                            <td id="epi-r1-total">100</td>
+                        </tr>
+                        <tr>
+                            <td id="epi-row-1-lbl"><strong>Test &minus;</strong></td>
+                            <td><input type="number" id="epi-c" value="10" min="0" step="1" aria-label="Row 2 Col 1 (c)"></td>
+                            <td><input type="number" id="epi-d" value="890" min="0" step="1" aria-label="Row 2 Col 2 (d)"></td>
+                            <td id="epi-r2-total">900</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Col total</strong></td>
+                            <td id="epi-c1-total">90</td>
+                            <td id="epi-c2-total">910</td>
+                            <td id="epi-grand-total"><strong>1000</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="input-group">
+                <label for="epi-conf">Confidence level:</label>
+                <input type="number" id="epi-conf" value="0.95" min="0.50" max="0.999" step="0.01">
+            </div>
+
+            <div class="button-group">
+                <button id="epi-calculate-btn" class="primary-button">Calculate All Measures</button>
+                <button id="epi-example-screen-btn" class="secondary-button">Example: screening test</button>
+                <button id="epi-example-cohort-btn" class="secondary-button">Example: cohort study</button>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Results</h2>
+            <div id="epi-results"></div>
+        </section>
+
+        <section class="section">
+            <h2>How to read this</h2>
+            <div class="info-box">
+                <p><strong>Sensitivity &amp; Specificity</strong> are properties of the test itself &mdash; they don't depend on how common the disease is.</p>
+                <p><strong>PPV &amp; NPV</strong> depend on prevalence. The same test applied to a low-prevalence population yields a lower PPV (more false positives among the positives).</p>
+                <p><strong>Likelihood ratios</strong> combine the above and don't change with prevalence. LR+ &gt; 10 is strong positive evidence; LR&minus; &lt; 0.1 is strong negative evidence.</p>
+                <p><strong>RR, OR, NNT</strong> are effect-size measures for the cohort-study framing. RR compares the risk in exposed vs unexposed; OR the odds. NNT is the inverse absolute risk difference &mdash; how many patients you need to treat (or expose) to see one more event.</p>
+                <p><strong>CIs</strong>: proportions use the Wilson score interval (Wilson, 1927); RR and OR use log-Wald CIs with Haldane-Anscombe correction for zero cells.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer-container">
+        <p>&copy; 2024 Z-t-Chi Calculator by Hadiza Galadima, PhD. All rights reserved.</p>
+        <p>For educational purposes only. Always double-check statistical calculations.</p>
+    </footer>
+
+    <script src="js/epidemiology.js" defer></script>
+</body>
+
+</html>

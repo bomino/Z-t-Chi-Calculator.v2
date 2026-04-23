@@ -15,6 +15,7 @@
         { href: 'chi_square.html', label: 'Chi-Square Calculator' },
         { href: 'compare.html', label: 'Compare' },
         { href: 'simulate.html', label: 'Simulate' },
+        { href: 'epidemiology.html', label: 'Epi 2×2' },
     ];
 
     function currentPage() {

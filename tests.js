@@ -342,6 +342,98 @@
         });
     });
 
+    describe('Wilson score CI (ZtChi.wilsonCi)', () => {
+        test('Standard 95% CI for 50/100 is approximately (0.40, 0.60)', () => {
+            const ci = ZtChi.wilsonCi(50, 100, 0.95);
+            assertClose(ci.p, 0.5, 1e-9, 'p');
+            assertClose(ci.low, 0.404, 0.01, 'low');
+            assertClose(ci.high, 0.596, 0.01, 'high');
+        });
+        test('Edge case: 0/10 gives lower bound of 0, upper ≈ 0.28', () => {
+            const ci = ZtChi.wilsonCi(0, 10, 0.95);
+            assertClose(ci.low, 0, 1e-9, 'low clamped to 0');
+            assertClose(ci.high, 0.278, 0.02, 'high ≈ 0.28');
+        });
+        test('Edge case: 10/10 gives upper bound of 1, lower ≈ 0.72', () => {
+            const ci = ZtChi.wilsonCi(10, 10, 0.95);
+            assertClose(ci.high, 1, 1e-9, 'high clamped to 1');
+            assertClose(ci.low, 0.722, 0.02, 'low ≈ 0.72');
+        });
+    });
+
+    describe('Epidemiology 2×2 (ZtChi.epidemiology)', () => {
+        test('Textbook diagnostic test [[80,20],[10,890]] gives expected sens/spec/PPV/NPV', () => {
+            const r = ZtChi.epidemiology(80, 20, 10, 890);
+            // sens = 80/(80+10) = 0.8889
+            assertClose(r.sens.p, 80 / 90, 1e-9, 'sens');
+            // spec = 890/(20+890) = 0.9780
+            assertClose(r.spec.p, 890 / 910, 1e-9, 'spec');
+            // PPV = 80/(80+20) = 0.80
+            assertClose(r.ppv.p, 80 / 100, 1e-9, 'PPV');
+            // NPV = 890/(10+890) = 0.9889
+            assertClose(r.npv.p, 890 / 900, 1e-9, 'NPV');
+            // prev = 90/1000
+            assertClose(r.prev.p, 90 / 1000, 1e-9, 'prev');
+        });
+
+        test('Likelihood ratios: LR+ = sens/(1-spec), LR- = (1-sens)/spec', () => {
+            const r = ZtChi.epidemiology(80, 20, 10, 890);
+            const expectedLrPos = (80 / 90) / (20 / 910);
+            const expectedLrNeg = (10 / 90) / (890 / 910);
+            assertClose(r.lrPos, expectedLrPos, 1e-9, 'LR+');
+            assertClose(r.lrNeg, expectedLrNeg, 1e-9, 'LR-');
+        });
+
+        test('Low-prevalence screening: PPV dramatically lower than sens/spec', () => {
+            // 0.5% prevalence, sens 99%, spec 98% → PPV drops to ~20%
+            const r = ZtChi.epidemiology(49, 199, 1, 9751);
+            assert(r.sens.p > 0.95, 'sens > 0.95');
+            assert(r.spec.p > 0.97, 'spec > 0.97');
+            assert(r.ppv.p < 0.25, `PPV should be low (~20%), got ${r.ppv.p}`);
+            // This is the classic "base rate fallacy" teaching example.
+        });
+
+        test('Cohort study: RR and OR computed correctly, log-CI contains 1 when no effect', () => {
+            // Null case: equal risk in both groups
+            const r = ZtChi.epidemiology(100, 900, 100, 900);
+            assertClose(r.rr, 1, 1e-6, 'RR=1');
+            assertClose(r.or, 1, 1e-6, 'OR=1');
+            assert(r.rrLow < 1 && r.rrHigh > 1, 'RR CI contains 1');
+            assert(r.orLow < 1 && r.orHigh > 1, 'OR CI contains 1');
+        });
+
+        test('Physicians Health Study (aspirin vs placebo) RR≈0.55, OR≈0.55', () => {
+            // a=104, b=10930, c=189, d=10848 → RR ≈ 0.550, OR ≈ 0.546
+            const r = ZtChi.epidemiology(104, 10930, 189, 10848);
+            assertClose(r.rr, 0.55, 0.02, 'RR');
+            assertClose(r.or, 0.546, 0.02, 'OR');
+            assert(r.rrHigh < 1, 'RR upper CI < 1 (significant reduction)');
+        });
+
+        test('NNT: sample computation for Physicians Health Study', () => {
+            const r = ZtChi.epidemiology(104, 10930, 189, 10848);
+            // risk(treated) ≈ 0.00942; risk(placebo) ≈ 0.01713
+            // diff ≈ -0.00771 → NNT ≈ 130
+            assertClose(r.nnt, 129.6, 3, 'NNT ≈ 130');
+        });
+
+        test('Zero-cell table uses Haldane-Anscombe correction', () => {
+            const r = ZtChi.epidemiology(5, 0, 0, 10);
+            assert(Number.isFinite(r.or), 'OR finite with zero cells');
+            assert(Number.isFinite(r.rr), 'RR finite with zero cells');
+            assert(Number.isFinite(r.orLow) && Number.isFinite(r.orHigh), 'OR CI finite');
+        });
+
+        test('Input validation rejects negative or non-integer cells', () => {
+            let threw = false;
+            try { ZtChi.epidemiology(1.5, 2, 3, 4); } catch (_) { threw = true; }
+            assert(threw, 'should reject non-integer');
+            threw = false;
+            try { ZtChi.epidemiology(-1, 2, 3, 4); } catch (_) { threw = true; }
+            assert(threw, 'should reject negative');
+        });
+    });
+
     describe('Sanity: bulk synthetic t-tests (false-positive rate ≤ α + noise)', () => {
         test('Under H₀ (true μ=100), 200 replications of n=30 give rejection rate ≤ 10%', () => {
             const rng = makeRng(987654321);
