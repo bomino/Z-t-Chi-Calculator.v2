@@ -1804,6 +1804,142 @@ input:invalid+.input-help {
     line-height: 1.5;
 }
 
+/* Inline dataset-context banner (shown at the top of a calculator after dataset handoff) */
+.dataset-context-banner {
+    position: relative;
+    margin: 10px 0 18px 0;
+    padding: 14px 44px 14px 18px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3faff 100%);
+    border-left: 4px solid #1976d2;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.dataset-context-banner .banner-kicker {
+    text-transform: uppercase;
+    font-size: 0.72em;
+    letter-spacing: 0.05em;
+    color: #1565c0;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.dataset-context-banner .banner-title {
+    margin: 0 0 6px 0;
+    color: #0d47a1;
+    font-size: 1.05em;
+}
+
+.dataset-context-banner .banner-citation {
+    margin: 2px 0 8px 0;
+    color: #666;
+    font-size: 0.88em;
+}
+
+.dataset-context-banner .banner-context {
+    margin: 6px 0;
+    color: #1a1a1a;
+    line-height: 1.5;
+    font-size: 0.95em;
+}
+
+.dataset-context-banner .banner-learn {
+    margin: 8px 0 0 0;
+    padding: 8px 10px;
+    background: rgba(25, 118, 210, 0.09);
+    border-radius: 4px;
+    color: #0d47a1;
+    font-size: 0.9em;
+    line-height: 1.45;
+}
+
+.banner-dismiss {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: #1565c0;
+    font-size: 1.4em;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.banner-dismiss:hover {
+    background: rgba(13, 71, 161, 0.1);
+}
+
+/* Guide page */
+.guide-tree {
+    padding: 14px 16px;
+    background: #fbfbfd;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+}
+
+.guide-question {
+    color: #1976d2;
+    font-size: 1.05em;
+    margin-bottom: 10px;
+}
+
+.guide-branch {
+    display: grid;
+    gap: 14px;
+}
+
+.guide-case {
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    border-left: 3px solid #1976d2;
+}
+
+.guide-case h4 {
+    margin: 0 0 6px 0;
+    color: #1976d2;
+    font-size: 1em;
+}
+
+.guide-case h4 small {
+    color: #666;
+    font-weight: 400;
+    font-size: 0.88em;
+    margin-left: 4px;
+}
+
+.guide-case p { margin: 6px 0; line-height: 1.5; color: #333; }
+
+.guide-options {
+    margin: 8px 0 0 0;
+    padding-left: 20px;
+    line-height: 1.6;
+}
+
+.guide-walkthrough {
+    padding: 14px 18px;
+    margin: 14px 0;
+    background: #fbfbfd;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+}
+
+.guide-walkthrough h3 {
+    margin: 0 0 8px 0;
+    color: #1976d2;
+    font-size: 1.08em;
+}
+
+.guide-walkthrough ol { line-height: 1.6; margin: 6px 0; padding-left: 22px; }
+
+.guide-walkthrough p { margin: 8px 0; line-height: 1.55; color: #333; }
+
+.guide-walkthrough details { margin: 10px 0; }
+
 /* CI-first banner on the t-calculator when raw data is provided */
 .ci-banner {
     background: #e8f5e9;

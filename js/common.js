@@ -200,6 +200,44 @@
     };
 
     /**
+     * Dataset context banner. Renders an inline, dismissible card at the top
+     * of the current page's <main> element when a calculator hydrates from
+     * a dataset handoff. The payload must include at least `datasetName`;
+     * `citation`, `context`, and `whatToLearn` are optional.
+     */
+    ZtChi.datasetBanner = {
+        render(payload) {
+            if (!payload || !payload.datasetName) return null;
+            const existing = document.getElementById('dataset-context-banner');
+            if (existing) existing.remove();
+
+            const banner = document.createElement('aside');
+            banner.id = 'dataset-context-banner';
+            banner.className = 'dataset-context-banner no-print';
+            banner.setAttribute('role', 'complementary');
+            banner.setAttribute('aria-label', 'Loaded dataset context');
+
+            const esc = ZtChi.escapeHtml || ((s) => s);
+            const parts = [`<button type="button" class="banner-dismiss" aria-label="Dismiss context card">&times;</button>`];
+            parts.push(`<div class="banner-kicker">Loaded dataset</div>`);
+            parts.push(`<h3 class="banner-title">${esc(payload.datasetName)}</h3>`);
+            if (payload.citation) parts.push(`<p class="banner-citation"><em>${esc(payload.citation)}</em></p>`);
+            if (payload.context) parts.push(`<p class="banner-context">${esc(payload.context)}</p>`);
+            if (payload.whatToLearn) parts.push(`<p class="banner-learn"><strong>What to look for:</strong> ${esc(payload.whatToLearn)}</p>`);
+            banner.innerHTML = parts.join('');
+
+            const main = document.querySelector('main[role="main"]') || document.querySelector('main');
+            if (main) {
+                main.insertBefore(banner, main.firstChild);
+            } else {
+                document.body.insertBefore(banner, document.body.firstChild);
+            }
+            banner.querySelector('.banner-dismiss').addEventListener('click', () => banner.remove());
+            return banner;
+        },
+    };
+
+    /**
      * Sample skewness (bias-corrected, a.k.a. "G1" in some references).
      *   g1 = (1/n) Σ ((x - x̄)/s)³
      *   G1 = sqrt(n(n-1))/(n-2) * g1

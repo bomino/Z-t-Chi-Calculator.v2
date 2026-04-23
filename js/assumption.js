@@ -249,7 +249,10 @@
             if (!p || p.calculator !== 'assumption') return;
             sessionStorage.removeItem('ZtChi.datasetHandoff');
             if (p.dataA) document.getElementById('assm-data').value = p.dataA;
-            if (p.datasetName) showNotification(`Loaded dataset: ${p.datasetName}`, 'info', { duration: 4000 });
+            if (p.datasetName) {
+                showNotification(`Loaded dataset: ${p.datasetName}`, 'info', { duration: 4000 });
+                if (window.ZtChi.datasetBanner) window.ZtChi.datasetBanner.render(p);
+            }
             run();
         } catch (_) { /* quiet */ }
     }

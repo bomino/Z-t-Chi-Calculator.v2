@@ -202,6 +202,7 @@ function hydrateFromDataset() {
         if (payload.df != null) document.getElementById('df').value = String(payload.df);
         if (payload.datasetName) {
             showNotification(`Loaded dataset: ${payload.datasetName}`, 'info', { duration: 4000 });
+            if (window.ZtChi.datasetBanner) window.ZtChi.datasetBanner.render(payload);
         }
     } catch (_) { /* quiet */ }
 }

@@ -435,7 +435,10 @@
             if (p.dataB) document.getElementById('sim-data-b').value = p.dataB;
             if (p.iterations != null) document.getElementById('sim-iterations').value = p.iterations;
             if (p.ciLevel != null) document.getElementById('sim-ci').value = p.ciLevel;
-            if (p.datasetName) showNotification(`Loaded dataset: ${p.datasetName}`, 'info', { duration: 4000 });
+            if (p.datasetName) {
+                showNotification(`Loaded dataset: ${p.datasetName}`, 'info', { duration: 4000 });
+                if (window.ZtChi.datasetBanner) window.ZtChi.datasetBanner.render(p);
+            }
         } catch (_) { /* quiet */ }
     }
 

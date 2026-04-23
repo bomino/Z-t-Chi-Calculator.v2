@@ -233,7 +233,10 @@
             if (p.colLabel0) document.getElementById('col-label-0').value = p.colLabel0;
             if (p.colLabel1) document.getElementById('col-label-1').value = p.colLabel1;
             if (p.alpha != null) document.getElementById('cmp-alpha').value = p.alpha;
-            if (p.datasetName) showNotification(`Loaded dataset: ${p.datasetName}`, 'info', { duration: 4000 });
+            if (p.datasetName) {
+                showNotification(`Loaded dataset: ${p.datasetName}`, 'info', { duration: 4000 });
+                if (window.ZtChi.datasetBanner) window.ZtChi.datasetBanner.render(p);
+            }
         } catch (_) { /* quiet */ }
     }
 

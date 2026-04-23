@@ -172,7 +172,13 @@
         if (!ds) { throw new Error('Unknown dataset: ' + datasetId); }
         const payload = ds.targets && ds.targets[target];
         if (!payload) { throw new Error(`Dataset ${datasetId} has no payload for target ${target}.`); }
-        const enriched = Object.assign({ calculator: target, datasetName: ds.title }, payload);
+        const enriched = Object.assign({
+            calculator: target,
+            datasetName: ds.title,
+            citation: ds.citation,
+            context: ds.context,
+            whatToLearn: ds.whatToLearn,
+        }, payload);
         try {
             sessionStorage.setItem('ZtChi.datasetHandoff', JSON.stringify(enriched));
         } catch (_) {

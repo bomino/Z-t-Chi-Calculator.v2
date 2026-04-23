@@ -216,7 +216,10 @@
             if (p.d != null) document.getElementById('epi-d').value = p.d;
             if (p.conf != null) document.getElementById('epi-conf').value = p.conf;
             updateTotals();
-            if (p.datasetName) showNotification(`Loaded dataset: ${p.datasetName}`, 'info', { duration: 4000 });
+            if (p.datasetName) {
+                showNotification(`Loaded dataset: ${p.datasetName}`, 'info', { duration: 4000 });
+                if (window.ZtChi.datasetBanner) window.ZtChi.datasetBanner.render(p);
+            }
         } catch (_) { /* quiet */ }
     }
 

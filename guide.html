@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Guide &mdash; Z-t-Chi Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="js/common.js" defer></script>
+    <script src="js/state.js" defer></script>
+    <script src="js/layout.js" defer></script>
+</head>
+
+<body>
+    <nav>
+        <ul class="nav-bar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="z_calculator.html">Z Calculator</a></li>
+            <li><a href="t_calculator.html">t Calculator</a></li>
+            <li><a href="chi_square.html">Chi-Square Calculator</a></li>
+            <li><a href="compare.html">Compare</a></li>
+            <li><a href="simulate.html">Simulate</a></li>
+            <li><a href="epidemiology.html">Epi 2&times;2</a></li>
+            <li><a href="datasets.html">Datasets</a></li>
+            <li><a href="assumption.html">Assumption Coach</a></li>
+            <li><a href="guide.html" class="active">Guide</a></li>
+        </ul>
+    </nav>
+
+    <div class="header-container">
+        <h1>User Guide</h1>
+        <p>Everything you need to use the app in a biostatistics classroom, from "which page do I open?" to "how do I embed a pre-loaded example in Canvas?"</p>
+    </div>
+
+    <main role="main">
+
+        <section class="section" id="which-calculator">
+            <h2>Which calculator should I use?</h2>
+            <p>Answer the two questions below and follow the arrow to the right page.</p>
+
+            <div class="guide-tree">
+                <div class="guide-question">
+                    <strong>1. What kind of variable are you analysing?</strong>
+                </div>
+
+                <div class="guide-branch">
+                    <div class="guide-case">
+                        <h4>A count or category <small>("yes / no", "infected / not", "vaccinated / placebo")</small></h4>
+                        <p>Usually a 2&times;2 table (two variables, two categories each). Decide by sample size:</p>
+                        <ul class="guide-options">
+                            <li><strong>Large sample, all expected counts &ge; 5:</strong> <a href="chi_square.html">Chi-Square Calculator</a> for a single test, or <a href="compare.html">Compare</a> to see χ², Fisher's, and the Z-test for proportions side-by-side.</li>
+                            <li><strong>Small sample or sparse table:</strong> <a href="compare.html">Compare</a> &mdash; it flags the Cochran violation and shows Fisher's exact as the recommended alternative.</li>
+                            <li><strong>More than 2&times;2 (e.g., 3&times;4):</strong> <a href="chi_square.html">Chi-Square Calculator</a>.</li>
+                            <li><strong>Diagnostic test (sensitivity, specificity, PPV/NPV) or cohort study (RR, OR, NNT):</strong> <a href="epidemiology.html">Epi 2&times;2</a>.</li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-case">
+                        <h4>A number <small>("systolic BP", "cholesterol", "body temperature")</small></h4>
+                        <p>Decide by your comparison structure:</p>
+                        <ul class="guide-options">
+                            <li><strong>One sample vs a known reference value (μ<sub>0</sub>):</strong> <a href="t_calculator.html">t Calculator</a> &rarr; one-sample mode. Outputs a 95% CI for the mean.</li>
+                            <li><strong>Paired observations</strong> (before/after on the same subjects): <a href="t_calculator.html">t Calculator</a> &rarr; paired mode.</li>
+                            <li><strong>Two independent groups</strong> (treatment vs control): <a href="t_calculator.html">t Calculator</a> &rarr; Welch's mode.</li>
+                            <li><strong>You want to verify the t-test's conclusion with a non-parametric method:</strong> <a href="simulate.html">Simulate</a> &rarr; bootstrap CI for one sample or permutation p-value for two samples.</li>
+                            <li><strong>You need a left/right/two-tail probability for a Z-score or a tabled value:</strong> <a href="z_calculator.html">Z Calculator</a>.</li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-case">
+                        <h4>Not sure if your data are OK for a parametric test</h4>
+                        <p>Start at the <a href="assumption.html">Assumption Coach</a>. It gives you a Q-Q plot, skewness + kurtosis, a Jarque-Bera normality test, and a traffic-light recommendation. Green = t-test fine; yellow = use caution; red = prefer a non-parametric or bootstrap approach.</p>
+                    </div>
+
+                    <div class="guide-case">
+                        <h4>You want to run a canonical biostats example</h4>
+                        <p>Open the <a href="datasets.html">Curated Datasets</a> library. Every entry has one-click "Load into <em>X</em>" buttons that send the data to the right calculator with the context already explained.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="quick-starts">
+            <h2>Quick-start walkthroughs</h2>
+
+            <article class="guide-walkthrough">
+                <h3>A. One-sample t-test from raw data</h3>
+                <ol>
+                    <li>Open the <a href="t_calculator.html">t Calculator</a>.</li>
+                    <li>Pick the mode "<strong>One-sample</strong>" at the top.</li>
+                    <li>Enter the hypothesised mean μ<sub>0</sub> and paste your raw data (comma, space, or newline separated).</li>
+                    <li>Click "Calculate t Test Results."</li>
+                    <li>Read the result in this order:
+                        <ol type="a">
+                            <li>The 95% CI for the mean (green banner at top).</li>
+                            <li>Whether that CI includes μ<sub>0</sub> or not.</li>
+                            <li>The p-values table, which should agree.</li>
+                            <li>(Optional) expand "Show calculation steps" for the LaTeX walk-through.</li>
+                        </ol>
+                    </li>
+                </ol>
+                <p><strong>Try it:</strong> load the <a href="datasets.html">Body Temperature</a> dataset, which tests whether 98.6&deg;F really is the "normal" mean body temperature (spoiler: Mackowiak, 1992 says no).</p>
+            </article>
+
+            <article class="guide-walkthrough">
+                <h3>B. Comparing three tests on a 2&times;2 table</h3>
+                <ol>
+                    <li>Open <a href="compare.html">Compare</a>.</li>
+                    <li>Enter your 2&times;2 counts and your &alpha; level.</li>
+                    <li>Click "Run All Three Tests."</li>
+                    <li>Read the cards:
+                        <ul>
+                            <li><strong>χ&sup2; (Pearson)</strong>: the classical large-sample test.</li>
+                            <li><strong>Yates-corrected χ&sup2;</strong>: more conservative for small tables.</li>
+                            <li><strong>Fisher's exact</strong>: the exact reference for small or sparse tables.</li>
+                            <li><strong>Z for two proportions</strong>: z&sup2; matches the uncorrected χ&sup2; exactly.</li>
+                        </ul>
+                    </li>
+                    <li>The "Agreement &amp; Divergence" panel below the cards flags anything worth discussing.</li>
+                </ol>
+                <p><strong>Try it:</strong> the "small-N example" button loads <code>[[8, 2], [1, 5]]</code>, a case where Yates says "fail to reject" while χ², Fisher's, and Z all say "reject" &mdash; the exact pedagogical moment this page is designed around.</p>
+            </article>
+
+            <article class="guide-walkthrough">
+                <h3>C. Simulation-based inference</h3>
+                <ol>
+                    <li>Open <a href="simulate.html">Simulate</a>.</li>
+                    <li>Choose a mode:
+                        <ul>
+                            <li><strong>Bootstrap</strong> for a CI for the mean of a single sample.</li>
+                            <li><strong>Permutation</strong> for a p-value comparing two samples' means.</li>
+                        </ul>
+                    </li>
+                    <li>Paste your raw data and click "Run Simulation." Expect ~40 ms for 10,000 resamples.</li>
+                    <li>Read both the simulation result AND the agreement panel &mdash; this is where the app shows whether the formula-based t-test and the simulation-based result agree. Divergence is informative about your data.</li>
+                </ol>
+                <p><strong>Try it:</strong> the "Cholesterol" dataset has a clear two-group difference. Run it in permutation mode and compare the permutation p to Welch's p on the same data.</p>
+            </article>
+
+            <article class="guide-walkthrough">
+                <h3>D. Check assumptions before a t-test</h3>
+                <ol>
+                    <li>Open the <a href="assumption.html">Assumption Coach</a>.</li>
+                    <li>Paste the same raw data you would feed into the t-calculator.</li>
+                    <li>Click "Check My Data."</li>
+                    <li>Read the verdict card:
+                        <ul>
+                            <li><strong>Green</strong>: t-test is fine.</li>
+                            <li><strong>Yellow</strong>: t-test may still work; cross-check with Simulate for a robustness read.</li>
+                            <li><strong>Red</strong>: prefer non-parametric (Wilcoxon in jamovi/SPSS) or simulate instead.</li>
+                        </ul>
+                    </li>
+                    <li>Regardless of colour, look at the Q-Q plot. The p-value of Jarque-Bera is loose for small n; the plot rarely lies.</li>
+                </ol>
+            </article>
+        </section>
+
+        <section class="section" id="instructor-notes">
+            <h2>Instructor notes</h2>
+
+            <div class="info-box">
+                <p><strong>Pre-loading a dataset in an assignment</strong></p>
+                <p>Every "Load into X" click from the <a href="datasets.html">Curated Datasets</a> page works by writing the dataset to the browser's session storage and then navigating. That's great for self-study, but if you want to send students directly to a pre-populated calculator in an assignment, use this pattern:</p>
+                <ol>
+                    <li>Open the datasets page yourself.</li>
+                    <li>Open the browser console and run <code>ZtChi.datasets.loadInto('body-temperature', 't')</code> (replace the two strings with the dataset <code>id</code> and target calculator).</li>
+                    <li>You land on the calculator with the dataset loaded. Now export a permalink: click "Preview report text" under any Copy APA button and use the URL in your address bar &mdash; it includes the calculator page but not the data (data is in sessionStorage, which is scoped to the tab).</li>
+                </ol>
+                <p><em>Roadmap note:</em> a true "permalink with data baked in" is planned; until then, share the dataset id and have students click through once.</p>
+            </div>
+
+            <div class="info-box">
+                <p><strong>Embedding a calculator in an LMS (Canvas, Blackboard)</strong></p>
+                <p>Append <code>?embed=1</code> to any calculator URL to hide the nav and footer. The page then fits cleanly in an LMS iframe:</p>
+                <pre class="example-box" style="white-space: pre-wrap;">&lt;iframe src="https://your-hosted-url/t_calculator.html?embed=1"
+        width="100%" height="900" style="border: 0;"&gt;&lt;/iframe&gt;</pre>
+                <p>Students can still interact with the calculator normally; they just don't see the site chrome.</p>
+            </div>
+
+            <div class="info-box">
+                <p><strong>Learning Mode</strong></p>
+                <p>The checkbox labelled "Learning Mode" at the top of the t-calculator and chi-square calculator enables the <em>pretesting effect</em> workflow. When on, clicking Calculate prompts students to commit to a prediction ("reject H<sub>0</sub>" or "fail to reject") before they see the result. This has been shown to improve retention (Kornell, Hays &amp; Bjork, 2009; Richland, Kornell &amp; Kao, 2009). Encourage students to turn it on in the first few weeks.</p>
+            </div>
+
+            <div class="info-box">
+                <p><strong>Print-friendly homework submissions</strong></p>
+                <p>Every calculator has a print stylesheet that hides the buttons, self-check cards, predict dialogs, and site chrome. Students who print their result page to PDF get a clean one-page homework deliverable with the show-work steps rendered.</p>
+            </div>
+        </section>
+
+        <section class="section" id="reference">
+            <h2>Reference card: what each page does</h2>
+            <table class="compact-results-table">
+                <thead>
+                    <tr><th>Page</th><th>What it does</th><th>Best for</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><a href="z_calculator.html">Z Calculator</a></td><td>Tail probabilities under the standard normal; probability &rarr; Z lookup</td><td>Standard normal table replacement</td></tr>
+                    <tr><td><a href="t_calculator.html">t Calculator</a></td><td>One-sample / paired / Welch's / direct-stat t-test with 95% CIs</td><td>Any t-test against a raw-data sample</td></tr>
+                    <tr><td><a href="chi_square.html">Chi-Square Calculator</a></td><td>χ² test of independence for r&times;c tables</td><td>Single χ² on a table with more than 2×2</td></tr>
+                    <tr><td><a href="compare.html">Compare</a></td><td>χ², Yates, Fisher, Z-for-proportions all at once on a 2&times;2</td><td>Teaching the "which test when" decision</td></tr>
+                    <tr><td><a href="simulate.html">Simulate</a></td><td>Bootstrap CIs and permutation p-values in a Web Worker</td><td>Verifying a formula-based result or handling non-normal data</td></tr>
+                    <tr><td><a href="epidemiology.html">Epi 2&times;2</a></td><td>Sens/spec/PPV/NPV/LR&plusmn;/RR/OR/NNT with CIs</td><td>Diagnostic tests or cohort studies</td></tr>
+                    <tr><td><a href="datasets.html">Datasets</a></td><td>Library of 6 classic/illustrative biostats datasets</td><td>Lecture demos and assignment seed data</td></tr>
+                    <tr><td><a href="assumption.html">Assumption Coach</a></td><td>Q-Q plot, skewness/kurtosis, JB test, outliers, traffic-light verdict</td><td>Deciding whether a t-test is appropriate</td></tr>
+                    <tr><td><a href="guide.html">Guide</a></td><td>This page.</td><td>Finding the right tool</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="section" id="troubleshooting">
+            <h2>Troubleshooting</h2>
+
+            <details class="show-work">
+                <summary class="show-work-toggle">The math in "Show calculation steps" shows as raw LaTeX (e.g., <code>\frac{a}{b}</code>) instead of rendered math.</summary>
+                <div class="show-work-body">
+                    <p>MathJax loads asynchronously from a CDN. If the CDN is blocked (corporate firewall, offline connection) or slow to load, the raw LaTeX shows. Refresh the page once the network is available; the symbolic integrity hash on the <code>&lt;script&gt;</code> tag ensures MathJax is only loaded if it matches the expected version.</p>
+                </div>
+            </details>
+
+            <details class="show-work">
+                <summary class="show-work-toggle">I just updated the page but still see the old behaviour.</summary>
+                <div class="show-work-body">
+                    <p>Your browser may be serving a cached JS file. Hard-reload: Ctrl+F5 (Windows/Linux) or Cmd+Shift+R (Mac), or open the page in a private/incognito window.</p>
+                </div>
+            </details>
+
+            <details class="show-work">
+                <summary class="show-work-toggle">I loaded a dataset but the calculator shows the default data.</summary>
+                <div class="show-work-body">
+                    <p>The dataset handoff uses <code>sessionStorage</code>, which is scoped to a single tab. If you opened the calculator in a new tab instead of letting the Datasets page navigate you, the session data doesn't cross. Go back to <a href="datasets.html">Datasets</a> and click "Load into <em>X</em>" &mdash; it navigates in the same tab.</p>
+                </div>
+            </details>
+
+            <details class="show-work">
+                <summary class="show-work-toggle">The Compare page says "tests disagree about significance at &alpha; = 0.05." How do I decide which to report?</summary>
+                <div class="show-work-body">
+                    <p>Follow this priority order:</p>
+                    <ol>
+                        <li>If any expected cell is below 5 (Cochran, 1954): prefer Fisher's exact.</li>
+                        <li>If N is large (&gt; 40) and all expected counts &ge; 5: report the uncorrected χ² or the Z-test for proportions (they're mathematically equivalent for a 2&times;2).</li>
+                        <li>Yates' correction is the most conservative; it's a safe choice but can make a real effect look non-significant.</li>
+                    </ol>
+                    <p>Whatever you pick, state it plainly in your write-up: "We used Fisher's exact test because expected cell count was X &lt; 5."</p>
+                </div>
+            </details>
+
+            <details class="show-work">
+                <summary class="show-work-toggle">The Simulate page shows "permutation p ≠ Welch's t p." Is the simulator wrong?</summary>
+                <div class="show-work-body">
+                    <p>Almost always it's the data. The two tests answer subtly different questions &mdash; permutation tests "are the two distributions identical?" while Welch's t-test tests "are the means equal, possibly with different variances?" For approximately normal, similar-variance data they agree closely; for skewed data or very different variances they can diverge, and the permutation p-value is the more robust one in that regime. Check the Assumption Coach on each group's data if you're unsure.</p>
+                </div>
+            </details>
+
+            <details class="show-work">
+                <summary class="show-work-toggle">A self-check card flagged my answer "Not quite" but I'm sure it's right.</summary>
+                <div class="show-work-body">
+                    <p>Each card cites a source. If you disagree after reading the cited reference, file it as a bug. The self-check bank is curated from ASA (2016), Haller &amp; Krauss (2002), and Cumming (2014) &mdash; so the cards reflect the current consensus interpretation, not every possible nuance. If your field or textbook uses a different convention, the card may simply not match.</p>
+                </div>
+            </details>
+        </section>
+    </main>
+
+    <footer class="footer-container">
+        <p>&copy; 2024 Z-t-Chi Calculator by Hadiza Galadima, PhD. All rights reserved.</p>
+        <p>For educational purposes only. Always double-check statistical calculations.</p>
+    </footer>
+</body>
+
+</html>
