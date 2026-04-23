@@ -103,6 +103,10 @@
                     ciLevel: 0.95,
                     datasetName: 'Body Temperature (Mackowiak 1992-style sample)',
                 },
+                assumption: {
+                    dataA: '98.4 97.8 98.2 98.1 99.1 97.6 98.7 98.3 98.0 98.5 97.4 98.6 98.2 97.9 98.8 98.1 98.3 97.7 98.0 98.4 98.6 97.5 98.2 98.9 98.0 97.8 98.4 98.1 98.3 97.9',
+                    datasetName: 'Body Temperature (Mackowiak 1992-style sample)',
+                },
             },
         },
 
@@ -150,6 +154,10 @@
                     iterations: 10000,
                     datasetName: 'Cholesterol — statin vs control (illustrative, n=20/group)',
                 },
+                assumption: {
+                    dataA: '198 210 215 185 202 220 192 207 188 219 205 197 213 208 195 201 218 199 211 206',
+                    datasetName: 'Cholesterol — statin group (illustrative, n=20)',
+                },
             },
         },
     ];
@@ -177,6 +185,7 @@
             simulate: 'simulate.html',
             z: 'z_calculator.html',
             chi: 'chi_square.html',
+            assumption: 'assumption.html',
         })[target];
         if (!href) { throw new Error('No target page for: ' + target); }
         window.location.href = href;

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assumption Coach &mdash; Check Your Data</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.5/jstat.min.js"
+            integrity="sha384-G0LNImWgCl2Dv94gWHL462179lItxVdMl0mIkiGu4HaUYuC4jZlAVdyqTZxTKRTs"
+            crossorigin="anonymous"></script>
+    <script src="js/common.js" defer></script>
+    <script src="js/state.js" defer></script>
+    <script src="js/layout.js" defer></script>
+</head>
+
+<body>
+    <nav>
+        <ul class="nav-bar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="z_calculator.html">Z Calculator</a></li>
+            <li><a href="t_calculator.html">t Calculator</a></li>
+            <li><a href="chi_square.html">Chi-Square Calculator</a></li>
+            <li><a href="compare.html">Compare</a></li>
+            <li><a href="simulate.html">Simulate</a></li>
+            <li><a href="epidemiology.html">Epi 2&times;2</a></li>
+            <li><a href="datasets.html">Datasets</a></li>
+            <li><a href="assumption.html" class="active">Assumption Coach</a></li>
+        </ul>
+    </nav>
+
+    <div class="header-container">
+        <h1>Assumption Coach</h1>
+        <p>Paste your data. Get a Q-Q plot, a normality test, outlier flags, and a concrete recommendation about which test to use.</p>
+        <div class="info-box">
+            <p>
+                <strong>Why check assumptions?</strong>
+                <span class="info-content">
+                    The t-test and Z-test assume the <em>sampling distribution of the mean</em> is normal. For small samples this requires roughly normal raw data; for larger samples (n &gtrsim; 30) the Central Limit Theorem helps. Running parametric tests on data that violate the assumptions &mdash; especially with small n &mdash; can give misleading p-values. This page gives you three angles on whether your data play by the t-test's rules.
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <main role="main">
+        <section class="section">
+            <h2>Step 1: Paste your data</h2>
+            <div class="input-group">
+                <label for="assm-data">Raw data (one variable, one number per entry):</label>
+                <textarea id="assm-data" rows="5" style="width: 100%; font-family: Menlo, Consolas, monospace;"
+                          placeholder="e.g.  98.4, 97.8, 98.2, 98.1, 99.1, 97.6, ..."></textarea>
+                <small class="input-help">Comma, space or newline separated. Non-numeric tokens are skipped with a warning.</small>
+            </div>
+            <div class="button-group">
+                <button id="assm-run-btn" class="primary-button">Check My Data</button>
+                <button id="assm-example-norm-btn" class="secondary-button">Example: normal (N=30)</button>
+                <button id="assm-example-skew-btn" class="secondary-button">Example: right-skewed (N=30)</button>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Results</h2>
+            <div id="assm-results"></div>
+        </section>
+
+        <section class="section">
+            <h2>How to read this</h2>
+            <div class="info-box">
+                <p><strong>Q-Q plot:</strong> if the points fall roughly along the diagonal line, your data are approximately normal. Systematic curvature (S-shape or bow) indicates skew or heavy tails.</p>
+                <p><strong>Skewness</strong> (S): 0 for normal; |S| &gt; 1 is notable. <strong>Excess kurtosis</strong> (K &minus; 3): 0 for normal; positive is heavy-tailed, negative is light-tailed.</p>
+                <p><strong>Jarque-Bera test:</strong> combines skewness and excess kurtosis into a single χ²(2) statistic. Low p-value means "reject normality." <em>Note:</em> for n &lt; 30 the chi-square approximation is loose &mdash; trust the Q-Q plot over the p-value for small samples. The Shapiro-Wilk test (not provided here) is stricter for small n.</p>
+                <p><strong>Outliers:</strong> values outside Q1 − 1.5·IQR or Q3 + 1.5·IQR (Tukey's rule). Does not imply they are errors &mdash; just that they pull strongly on parametric summaries.</p>
+                <p><strong>Recommendation:</strong> a rules-of-thumb traffic light. Not a substitute for your own judgment about the data-generating process and the inferential question.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer-container">
+        <p>&copy; 2024 Z-t-Chi Calculator by Hadiza Galadima, PhD. All rights reserved.</p>
+        <p>For educational purposes only. Always double-check statistical calculations.</p>
+    </footer>
+
+    <script src="js/assumption.js" defer></script>
+</body>
+
+</html>

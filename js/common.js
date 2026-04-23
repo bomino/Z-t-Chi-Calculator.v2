@@ -200,6 +200,120 @@
     };
 
     /**
+     * Sample skewness (bias-corrected, a.k.a. "G1" in some references).
+     *   g1 = (1/n) Σ ((x - x̄)/s)³
+     *   G1 = sqrt(n(n-1))/(n-2) * g1
+     * Returns NaN for n < 3 or zero variance.
+     */
+    ZtChi.skewness = function skewness(xs) {
+        const n = xs.length;
+        if (n < 3) return NaN;
+        const mean = xs.reduce((a, b) => a + b, 0) / n;
+        let m2 = 0, m3 = 0;
+        for (let i = 0; i < n; i++) {
+            const d = xs[i] - mean;
+            m2 += d * d;
+            m3 += d * d * d;
+        }
+        m2 /= n; m3 /= n;
+        if (m2 === 0) return NaN;
+        const g1 = m3 / Math.pow(m2, 1.5);
+        return Math.sqrt(n * (n - 1)) / (n - 2) * g1;
+    };
+
+    /**
+     * Sample kurtosis (excess kurtosis; 0 for a normal distribution).
+     * Uses the unbiased "G2" estimator.
+     */
+    ZtChi.kurtosis = function kurtosis(xs) {
+        const n = xs.length;
+        if (n < 4) return NaN;
+        const mean = xs.reduce((a, b) => a + b, 0) / n;
+        let m2 = 0, m4 = 0;
+        for (let i = 0; i < n; i++) {
+            const d = xs[i] - mean;
+            const d2 = d * d;
+            m2 += d2;
+            m4 += d2 * d2;
+        }
+        m2 /= n; m4 /= n;
+        if (m2 === 0) return NaN;
+        const g2 = m4 / (m2 * m2) - 3;
+        const scale = (n - 1) / ((n - 2) * (n - 3));
+        return scale * ((n + 1) * g2 + 6);
+    };
+
+    /**
+     * Jarque-Bera test of normality.
+     * JB = (n/6) * (S² + (K - 3)²/4) ~ χ²(2) asymptotically.
+     * Note: uses the raw (biased) moment estimators so the classical JB
+     * distribution applies. For small n (< 30) the chi-square approximation
+     * is loose; Shapiro-Wilk is stricter but requires specialist code.
+     */
+    ZtChi.jarqueBera = function jarqueBera(xs) {
+        const n = xs.length;
+        if (n < 4) return { jb: NaN, p: NaN, n };
+        const mean = xs.reduce((a, b) => a + b, 0) / n;
+        let m2 = 0, m3 = 0, m4 = 0;
+        for (let i = 0; i < n; i++) {
+            const d = xs[i] - mean;
+            const d2 = d * d;
+            m2 += d2;
+            m3 += d2 * d;
+            m4 += d2 * d2;
+        }
+        m2 /= n; m3 /= n; m4 /= n;
+        const S = m2 === 0 ? 0 : m3 / Math.pow(m2, 1.5);
+        const K = m2 === 0 ? 3 : m4 / (m2 * m2);
+        const jb = (n / 6) * (S * S + Math.pow(K - 3, 2) / 4);
+        const p = Number.isFinite(jb) ? 1 - jStat.chisquare.cdf(jb, 2) : NaN;
+        return { jb, p, skewness: S, excessKurtosis: K - 3, n };
+    };
+
+    /**
+     * Theoretical vs observed points for a normal Q-Q plot.
+     * Uses Blom's (1958) plotting-position formula: p_i = (i - 3/8) / (n + 1/4).
+     * Returns sorted pairs { theo, obs, idx }.
+     */
+    ZtChi.qqPoints = function qqPoints(xs) {
+        const sorted = xs.slice().sort((a, b) => a - b);
+        const n = sorted.length;
+        const out = new Array(n);
+        for (let i = 0; i < n; i++) {
+            const p = (i + 1 - 0.375) / (n + 0.25);
+            out[i] = { theo: jStat.normal.inv(p, 0, 1), obs: sorted[i], idx: i + 1 };
+        }
+        return out;
+    };
+
+    /**
+     * Standard boxplot-style outlier detection:
+     *   outlier if obs < Q1 - 1.5*IQR or obs > Q3 + 1.5*IQR
+     * Returns { lower, upper, outliers: [{value, index}] } using 0-based idx in the ORIGINAL (unsorted) xs.
+     */
+    ZtChi.iqrOutliers = function iqrOutliers(xs) {
+        const n = xs.length;
+        if (n < 4) return { q1: NaN, q3: NaN, iqr: NaN, lower: NaN, upper: NaN, outliers: [] };
+        const sorted = xs.slice().sort((a, b) => a - b);
+        const pct = (p) => {
+            const pos = p * (n - 1);
+            const lo = Math.floor(pos), hi = Math.ceil(pos);
+            if (lo === hi) return sorted[lo];
+            return sorted[lo] + (pos - lo) * (sorted[hi] - sorted[lo]);
+        };
+        const q1 = pct(0.25);
+        const q3 = pct(0.75);
+        const iqr = q3 - q1;
+        const lower = q1 - 1.5 * iqr;
+        const upper = q3 + 1.5 * iqr;
+        const outliers = [];
+        for (let i = 0; i < n; i++) {
+            if (xs[i] < lower || xs[i] > upper) outliers.push({ value: xs[i], index: i });
+        }
+        return { q1, q3, iqr, lower, upper, outliers };
+    };
+
+    /**
      * Summary statistics for a numeric array.
      */
     ZtChi.summaryStats = function summaryStats(xs) {

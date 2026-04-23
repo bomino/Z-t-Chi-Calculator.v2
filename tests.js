@@ -350,6 +350,53 @@
         });
     });
 
+    describe('Normality diagnostics (skewness / kurtosis / Jarque-Bera / IQR)', () => {
+        test('Skewness of symmetric data ≈ 0', () => {
+            const xs = [];
+            for (let i = -5; i <= 5; i++) xs.push(i);   // symmetric around 0
+            assertClose(ZtChi.skewness(xs), 0, 1e-9, 'skew');
+        });
+        test('Skewness of right-skewed data is positive', () => {
+            const xs = [1, 2, 3, 4, 5, 20];
+            const s = ZtChi.skewness(xs);
+            assert(s > 1, `expected large positive skew, got ${s}`);
+        });
+        test('Excess kurtosis ~ 0 for approx-normal sample', () => {
+            // N(100, 10) sample drawn deterministically
+            const rng = (function () { let s = 12345 >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();
+            const xs = [];
+            for (let i = 0; i < 500; i += 2) {
+                const u1 = Math.max(1e-12, rng()), u2 = rng();
+                const r = Math.sqrt(-2 * Math.log(u1));
+                xs.push(100 + 10 * r * Math.cos(2 * Math.PI * u2));
+                xs.push(100 + 10 * r * Math.sin(2 * Math.PI * u2));
+            }
+            const k = ZtChi.kurtosis(xs);
+            assert(Math.abs(k) < 0.5, `expected excess kurtosis near 0, got ${k}`);
+        });
+        test('Jarque-Bera rejects normality on right-skewed data', () => {
+            const xs = [1, 1, 1, 2, 2, 2, 3, 3, 5, 8, 13, 21, 34, 55, 89];
+            const r = ZtChi.jarqueBera(xs);
+            assert(r.p < 0.05, `expected JB to reject, got p=${r.p}`);
+        });
+        test('Q-Q points are sorted with monotonic theoretical quantiles', () => {
+            const xs = [5, 1, 3, 2, 4];
+            const q = ZtChi.qqPoints(xs);
+            assert(q.length === 5, 'length');
+            for (let i = 1; i < q.length; i++) {
+                assert(q[i].obs >= q[i - 1].obs, `obs sorted at ${i}`);
+                assert(q[i].theo > q[i - 1].theo, `theo increasing at ${i}`);
+            }
+        });
+        test('IQR outlier detection flags extreme values', () => {
+            const xs = [10, 12, 11, 13, 11, 12, 100];  // 100 is the outlier
+            const r = ZtChi.iqrOutliers(xs);
+            assertEqual(r.outliers.length, 1, 'one outlier');
+            assertEqual(r.outliers[0].value, 100, 'value');
+            assertEqual(r.outliers[0].index, 6, '0-based index in original array');
+        });
+    });
+
     describe('One-sample / paired / Welch t (ZtChi.oneSampleT / pairedT / welchT)', () => {
         test('One-sample t on known data matches manual calc', () => {
             // Known: xs = [2, 4, 6, 8, 10], μ0 = 5, x̄=6, s=3.162, SE=1.414

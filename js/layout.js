@@ -17,6 +17,7 @@
         { href: 'simulate.html', label: 'Simulate' },
         { href: 'epidemiology.html', label: 'Epi 2×2' },
         { href: 'datasets.html', label: 'Datasets' },
+        { href: 'assumption.html', label: 'Assumption Coach' },
     ];
 
     function currentPage() {
