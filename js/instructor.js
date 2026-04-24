@@ -60,11 +60,26 @@
         }
     }
 
+    /**
+     * Origin of the student site as seen from the instructor builder.
+     * When the builder is served from the teach subdomain (production)
+     * this needs to cross-origin-point at the student subdomain; the
+     * target student pages don't exist on teach and are 404'd by the
+     * middleware even if they did. On localhost / same-origin dev the
+     * builder and student calculators share one origin, so use that.
+     */
+    function studentSiteOrigin() {
+        const host = window.location.hostname;
+        if (host === 'teach.hgaladima.com') return 'https://ztchi.hgaladima.com';
+        return window.location.origin;
+    }
+
     function buildLink(token, sig) {
-        const u = new URL(window.location.origin + window.location.pathname);
+        const origin = studentSiteOrigin();
+        const u = new URL('/', origin);
         const calc = decodeSpec(token).calc;
         const page = calcToPage(calc);
-        u.pathname = u.pathname.replace(/[^/]*$/, '') + page;
+        u.pathname = '/' + page;
         u.searchParams.set('problem', token);
         if (sig) u.searchParams.set('sig', sig);
         return u.toString();
