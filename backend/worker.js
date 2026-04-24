@@ -66,6 +66,9 @@ export default {
       if (url.pathname === '/ai' && request.method === 'POST') {
         return withCors(await handleAi(request, env), origin, allowed);
       }
+      if (url.pathname === '/verify' && request.method === 'POST') {
+        return withCors(await handleVerify(request, env), origin, allowed);
+      }
     } catch (err) {
       return withCors(
         json({ error: 'internal', message: String(err && err.message || err) }, 500),
@@ -110,6 +113,45 @@ async function handleSign(request, env) {
     sig: b64urlBytes(sig),
     alg: 'HS256',
   });
+}
+
+/**
+ * Verify an HMAC signature for a previously-signed problem payload.
+ *
+ * Called by students' browsers when they open a signed instructor link —
+ * problem-overlay.js decodes the URL's payload, sends it here with the
+ * URL's `sig`, and shows a VERIFIED / signature-mismatch badge.
+ *
+ * Deliberately NOT gated by INSTRUCTOR_TOKENS. Students don't have the
+ * instructor token and shouldn't need it to verify. Security is unaffected:
+ *   - The HMAC secret stays on the Worker.
+ *   - /verify only returns a boolean; no signature material leaks.
+ *   - Same CORS allowlist and rate limiting apply as the rest of the API.
+ */
+async function handleVerify(request, env) {
+  if (!env.SIGN_SECRET) return json({ error: 'signing not configured' }, 503);
+  const body = await request.json();
+  if (!body || typeof body.payload !== 'object' || typeof body.sig !== 'string') {
+    return json({ error: 'payload and sig required' }, 400);
+  }
+  const payloadStr = JSON.stringify(body.payload);
+  const computed = await hmacSha256(env.SIGN_SECRET, payloadStr);
+  const expected = b64urlBytes(computed);
+  return json({
+    valid: timingSafeEqual(expected, body.sig),
+    alg: 'HS256',
+  });
+}
+
+/**
+ * Constant-time string comparison. HMAC verification should not leak
+ * timing information about where the first mismatch occurred.
+ */
+function timingSafeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
 }
 
 async function handleAi(request, env) {

@@ -119,8 +119,11 @@
                 badge.title = 'Backend unreachable — integrity cannot be verified right now.';
                 return;
             }
-            const re = await ZtChi.backend.post('/sign', { payload: spec });
-            if (re && re.sig && re.sig === sig) {
+            // Use /verify (public, no instructor token required) instead of
+            // re-signing through /sign. Students don't have the instructor
+            // token and should be able to verify links they've been given.
+            const re = await ZtChi.backend.post('/verify', { payload: spec, sig });
+            if (re && re.valid === true) {
                 badge.textContent = 'verified';
                 badge.className = 'problem-overlay-badge badge-verified';
                 badge.title = 'Signature verified against backend.';
