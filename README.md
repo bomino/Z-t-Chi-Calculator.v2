@@ -90,7 +90,7 @@ The student calculator and the instructor builder are deployed to **separate CF 
 | `ztchi.hgaladima.com` | `ztchi-calculator` | Student-facing calculator suite | Every page except `instructor.html`; blocks `/instructor.html` → 404 |
 | `teach.hgaladima.com` | `ztchi-teach` | Instructor builder (token-gated) | Only `instructor.html` (served at `/`); every other calculator path → 404 |
 
-Both projects connect to the **same git remote** and the **same `main` branch**. The split is enforced at the Cloudflare edge via host-based rules in `_redirects` — no source-level duplication. Both projects share the `functions/api/[[path]].js` Pages Function which proxies `/api/*` to the backend Worker via service binding, so signed-link generation (teach.hgaladima.com) and verification (ztchi.hgaladima.com) both work.
+Both projects connect to the **same git remote** and the **same `main` branch**. The split is enforced at the Cloudflare edge via host-based rules in `functions/_middleware.js` — no source-level duplication. Both projects share the `functions/api/[[path]].js` Pages Function which proxies `/api/*` to the backend Worker via service binding, so signed-link generation (teach.hgaladima.com) and verification (ztchi.hgaladima.com) both work.
 
 Why separate subdomains: students never see the instructor builder in their nav or URL bar. Dr. Galadima (or a TA who's been given the instructor token) bookmarks `https://teach.hgaladima.com/` and the whole builder UI is there with no student-facing chrome. See `backend/DEPLOY.md` for setup of the second CF Pages project.
 

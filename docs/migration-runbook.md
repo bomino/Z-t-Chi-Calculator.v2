@@ -10,7 +10,7 @@ GitHub Pages and onto Cloudflare Pages under two subdomains of
 Covers DNS setup, both CF Pages projects, custom domain binding, TLS
 provisioning, verification, monitoring migration, and rollback. Assumes
 you have never managed DNS before. Code-side groundwork is already
-committed (`functions/api/[[path]].js`, `_redirects`, `js/backend.js`,
+committed (`functions/api/[[path]].js`, `functions/_middleware.js`, `js/backend.js`,
 etc.); what's left is dashboard clicks, two `wrangler deploy` calls,
 and verification.
 
@@ -307,7 +307,7 @@ menu → Remove) to revert without affecting the pages.dev URL.
 ```bash
 curl -I https://ztchi.hgaladima.com/                         # 200
 curl -I https://ztchi.hgaladima.com/z_calculator.html        # 200
-curl -I https://ztchi.hgaladima.com/instructor.html          # 404 (blocked by _redirects)
+curl -I https://ztchi.hgaladima.com/instructor.html          # 404 (blocked by middleware)
 curl    https://ztchi.hgaladima.com/api/health               # {"ok":true,...}
 ```
 
@@ -321,7 +321,7 @@ Browser check in incognito:
 ## Part 5 — Create the instructor CF Pages project
 
 Same pattern as Part 4, but for a second project pointing at the same
-repo. The shared `_redirects` file uses host-based rules so the same
+repo. The shared `functions/_middleware.js` uses host-based rules so the same
 source serves different content on each subdomain.
 
 ### Step 5.1 — Create the project
@@ -353,7 +353,10 @@ Pages project needs its own binding; they don't share.
 Open `https://ztchi-teach.pages.dev/` in incognito.
 
 - [ ] Redirects or renders as the instructor builder (`/` → `/instructor.html`
-      per `_redirects`).
+      per `functions/_middleware.js`, which only triggers this rewrite when
+      `hostname === 'teach.hgaladima.com'`; on `ztchi-teach.pages.dev` the
+      rewrite WON'T fire because the hostname doesn't match — test this on
+      the custom domain after step 5.4 instead).
 - [ ] Minimal nav: "← Student site" + "◆ Instructor mode" badge only.
 - [ ] Token gate overlay visible.
 - [ ] `https://ztchi-teach.pages.dev/api/health` returns `{"ok":true,...}`.
@@ -604,6 +607,6 @@ Not part of this migration; plan separately if needed:
 - Architectural rationale and audit history: [`docs/audits/`](./audits/).
 - Subdomain architecture summary: [`README.md`](../README.md) →
   "Subdomain layout" section.
-- The committed `_redirects` file (host-based split rules):
-  [`_redirects`](../_redirects).
+- The committed middleware (host-based split rules):
+  [`functions/_middleware.js`](../functions/_middleware.js).
 - The Pages Function proxy: [`functions/api/[[path]].js`](../functions/api/%5B%5Bpath%5D%5D.js).
