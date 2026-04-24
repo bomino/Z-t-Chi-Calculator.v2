@@ -25,3 +25,7 @@ npm-debug.log*
 backend/.wrangler/
 .wrangler/
 .dev.vars
+
+# Ad-hoc screenshots from debugging sessions
+Screenshot*.png
+screenshot*.png
