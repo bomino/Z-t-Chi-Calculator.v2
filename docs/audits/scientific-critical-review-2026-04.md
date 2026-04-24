@@ -3,6 +3,7 @@
 **Date:** 2026-04-24
 **Scope:** 4-lens review (statistical correctness, pedagogy claims, AI interpreter outputs, Assumption Coach decision rule)
 **Framework:** systematic evaluation using methodological/bias/statistical-pitfall/claim-evaluation criteria.
+**Verification pass:** each finding re-checked against the actual codebase. Corrections noted inline and summarized at the end.
 
 ---
 
@@ -30,7 +31,7 @@ Nothing in this review indicates a fatal correctness defect. Three findings rise
 
 4. **Graceful degradation throughout.** The optional backend's absence leaves both Instructor Mode and the AI button in well-labeled degraded states; the core app works identically without them.
 
-5. **Explicit references in source.** Every statistical helper names its canonical source in its JSDoc. This is unusually good hygiene for a teaching tool and makes the rest of this review tractable.
+5. **Explicit references in source.** Every statistical *helper* module (`common.js`, `simulate.js`, `assumption.js`, `compare.js`, `corrections.js`, `checks.js`, `predict.js`, `three-level.js`) JSDoc-cites its canonical sources. Good hygiene, makes the rest of this review tractable. *Verified caveat:* the three calculator UI modules (`z_calculator.js`, `t_calculator.js`, `chi_square.js`) have no file-level citations — they delegate math to well-cited helpers, so no practical gap, but the audit's original "every statistical helper" framing was slightly broader than reality.
 
 6. **Regression harness at `tests.html`** — 65 deterministic tests covering Z/t/chi/compare/simulate/epi/corrections paths against known values and cross-method consistency. All passing.
 
@@ -92,12 +93,18 @@ if (n >= 30 && jb.p < 0.01 && absSkew < 1.2) {
 
 **Why this matters:** The "n=30 makes everything OK" heuristic is widely repeated and widely wrong in specific cases. Simulation studies (Wilcox 2012; Micceri 1989) show that for heavy-tailed or strongly skewed distributions, t-test Type I error rates can remain well above α even at n=100 or n=200. The threshold n=30 traces to Lehmann's (1999) textbook suggestion for *moderate* departures — not heavy tails or strong skew.
 
-The coach does guard (`absSkew < 1.2`), which is better than nothing. But:
-- There's no kurtosis guard in the CLT demotion. A distribution with normal skew but excess kurtosis > 5 can break t-test robustness at n=30.
+The coach does guard (`absSkew < 1.2`), which is better than nothing. But the verification pass surfaced a **sharper concern than originally reported**:
+
+- Look at line 123-126: if `absExcKurt > 2.0`, tier is set to 'red'.
+- Then at line 135: `if (tier === 'red' && absSkew < 1.2) tier = 'yellow';`
+- The demotion condition **only checks skewness**. A red verdict that was set *because of high kurtosis* will be demoted to yellow whenever skewness happens to be low. This is exactly backward — kurtosis-driven departures from normality are a bigger threat to t-test CLT behavior at moderate n than skewness-driven ones.
+
+So this isn't just optimistic wording — there's a real logic bug that demotes the kurtosis verdict based on skew alone.
+
 - "CLT likely makes the t-test approximately valid" is directional-but-optimistic language for a student who may already be primed to want a green light.
 
 **Recommendation:**
-1. Add a kurtosis gate: `absExcKurt < 3` before the CLT demotion.
+1. Fix the demotion condition to require **both** low skew AND low kurtosis: `if (tier === 'red' && absSkew < 1.2 && absExcKurt < 2.0) tier = 'yellow';`
 2. Reword to: "*CLT may help with moderate skew at n = X, but the t-test's p-values and CIs can still be biased if the distribution is heavy-tailed or bimodal. If in doubt, use the bootstrap on the Simulate page as a cross-check.*"
 3. Offer a concrete threshold, e.g.: "For |skew| between 0.5 and 1.2 and n < 100, the t-test can still have Type I error rates around 7-8% at a nominal α = 0.05."
 
@@ -120,9 +127,9 @@ Efron's original formulation uses `(1 − α/2)(B + 1)`-th order statistic. The 
 
 `js/simulate.js` line 104–109. A permutation count of 0 extreme-or-more samples yields p = 0. Some statisticians prefer `(1 + count) / (1 + iterations)` to produce a non-zero lower bound (reflecting that the observed table is itself one possible permutation). Minor pedagogical improvement.
 
-### M-3. Hardcoded z-critical value (`1.959963984540054`)
+### M-3. Hardcoded z-critical value (`1.959963984540054`) — *downgraded after verification*
 
-`js/common.js` line 188, 461, 509. Correct to ~15 digits, but `jStat.normal.inv(0.975, 0, 1)` is already available and used elsewhere. Consistency nit only.
+Originally flagged at three sites. Verification shows only **one** of them (`js/common.js` line 188, in `zTestTwoProportions`) is a genuine "instead of jStat" use. The other two occurrences (lines 461, 509) are **defensive fallbacks** used only when `jStat` is undefined — that's the correct pattern, not a problem. Only line 188 is worth tidying up.
 
 ### M-4. Jarque-Bera uses biased moments while display shows bias-corrected G1/G2
 
@@ -130,13 +137,15 @@ By design — JB's chi-square reference distribution assumes biased-moment input
 
 ### M-5. Shapiro-Wilk cited but not implemented
 
-`js/assumption.js` header cites Shapiro & Wilk (1965) but the test isn't implemented. For n < 50, S-W is more powerful than Jarque-Bera at detecting deviations from normality. The current reliance on JB is the weakest of the common normality tests at small n. Either:
+`js/assumption.js` header cites Shapiro & Wilk (1965) but the test isn't implemented. For n < 50, S-W is more powerful than Jarque-Bera at detecting deviations from normality. The current reliance on JB is the weakest of the common normality tests at small n.
+
+*Verified softening:* `assumption.html` line 76 **openly discloses** this absence to students: "*The Shapiro-Wilk test (not provided here) is stricter for small n.*" So the tool isn't misleading anyone; it just leaves capability on the table. Either:
 - Remove the citation (it's currently just a footnote), or
 - Implement a reasonable approximation (Royston 1982 gives a computable form), which would materially improve the Coach's detection at the smaller samples it already cautions about.
 
-### M-6. CI-first claim vs implementation gap
+### ~~M-6. CI-first claim vs implementation gap~~ — *withdrawn after verification*
 
-`README.md` describes the tool as ASA-2016-aligned "CI-first" but the Z and stat-only-mode t calculator still lead with the p-value (they accept a z-score or t-statistic, not raw data, so no CI is computable). The project plan already notes this honestly. **Either** the raw-data modes should be added to Z calculator (Phase 2 per existing plan) **or** the top-level ASA-alignment claim should be caveated where it first appears in README.
+On re-reading, `README.md` does **not** actually claim "CI-first" anywhere. The claim only lives in internal planning docs and code-comments. The user-facing language on line 12 is appropriately scoped: "Reports a 95% CI for the mean (or mean difference) *in raw-data modes*." README line 206 says pedagogy is "grounded in the ASA Statement on p-Values (2016)" — see M-7 for that phrasing — but does not invoke "CI-first" as a branding claim. Finding withdrawn; the original audit was incorrect here.
 
 ### M-7. "GAISE 2016 alignment" in README is marketing-toned
 
@@ -144,11 +153,17 @@ The six GAISE recommendations are (1) teach statistical thinking, (2) focus on c
 
 ### M-8. Wilcoxon is recommended but not implemented
 
-Assumption Coach's red-tier advice: "Use: the Wilcoxon signed-rank / rank-sum test (not provided here)…". A student who lands on this advice has to leave the app to act on it. Either implement it (adds a `js/nonparametric.js` and a page) or provide an inline computation link (e.g., route to a widely trusted online calculator). Current state leaves the "red" tier with weaker actionability than the "yellow" tier.
+Assumption Coach's red-tier advice (`js/assumption.js` line 156): "Use: the Wilcoxon signed-rank / rank-sum test (not provided here), OR the bootstrap CI + permutation p-value on the Simulate page."
 
-### M-9. Chi-square E < 5 warning could cite both Cochran 1954 and more recent work
+*Verified softening:* the bootstrap/permutation path *is* routable within the app, so the red tier isn't zero-actionability — just under-served relative to the yellow tier (which has multiple concrete options). Implementing Wilcoxon would close that gap. Adds a `js/nonparametric.js` and a page, or at minimum a rank-based fallback inside the Simulate page.
 
-The current inline warning cites "Cochran's rule" generically. More recent work (Larntz 1978; Campbell 2007) shows the E ≥ 5 rule is often too conservative and that E ≥ 1 may be adequate for much of the parameter space. This is a teaching opportunity the Error Traps page already handles; cross-link from the chi-square warning to that page.
+### M-9. Chi-square E < 5 warning could cite both Cochran 1954 and more recent work — *location corrected*
+
+*Verified correction:* My original audit said "the current inline warning cites Cochran's rule generically." That was wrong in two places:
+- `chi_square.js` line 82's warning says "expected frequency cell(s) are below 5" with **no author citation at all**.
+- `compare.js` line 188's divergence note **does** cite "Cochran's (1954) rule."
+
+So the actual finding is: the chi-square page's inline warning is unattributed, while the compare page's divergence note is correctly attributed but could pair Cochran 1954 with more recent empirical work (Larntz 1978; Campbell 2007) that shows E ≥ 5 is often overly conservative. Low-value item either way.
 
 ---
 
@@ -188,5 +203,19 @@ Of all the issues surfaced, none is a fatal flaw; the project's core claim ("a b
 
 Limitations of this review:
 - AI sample size is 8, not 100. A systematic 100-sample audit would tighten the Important-finding estimate on I-1.
-- No simulation study was run to benchmark the Assumption Coach's traffic-light rule against ground truth across skew/kurtosis combinations; finding I-3 is based on cited literature, not a direct empirical test here.
+- No simulation study was run to benchmark the Assumption Coach's traffic-light rule against ground truth across skew/kurtosis combinations; finding I-3 is based on cited literature and a code-reading, not a direct empirical test here.
 - Accessibility, security, and privacy were not reviewed — this is a pure statistical/pedagogical critique.
+
+---
+
+## Verification pass — what changed between the draft and this version
+
+Every finding was re-checked against the codebase. Of the 12 original findings:
+
+- **8 confirmed unchanged**: I-1, I-2 (on code facts), M-1, M-2, M-4, M-5 (softened), M-7, M-8 (softened).
+- **1 sharpened**: I-3 — the verification surfaced a specific logic bug (kurtosis-driven red verdict gets demoted to yellow based on skew alone at line 135 of `js/assumption.js`), sharper than the originally-reported "no kurtosis guard" wording.
+- **2 corrected**: M-3 (originally claimed 3 hardcoded sites; verification showed only 1 genuine "instead of jStat" — the other two are correct defensive fallbacks when jStat is undefined), M-9 (originally mis-located the Cochran citation).
+- **1 withdrawn**: M-6 — the original audit claimed README calls the tool "CI-first"; verification shows this phrasing only appears in internal planning docs, not user-facing copy. README is appropriately caveated.
+- **1 strength softened**: "every statistical helper cites its sources" was broadly true for helper modules but not for the three calculator UI modules (which delegate math to well-cited helpers, so no practical defect).
+
+The net effect on the overall assessment: three Important findings still stand (I-1, I-2 on code facts, I-3 — now with a sharper bug description). The roadmap of fixes is unchanged. This verification pass is itself an application of the critical-thinking principle that a single-author review benefits from a second look.
