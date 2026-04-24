@@ -5,49 +5,55 @@
  *
  * Two jobs:
  *   1. Block repo-internal paths that shouldn't be web-served (the
- *      backend/ directory, docs/, git metadata, etc.). CF Pages uploads
- *      everything in the repo as assets in the "Workers + static assets"
- *      deploy model; middleware 404s them at request time.
+ *      backend/ directory, docs/, git metadata, etc.).
  *   2. Enforce the host-based split between student and instructor
  *      subdomains. On teach.hgaladima.com we rewrite / to /instructor.html
  *      and 404 the student calculator pages; on ztchi.hgaladima.com we
  *      404 the instructor builder and its JS glue.
  *
- * Host-based rules live here (not in _redirects) because _redirects
- * doesn't support absolute-URL source patterns or 404 status codes.
+ * Wrapped in try/catch so a bug in the middleware never brings the whole
+ * site down — on error we pass through to static asset serving.
  */
 export async function onRequest(context) {
-    const { request, next } = context;
-    const url = new URL(request.url);
+    try {
+        return await handle(context);
+    } catch (err) {
+        // Surface the error in the Function log but fall through to the
+        // normal pipeline rather than 5xx the whole response.
+        console.error('middleware error', err);
+        return context.next();
+    }
+}
+
+async function handle(context) {
+    const { next } = context;
+    const url = new URL(context.request.url);
     const pathname = url.pathname;
     const host = url.hostname;
 
     // 1. Block repo-internal paths on any host.
-    // Any request under these prefixes gets a 404 regardless of hostname.
     if (/^\/(backend|docs|\.github|\.git|\.vscode|\.wrangler)\//.test(pathname)) {
-        return render404(url);
+        return notFound();
     }
 
-    // 2. Host-based split.
+    // 2. Host-based split. Only fires on the production custom domains;
+    //    on *.pages.dev (preview/default) we pass everything through so
+    //    canary testing works.
     if (host === 'teach.hgaladima.com') {
-        // Root of the instructor subdomain serves the builder directly.
         if (pathname === '/' || pathname === '/index.html') {
-            return next('/instructor.html');
+            // Rewrite root to the instructor builder.
+            const rewritten = new URL('/instructor.html', url);
+            return next(new Request(rewritten, context.request));
         }
-        // Student calculators are not served under the instructor domain.
         if (STUDENT_ONLY_PATHS.has(pathname)) {
-            return render404(url);
+            return notFound();
         }
     } else if (host === 'ztchi.hgaladima.com') {
-        // Instructor builder and its glue are not served under the student domain.
         if (pathname === '/instructor.html' || pathname === '/js/instructor-builder.js') {
-            return render404(url);
+            return notFound();
         }
     }
 
-    // Everything else falls through to the normal pipeline:
-    // /api/* goes to functions/api/[[path]].js; other paths are served
-    // as static assets.
     return next();
 }
 
@@ -67,15 +73,24 @@ const STUDENT_ONLY_PATHS = new Set([
     '/tests.html',
 ]);
 
-async function render404(url) {
-    try {
-        const res = await fetch(new URL('/404.html', url));
-        const body = await res.text();
-        return new Response(body, {
-            status: 404,
-            headers: { 'content-type': 'text/html; charset=utf-8' },
-        });
-    } catch (_) {
-        return new Response('Not found', { status: 404 });
-    }
+// Minimal self-contained 404 — avoids fetching /404.html back through the
+// edge, which was the hanging path that produced 522 in the first deploy.
+function notFound() {
+    const body = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Not found</title>
+<style>body{font-family:system-ui,sans-serif;max-width:560px;margin:60px auto;padding:0 20px;text-align:center;color:#333}h1{font-size:3em;margin:0;color:#1976d2}p{color:#666}a{color:#1976d2}</style>
+</head>
+<body>
+<h1>404</h1>
+<p>This page is not on this site.</p>
+<p><a href="/">Return home</a></p>
+</body>
+</html>`;
+    return new Response(body, {
+        status: 404,
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+    });
 }
