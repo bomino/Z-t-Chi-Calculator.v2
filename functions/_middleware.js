@@ -31,6 +31,14 @@ async function handle(context) {
     const pathname = url.pathname;
     const host = url.hostname;
 
+    // CF Pages auto-redirects /foo.html ↔ /foo (the "pretty URL" behavior).
+    // Normalize to the .html form before matching so that both `/z_calculator`
+    // and `/z_calculator.html` hit the same rule — otherwise a user on the
+    // wrong subdomain could bypass the block by dropping the extension.
+    const asHtml = pathname.endsWith('.html') || pathname === '/'
+        ? pathname
+        : pathname + '.html';
+
     // 1. Block repo-internal paths on any host.
     if (/^\/(backend|docs|\.github|\.git|\.vscode|\.wrangler)\//.test(pathname)) {
         return notFound();
@@ -45,11 +53,11 @@ async function handle(context) {
             const rewritten = new URL('/instructor.html', url);
             return next(new Request(rewritten, context.request));
         }
-        if (STUDENT_ONLY_PATHS.has(pathname)) {
+        if (STUDENT_ONLY_PATHS.has(asHtml)) {
             return notFound();
         }
     } else if (host === 'ztchi.hgaladima.com') {
-        if (pathname === '/instructor.html' || pathname === '/js/instructor-builder.js') {
+        if (asHtml === '/instructor.html' || pathname === '/js/instructor-builder.js') {
             return notFound();
         }
     }
