@@ -8,9 +8,9 @@
 (function () {
     'use strict';
 
-    // Grouped navigation. Home + three task-shaped dropdowns + a Teach corner.
-    // The Teach affordance is visually separated so students don't see it in
-    // their primary task list.
+    // Student-facing navigation. Three task-shaped dropdowns.
+    // The instructor builder lives on its own subdomain (teach.hgaladima.com)
+    // and is reachable only by bookmark — students do not see it in this nav.
     const NAV_GROUPS = [
         { label: 'Home', href: 'index.html' },
         {
@@ -42,12 +42,26 @@
         },
     ];
 
-    const TEACH_LINK = { href: 'instructor.html', label: 'Teach' };
-
     function currentPage() {
         const path = window.location.pathname || '';
         const file = path.split('/').pop();
         return file && file !== '' ? file : 'index.html';
+    }
+
+    function isInstructorPage() {
+        return currentPage() === 'instructor.html';
+    }
+
+    /**
+     * URL of the student site as seen from the instructor page.
+     * Returns a cross-origin absolute URL when we're on the instructor
+     * subdomain (teach.hgaladima.com), otherwise relative (so local dev,
+     * *.pages.dev previews, and same-origin transitional states all work).
+     */
+    function studentSiteUrl() {
+        const host = window.location.hostname;
+        if (host === 'teach.hgaladima.com') return 'https://ztchi.hgaladima.com/';
+        return './index.html';
     }
 
     function renderLink({ href, label }, active) {
@@ -75,15 +89,21 @@
         );
     }
 
-    function renderTeach(active) {
-        const cls = TEACH_LINK.href === active ? 'nav-teach active' : 'nav-teach';
-        return `<li class="${cls}"><a href="${TEACH_LINK.href}" aria-label="Instructor mode"><span class="nav-teach-icon" aria-hidden="true">◆</span> ${TEACH_LINK.label}</a></li>`;
+    function renderInstructorNav() {
+        // Minimal nav shown only on instructor.html. One link back to the
+        // student site (cross-origin when on teach.hgaladima.com) and an
+        // "Instructor mode" badge so the user knows where they are.
+        return `<ul class="nav-bar">` +
+            `<li><a href="${studentSiteUrl()}">&larr; Student site</a></li>` +
+            `<li class="nav-teach active"><span aria-hidden="true" class="nav-teach-icon">&#9670;</span> Instructor mode</li>` +
+            `</ul>`;
     }
 
     function renderNav() {
+        if (isInstructorPage()) return renderInstructorNav();
         const active = currentPage();
         const items = NAV_GROUPS.map((g) => renderGroup(g, active)).join('');
-        return `<ul class="nav-bar">${items}${renderTeach(active)}</ul>`;
+        return `<ul class="nav-bar">${items}</ul>`;
     }
 
     function wireGroupToggles(nav) {

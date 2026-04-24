@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{var t=localStorage.getItem('ZtChi.theme')||'auto';if(t==='auto')t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}}());</script>
+    <title>Page not found &mdash; Z-t-Chi Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <meta name="theme-color" content="#1976d2">
+</head>
+
+<body>
+    <main role="main" style="text-align: center; padding: 60px 20px;">
+        <h1 style="font-size: 3em; margin: 0;">404</h1>
+        <p style="font-size: 1.2em; color: var(--fg-muted); margin: 10px 0 30px;">
+            This page isn't on this site.
+        </p>
+        <p id="context" style="max-width: 520px; margin: 0 auto; color: var(--fg);"></p>
+        <p style="margin-top: 30px;">
+            <a href="/" class="card-button">Return home</a>
+        </p>
+    </main>
+
+    <script>
+        // Give a context-sensitive hint based on where we are.
+        (function () {
+            var host = window.location.hostname;
+            var ctx = document.getElementById('context');
+            if (!ctx) return;
+            if (host === 'teach.hgaladima.com') {
+                ctx.innerHTML = 'This is the instructor-only subdomain. Student calculators live at <a href="https://ztchi.hgaladima.com/">ztchi.hgaladima.com</a>.';
+            } else if (host === 'ztchi.hgaladima.com') {
+                ctx.innerHTML = 'The page may have moved. Try the <a href="/">home page</a> or pick a calculator from the nav.';
+            } else {
+                ctx.textContent = 'Try the home page or pick a calculator from the nav.';
+            }
+        })();
+    </script>
+</body>
+
+</html>

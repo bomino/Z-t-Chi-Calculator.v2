@@ -1,0 +1,37 @@
+# Cloudflare Pages _redirects — host-based rules for the two-subdomain setup.
+#
+# ztchi.hgaladima.com: student-facing calculator. instructor.html is blocked
+#   here so a student who types the URL gets a 404 rather than the builder.
+# teach.hgaladima.com: instructor builder. All calculator / study / reference
+#   pages return 404 so the builder isn't served under the instructor domain.
+#
+# Rules are evaluated top-to-bottom, first-match-wins per host.
+
+# --- ztchi.hgaladima.com (student) ---
+# Block direct access to the instructor builder and its JS glue.
+https://ztchi.hgaladima.com/instructor.html           /404.html   404
+https://ztchi.hgaladima.com/js/instructor-builder.js  /404.html   404
+
+# --- teach.hgaladima.com (instructor) ---
+# Root serves the builder directly.
+https://teach.hgaladima.com/                          /instructor.html   200
+
+# Block student-facing calculators under the instructor domain.
+https://teach.hgaladima.com/index.html                /404.html   404
+https://teach.hgaladima.com/z_calculator.html         /404.html   404
+https://teach.hgaladima.com/t_calculator.html         /404.html   404
+https://teach.hgaladima.com/chi_square.html           /404.html   404
+https://teach.hgaladima.com/compare.html              /404.html   404
+https://teach.hgaladima.com/corrections.html          /404.html   404
+https://teach.hgaladima.com/epidemiology.html         /404.html   404
+https://teach.hgaladima.com/simulate.html             /404.html   404
+https://teach.hgaladima.com/assumption.html           /404.html   404
+https://teach.hgaladima.com/datasets.html             /404.html   404
+https://teach.hgaladima.com/guide.html                /404.html   404
+https://teach.hgaladima.com/notation.html             /404.html   404
+https://teach.hgaladima.com/error-traps.html          /404.html   404
+
+# Block repo-internal paths from public serving on both subdomains.
+/backend/*                                            /404.html   404
+/docs/*                                               /404.html   404
+/.github/*                                            /404.html   404
