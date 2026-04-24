@@ -38,108 +38,132 @@
     </div>
 
     <main role="main">
-        <section class="calculator-cards">
-            <!-- Introduction Card -->
-            <div class="intro-card">
-                <h2>About Z-t-Chi Calculator</h2>
-                <div class="feature-list">
-                    <div class="feature-item">
-                        <span class="feature-icon">📊</span>
-                        <p>Interactive visualizations for better understanding</p>
-                    </div>
-                    <div class="feature-item">
-                        <span class="feature-icon">🎯</span>
-                        <p>Precise calculations with detailed interpretations</p>
-                    </div>
-                    <div class="feature-item">
-                        <span class="feature-icon">📚</span>
-                        <p>Educational insights and statistical explanations</p>
-                    </div>
-                    <div class="feature-item">
-                        <span class="feature-icon">💡</span>
-                        <p>User-friendly interface for students and professionals</p>
-                    </div>
+        <div class="intro-card">
+            <h2>About Z-t-Chi Calculator</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <span class="feature-icon">📊</span>
+                    <p>Interactive visualizations for better understanding</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">🎯</span>
+                    <p>Precise calculations with detailed interpretations</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">📚</span>
+                    <p>Educational insights and statistical explanations</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">💡</span>
+                    <p>User-friendly interface for students and professionals</p>
                 </div>
             </div>
+        </div>
 
-            <div class="calc-card">
-                <h2>Z Calculator</h2>
-                <p>Calculate probabilities and areas under the normal curve.</p>
-                <a href="z_calculator.html" class="card-button">Open Z Calculator</a>
-            </div>
+        <section class="landing-section" aria-labelledby="sec-calculate">
+            <header class="landing-section-header">
+                <h2 id="sec-calculate">Calculate</h2>
+                <p>Run a specific test or compare tests on one dataset.</p>
+            </header>
+            <div class="calculator-cards">
+                <div class="calc-card">
+                    <h3>Z Calculator</h3>
+                    <p>Probabilities and areas under the standard normal curve, with shaded-region visualizations.</p>
+                    <a href="z_calculator.html" class="card-button">Open Z Calculator</a>
+                </div>
 
-            <div class="calc-card">
-                <h2>t Calculator</h2>
-                <p>Calculate critical values and p-values for t-tests.</p>
-                <a href="t_calculator.html" class="card-button">Open t Calculator</a>
-            </div>
+                <div class="calc-card">
+                    <h3>t Calculator</h3>
+                    <p>Critical values and p-values for one-sample, paired, and Welch's two-sample t tests.</p>
+                    <a href="t_calculator.html" class="card-button">Open t Calculator</a>
+                </div>
 
-            <div class="calc-card">
-                <h2>Chi-Square Calculator</h2>
-                <p>Analyze categorical data and test independence.</p>
-                <a href="chi_square.html" class="card-button">Open Chi-Square Calculator</a>
-            </div>
+                <div class="calc-card">
+                    <h3>Chi-Square Calculator</h3>
+                    <p>&chi;&sup2; test of independence for r &times; c contingency tables, with Cramer's V.</p>
+                    <a href="chi_square.html" class="card-button">Open Chi-Square Calculator</a>
+                </div>
 
-            <div class="calc-card">
-                <h2>Compare Tests</h2>
-                <p>Run &chi;&sup2;, Fisher's exact, and Z for proportions on the same 2&times;2 table and see where they diverge.</p>
-                <a href="compare.html" class="card-button">Open Compare Tests</a>
-            </div>
+                <div class="calc-card">
+                    <h3>Compare Tests</h3>
+                    <p>Run &chi;&sup2;, Fisher's exact, and Z for proportions on the same 2&times;2 table and see where they diverge.</p>
+                    <a href="compare.html" class="card-button">Open Compare Tests</a>
+                </div>
 
-            <div class="calc-card">
-                <h2>Simulation</h2>
-                <p>Bootstrap CIs and permutation p-values on your raw data &mdash; see the same conclusion from a second angle.</p>
-                <a href="simulate.html" class="card-button">Open Simulation</a>
-            </div>
+                <div class="calc-card">
+                    <h3>Corrections</h3>
+                    <p>Bonferroni, Holm, and Benjamini-Hochberg for a bundle of p-values &mdash; plus an interactive chart of Type I inflation.</p>
+                    <a href="corrections.html" class="card-button">Open Corrections</a>
+                </div>
 
-            <div class="calc-card">
-                <h2>Epidemiology 2&times;2</h2>
-                <p>Sensitivity, specificity, PPV, NPV, LR+/LR&minus;, RR, OR, NNT &mdash; all with CIs from a single 2&times;2 table.</p>
-                <a href="epidemiology.html" class="card-button">Open Epi Calculator</a>
-            </div>
-
-            <div class="calc-card">
-                <h2>Corrections</h2>
-                <p>Bonferroni, Holm, and Benjamini-Hochberg for a bundle of p-values &mdash; plus an interactive chart of Type I inflation.</p>
-                <a href="corrections.html" class="card-button">Open Corrections</a>
-            </div>
-
-            <div class="calc-card">
-                <h2>Curated Datasets</h2>
-                <p>Classic biostatistics data (Salk vaccine, Physicians' Health Study, Lady Tasting Tea, ...) &mdash; one click into any relevant calculator.</p>
-                <a href="datasets.html" class="card-button">Open Dataset Library</a>
-            </div>
-
-            <div class="calc-card">
-                <h2>Assumption Coach</h2>
-                <p>Q-Q plot + skewness + kurtosis + Jarque-Bera + outliers + a traffic-light recommendation on whether parametric tests are appropriate.</p>
-                <a href="assumption.html" class="card-button">Check Your Data</a>
-            </div>
-
-            <div class="calc-card">
-                <h2>User Guide</h2>
-                <p>New here? Start with the decision tree ("which calculator should I use?") and the quick-start walkthroughs.</p>
-                <a href="guide.html" class="card-button">Open the Guide</a>
-            </div>
-
-            <div class="calc-card">
-                <h2>Notation Translator</h2>
-                <p>Cross-reference textbook notation (&mu;, x&#772;, &chi;&sup2;) against SPSS labels, R output, and APA reporting style.</p>
-                <a href="notation.html" class="card-button">Open the Translator</a>
-            </div>
-
-            <div class="calc-card">
-                <h2>Error Traps</h2>
-                <p>Fifteen classic mistakes in applied statistics &mdash; scenario, why-it-looks-right, what's-actually-wrong, and the fix. Filter by test type.</p>
-                <a href="error-traps.html" class="card-button">Open the Library</a>
-            </div>
-
-            <div class="calc-card">
-                <h2>Instructor Mode</h2>
-                <p>Build a signed problem link students can open &mdash; they see the prompt, use the calculator, and get instant feedback on whether they matched your expected answer.</p>
-                <a href="instructor.html" class="card-button">Open Instructor Mode</a>
+                <div class="calc-card">
+                    <h3>Epidemiology 2&times;2</h3>
+                    <p>Sensitivity, specificity, PPV, NPV, LR+/LR&minus;, RR, OR, NNT &mdash; all with CIs from a single 2&times;2 table.</p>
+                    <a href="epidemiology.html" class="card-button">Open Epi Calculator</a>
+                </div>
             </div>
         </section>
+
+        <section class="landing-section" aria-labelledby="sec-study">
+            <header class="landing-section-header">
+                <h2 id="sec-study">Study</h2>
+                <p>Build intuition with simulation, assumption checks, and real datasets.</p>
+            </header>
+            <div class="calculator-cards">
+                <div class="calc-card">
+                    <h3>Simulation</h3>
+                    <p>Bootstrap CIs and permutation p-values on your raw data &mdash; see the same conclusion from a second angle.</p>
+                    <a href="simulate.html" class="card-button">Open Simulation</a>
+                </div>
+
+                <div class="calc-card">
+                    <h3>Assumption Coach</h3>
+                    <p>Q-Q plot + skewness + kurtosis + Jarque-Bera + outliers + a traffic-light recommendation on whether parametric tests are appropriate.</p>
+                    <a href="assumption.html" class="card-button">Check Your Data</a>
+                </div>
+
+                <div class="calc-card">
+                    <h3>Curated Datasets</h3>
+                    <p>Classic biostatistics data (Salk vaccine, Physicians' Health Study, Lady Tasting Tea, ...) &mdash; one click into any relevant calculator.</p>
+                    <a href="datasets.html" class="card-button">Open Dataset Library</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-section" aria-labelledby="sec-reference">
+            <header class="landing-section-header">
+                <h2 id="sec-reference">Reference</h2>
+                <p>Look up a decision, a symbol, or a common mistake.</p>
+            </header>
+            <div class="calculator-cards">
+                <div class="calc-card">
+                    <h3>User Guide</h3>
+                    <p>New here? Start with the decision tree ("which calculator should I use?") and the quick-start walkthroughs.</p>
+                    <a href="guide.html" class="card-button">Open the Guide</a>
+                </div>
+
+                <div class="calc-card">
+                    <h3>Notation Translator</h3>
+                    <p>Cross-reference textbook notation (&mu;, x&#772;, &chi;&sup2;) against SPSS labels, R output, and APA reporting style.</p>
+                    <a href="notation.html" class="card-button">Open the Translator</a>
+                </div>
+
+                <div class="calc-card">
+                    <h3>Error Traps</h3>
+                    <p>Fifteen classic mistakes in applied statistics &mdash; scenario, why-it-looks-right, what's-actually-wrong, and the fix. Filter by test type.</p>
+                    <a href="error-traps.html" class="card-button">Open the Library</a>
+                </div>
+            </div>
+        </section>
+
+        <aside class="teach-card" aria-label="Instructor-facing tools">
+            <div class="teach-card-body">
+                <span class="teach-card-badge">◆ Teach</span>
+                <h2>Instructor Mode</h2>
+                <p>Build a signed problem link students can open. They see the prompt, use the calculator, and get instant feedback on whether they matched your expected answer. Requires an instructor token to sign; unsigned fallback works for practice.</p>
+                <a href="instructor.html" class="card-button teach-card-button">Open Instructor Mode</a>
+            </div>
+        </aside>
     </main>
 
     <footer class="footer-container">

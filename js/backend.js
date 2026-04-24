@@ -52,12 +52,16 @@
         }
     }
 
-    async function post(path, body) {
+    async function post(path, body, options = {}) {
         if (!url) throw new Error('backend not configured');
+        const headers = { 'content-type': 'application/json' };
+        if (options.bearerToken) {
+            headers['authorization'] = `Bearer ${options.bearerToken}`;
+        }
         const res = await fetch(`${url}${path}`, {
             method: 'POST',
             mode: 'cors',
-            headers: { 'content-type': 'application/json' },
+            headers,
             body: JSON.stringify(body),
         });
         const data = await res.json().catch(() => ({}));

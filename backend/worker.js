@@ -78,6 +78,25 @@ export default {
 
 async function handleSign(request, env) {
   if (!env.SIGN_SECRET) return json({ error: 'signing not configured' }, 503);
+
+  // Optional instructor-token gate. If INSTRUCTOR_TOKENS secret is set, the
+  // request must carry `Authorization: Bearer <token>` where the token matches
+  // one entry in the (comma-or-newline-separated) list. If the secret is NOT
+  // set, anyone who passes the CORS allowlist can sign — useful for single-
+  // instructor deployments that trust their origin.
+  if (env.INSTRUCTOR_TOKENS) {
+    const auth = request.headers.get('Authorization') || '';
+    const match = /^Bearer\s+(.+)$/i.exec(auth);
+    const presented = match ? match[1].trim() : '';
+    const allowed = env.INSTRUCTOR_TOKENS
+      .split(/[,\n]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (!presented || !allowed.includes(presented)) {
+      return json({ error: 'instructor token required' }, 401);
+    }
+  }
+
   const body = await request.json();
   if (!body || typeof body.payload !== 'object') {
     return json({ error: 'payload required' }, 400);
@@ -197,7 +216,7 @@ function corsPreflight(origin, allowed) {
   const headers = new Headers();
   if (allowed) headers.set('Access-Control-Allow-Origin', origin);
   headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  headers.set('Access-Control-Allow-Headers', 'content-type');
+  headers.set('Access-Control-Allow-Headers', 'content-type, authorization');
   headers.set('Access-Control-Max-Age', '86400');
   return new Response(null, { status: 204, headers });
 }

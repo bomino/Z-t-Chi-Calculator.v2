@@ -112,14 +112,38 @@
         })[calc] || [];
     }
 
+    const TOKEN_KEY = 'ZtChi.instructorToken';
+
+    function getToken() {
+        try {
+            return localStorage.getItem(TOKEN_KEY) || '';
+        } catch (_) {
+            return '';
+        }
+    }
+
+    function setToken(token) {
+        try {
+            if (token) localStorage.setItem(TOKEN_KEY, token);
+            else localStorage.removeItem(TOKEN_KEY);
+        } catch (_) { /* no-op */ }
+    }
+
     async function sign(spec) {
         if (!ZtChi.backend || !ZtChi.backend.url) return null;
         try {
             const { enabled } = await ZtChi.backend.ready;
             if (!enabled) return null;
-            const res = await ZtChi.backend.post('/sign', { payload: spec });
+            const token = getToken();
+            const res = await ZtChi.backend.post('/sign', { payload: spec }, { bearerToken: token });
             return { payload: res.payload, sig: res.sig };
-        } catch (_) {
+        } catch (err) {
+            // Surface 401/403 so the UI can clear the token and re-prompt.
+            if (err && (err.status === 401 || err.status === 403)) {
+                const e = new Error(err.data && err.data.error || 'unauthorized');
+                e.status = err.status;
+                throw e;
+            }
             return null;
         }
     }
@@ -160,5 +184,7 @@
         sign,
         readFromUrl,
         checkAnswer,
+        getToken,
+        setToken,
     };
 })();

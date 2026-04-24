@@ -8,22 +8,41 @@
 (function () {
     'use strict';
 
-    const NAV_LINKS = [
-        { href: 'index.html', label: 'Home' },
-        { href: 'z_calculator.html', label: 'Z Calculator' },
-        { href: 't_calculator.html', label: 't Calculator' },
-        { href: 'chi_square.html', label: 'Chi-Square Calculator' },
-        { href: 'compare.html', label: 'Compare' },
-        { href: 'simulate.html', label: 'Simulate' },
-        { href: 'epidemiology.html', label: 'Epi 2×2' },
-        { href: 'corrections.html', label: 'Corrections' },
-        { href: 'datasets.html', label: 'Datasets' },
-        { href: 'assumption.html', label: 'Assumption Coach' },
-        { href: 'guide.html', label: 'Guide' },
-        { href: 'notation.html', label: 'Notation' },
-        { href: 'error-traps.html', label: 'Error Traps' },
-        { href: 'instructor.html', label: 'Instructor' },
+    // Grouped navigation. Home + three task-shaped dropdowns + a Teach corner.
+    // The Teach affordance is visually separated so students don't see it in
+    // their primary task list.
+    const NAV_GROUPS = [
+        { label: 'Home', href: 'index.html' },
+        {
+            label: 'Calculate',
+            children: [
+                { href: 'z_calculator.html', label: 'Z Calculator' },
+                { href: 't_calculator.html', label: 't Calculator' },
+                { href: 'chi_square.html', label: 'Chi-Square' },
+                { href: 'compare.html', label: 'Compare Tests' },
+                { href: 'corrections.html', label: 'Corrections' },
+                { href: 'epidemiology.html', label: 'Epi 2×2' },
+            ],
+        },
+        {
+            label: 'Study',
+            children: [
+                { href: 'simulate.html', label: 'Simulate' },
+                { href: 'assumption.html', label: 'Assumption Coach' },
+                { href: 'datasets.html', label: 'Datasets' },
+            ],
+        },
+        {
+            label: 'Reference',
+            children: [
+                { href: 'guide.html', label: 'Guide' },
+                { href: 'notation.html', label: 'Notation' },
+                { href: 'error-traps.html', label: 'Error Traps' },
+            ],
+        },
     ];
+
+    const TEACH_LINK = { href: 'instructor.html', label: 'Teach' };
 
     function currentPage() {
         const path = window.location.pathname || '';
@@ -31,13 +50,80 @@
         return file && file !== '' ? file : 'index.html';
     }
 
+    function renderLink({ href, label }, active) {
+        const cls = href === active ? ' class="active"' : '';
+        return `<li><a href="${href}"${cls}>${label}</a></li>`;
+    }
+
+    function groupContainsActive(group, active) {
+        return group.children && group.children.some((c) => c.href === active);
+    }
+
+    function renderGroup(group, active) {
+        if (!group.children) return renderLink(group, active);
+        const hasActive = groupContainsActive(group, active);
+        const toggleCls = hasActive ? 'nav-group-toggle active' : 'nav-group-toggle';
+        const subId = `nav-sub-${group.label.toLowerCase()}`;
+        const items = group.children.map((c) => renderLink(c, active)).join('');
+        return (
+            `<li class="nav-group">` +
+            `<button type="button" class="${toggleCls}" aria-expanded="false" aria-controls="${subId}">` +
+            `<span>${group.label}</span><span class="nav-caret" aria-hidden="true">▾</span>` +
+            `</button>` +
+            `<ul class="nav-submenu" id="${subId}" role="menu">${items}</ul>` +
+            `</li>`
+        );
+    }
+
+    function renderTeach(active) {
+        const cls = TEACH_LINK.href === active ? 'nav-teach active' : 'nav-teach';
+        return `<li class="${cls}"><a href="${TEACH_LINK.href}" aria-label="Instructor mode"><span class="nav-teach-icon" aria-hidden="true">◆</span> ${TEACH_LINK.label}</a></li>`;
+    }
+
     function renderNav() {
         const active = currentPage();
-        const items = NAV_LINKS.map(({ href, label }) => {
-            const cls = href === active ? ' class="active"' : '';
-            return `<li><a href="${href}"${cls}>${label}</a></li>`;
-        }).join('');
-        return `<ul class="nav-bar">${items}</ul>`;
+        const items = NAV_GROUPS.map((g) => renderGroup(g, active)).join('');
+        return `<ul class="nav-bar">${items}${renderTeach(active)}</ul>`;
+    }
+
+    function wireGroupToggles(nav) {
+        const toggles = nav.querySelectorAll('.nav-group-toggle');
+        toggles.forEach((toggle) => {
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const parent = toggle.closest('.nav-group');
+                const expanded = toggle.getAttribute('aria-expanded') === 'true';
+                // Close all other groups
+                nav.querySelectorAll('.nav-group.open').forEach((el) => {
+                    if (el !== parent) {
+                        el.classList.remove('open');
+                        const t = el.querySelector('.nav-group-toggle');
+                        if (t) t.setAttribute('aria-expanded', 'false');
+                    }
+                });
+                parent.classList.toggle('open', !expanded);
+                toggle.setAttribute('aria-expanded', String(!expanded));
+            });
+        });
+        // Close open dropdowns when clicking elsewhere or pressing Escape
+        document.addEventListener('click', (e) => {
+            if (!nav.contains(e.target)) {
+                nav.querySelectorAll('.nav-group.open').forEach((el) => {
+                    el.classList.remove('open');
+                    const t = el.querySelector('.nav-group-toggle');
+                    if (t) t.setAttribute('aria-expanded', 'false');
+                });
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                nav.querySelectorAll('.nav-group.open').forEach((el) => {
+                    el.classList.remove('open');
+                    const t = el.querySelector('.nav-group-toggle');
+                    if (t) t.setAttribute('aria-expanded', 'false');
+                });
+            }
+        });
     }
 
     function injectNav() {
@@ -63,7 +149,9 @@
                     toggle.setAttribute('aria-expanded', String(!expanded));
                     list.classList.toggle('open');
                 });
-                // Auto-close the menu when a link inside is clicked (mobile UX)
+                // Auto-close the menu when a leaf link inside is clicked (mobile UX).
+                // Group-toggle buttons are handled separately and must not collapse
+                // the whole menu when opening a submenu.
                 list.addEventListener('click', (e) => {
                     if (e.target.tagName === 'A') {
                         list.classList.remove('open');
@@ -71,6 +159,8 @@
                     }
                 });
             }
+
+            wireGroupToggles(nav);
 
             // Theme switcher (if theme.js loaded)
             const themeHost = nav.querySelector('.theme-switcher-host');

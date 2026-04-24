@@ -87,7 +87,18 @@
         // student's client, which decodes the token back into that same wrapped shape,
         // reproduces byte-identical JSON when it re-signs for verification.
         const fullSpec = ZtChi.instructor.decodeSpec(token);
-        const signed = await ZtChi.instructor.sign(fullSpec);
+        let signed = null;
+        try {
+            signed = await ZtChi.instructor.sign(fullSpec);
+        } catch (err) {
+            if (err && (err.status === 401 || err.status === 403)) {
+                ZtChi.instructor.setToken(null);
+                ZtChi.showNotification('Your instructor token was rejected. Paste a fresh token to continue signing.', 'error', { duration: 6000 });
+                showTokenGate();
+                return;
+            }
+            throw err;
+        }
 
         const status = document.getElementById('signStatus');
         const out = document.getElementById('outputLink');
@@ -168,6 +179,76 @@
         }
     }
 
+    const GATE_SKIPPED_KEY = 'ZtChi.instructorGateSkipped';
+
+    function showTokenGate() {
+        const gate = document.getElementById('tokenGate');
+        const status = document.getElementById('tokenStatus');
+        const panel = document.getElementById('builderPanel');
+        if (gate) gate.style.display = 'block';
+        if (status) status.style.display = 'none';
+        if (panel) panel.style.display = 'none';
+    }
+
+    function showBuilder(signedIn) {
+        const gate = document.getElementById('tokenGate');
+        const status = document.getElementById('tokenStatus');
+        const panel = document.getElementById('builderPanel');
+        const badge = document.getElementById('tokenStatusBadge');
+        const text = document.getElementById('tokenStatusText');
+
+        if (gate) gate.style.display = 'none';
+        if (panel) panel.style.display = 'block';
+        if (status) status.style.display = 'block';
+        if (signedIn) {
+            if (badge) { badge.textContent = '✓'; badge.className = 'token-status-badge ok'; }
+            if (text) text.textContent = 'Signed in as instructor. Links from this device will be signed.';
+        } else {
+            if (badge) { badge.textContent = '!'; badge.className = 'token-status-badge warn'; }
+            if (text) text.textContent = 'No token set — generated links will be unsigned. OK for practice, not for graded work.';
+        }
+    }
+
+    function onSaveToken() {
+        const input = document.getElementById('tokenInput');
+        const token = input ? input.value.trim() : '';
+        if (!token) {
+            ZtChi.showNotification('Paste the instructor token, or choose "Continue without signing".', 'warning');
+            return;
+        }
+        ZtChi.instructor.setToken(token);
+        try { sessionStorage.removeItem(GATE_SKIPPED_KEY); } catch (_) { /* no-op */ }
+        showBuilder(true);
+        if (input) input.value = '';
+        ZtChi.showNotification('Token saved. Links will now be signed.', 'success');
+    }
+
+    function onSkipToken() {
+        try { sessionStorage.setItem(GATE_SKIPPED_KEY, '1'); } catch (_) { /* no-op */ }
+        showBuilder(false);
+    }
+
+    function onSignOut() {
+        ZtChi.instructor.setToken(null);
+        try { sessionStorage.removeItem(GATE_SKIPPED_KEY); } catch (_) { /* no-op */ }
+        showTokenGate();
+        ZtChi.showNotification('Signed out. Token cleared from this browser.', 'info');
+    }
+
+    function initGate() {
+        const hasToken = !!ZtChi.instructor.getToken();
+        let skipped = false;
+        try { skipped = sessionStorage.getItem(GATE_SKIPPED_KEY) === '1'; } catch (_) { /* no-op */ }
+
+        if (hasToken) {
+            showBuilder(true);
+        } else if (skipped) {
+            showBuilder(false);
+        } else {
+            showTokenGate();
+        }
+    }
+
     function init() {
         if (!ZtChi.instructor) return;
         const calcSel = document.getElementById('problemCalc');
@@ -178,12 +259,19 @@
         const btnCopy = document.getElementById('btnCopy');
         const btnOpen = document.getElementById('btnOpen');
         const btnEx = document.getElementById('btnExample');
+        const btnSave = document.getElementById('btnSaveToken');
+        const btnSkip = document.getElementById('btnSkipToken');
+        const btnOut = document.getElementById('btnSignOut');
 
         if (btnGen) btnGen.addEventListener('click', generate);
         if (btnCopy) btnCopy.addEventListener('click', copyLink);
         if (btnOpen) btnOpen.addEventListener('click', openAsStudent);
         if (btnEx) btnEx.addEventListener('click', loadExample);
+        if (btnSave) btnSave.addEventListener('click', onSaveToken);
+        if (btnSkip) btnSkip.addEventListener('click', onSkipToken);
+        if (btnOut) btnOut.addEventListener('click', onSignOut);
 
+        initGate();
         renderBackendStatus();
     }
 

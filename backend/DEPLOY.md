@@ -219,13 +219,35 @@ Paste your `sk-ant-api03-...` key. Expect:
 ✨ Success! Uploaded secret ANTHROPIC_API_KEY
 ```
 
-### 5c. Verify both are registered
+### 5c. (Optional) Instructor-only signing
+
+By default anyone whose origin is in your allowlist can call `/sign`.
+If you want to gate signing to a specific list of instructors (the
+recommended posture for a multi-instructor deployment, or anywhere
+you don't trust the allow-listed origin), set one more secret:
+
+```bash
+wrangler secret put INSTRUCTOR_TOKENS
+```
+
+Paste either a single token or a comma-separated / newline-separated
+list (one line per instructor). Generate each token with the same
+command as Step 3 (`openssl rand -base64 32` is plenty). Give each
+instructor their own token via a private channel; they paste it into
+`instructor.html` once and the browser remembers it in `localStorage`.
+
+Rotating an instructor's token: edit the list (remove or replace
+their line), re-run `wrangler secret put INSTRUCTOR_TOKENS`, and
+re-deploy. Their browser will get a 401 on the next `/sign`, the
+app clears their stored token and re-prompts.
+
+### 5d. Verify secrets are registered
 
 ```bash
 wrangler secret list
 ```
 
-Expect:
+Expect at minimum:
 
 ```
 [
@@ -233,6 +255,8 @@ Expect:
   { "name": "SIGN_SECRET", "type": "secret_text" }
 ]
 ```
+
+Plus `INSTRUCTOR_TOKENS` if you completed Step 5c.
 
 You will never see their values again — that's by design. To change
 one, run `wrangler secret put <name>` again.
@@ -474,6 +498,7 @@ If you want `api.yourschool.edu` instead of `*.workers.dev`:
 | `403 origin not allowed` from `/sign` or `/ai` | Your Origin isn't in `ALLOWED_ORIGINS` | Add it to `wrangler.toml`, `wrangler deploy` again |
 | CORS error in browser devtools | Same as above, or preflight OPTIONS isn't returning the header | Check the network tab for the OPTIONS request; its response should set `access-control-allow-origin` |
 | `503 signing not configured` | `SIGN_SECRET` not set | `wrangler secret put SIGN_SECRET` |
+| `401 instructor token required` from `/sign` | `INSTRUCTOR_TOKENS` is set but the client didn't send a valid Bearer token | Paste the token again in `instructor.html`, or remove that instructor's token from `INSTRUCTOR_TOKENS` and redeploy if you want open signing |
 | `503 AI not configured` | `ANTHROPIC_API_KEY` not set | `wrangler secret put ANTHROPIC_API_KEY` |
 | `502 upstream` with Anthropic error `insufficient_quota` | Anthropic account has no credit | Top up at console.anthropic.com |
 | `429 rate limit exceeded` | Student hit the per-IP cap | Increase `RATE_LIMIT_PER_HOUR`, re-deploy |

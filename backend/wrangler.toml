@@ -13,3 +13,8 @@ AI_MODEL = "claude-haiku-4-5-20251001"
 # Required secrets:
 #   SIGN_SECRET         — HMAC-SHA256 secret for signing instructor problems
 #   ANTHROPIC_API_KEY   — Anthropic Claude API key
+# Optional secret:
+#   INSTRUCTOR_TOKENS   — comma- or newline-separated list of per-instructor
+#                         tokens. When set, /sign requires a Bearer token
+#                         matching an entry. When unset, any origin in the
+#                         allowlist can sign.

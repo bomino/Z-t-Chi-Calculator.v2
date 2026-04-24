@@ -42,6 +42,29 @@
     </div>
 
     <main role="main">
+        <section class="section token-gate" id="tokenGate" style="display:none;">
+            <h2>Instructor sign-in</h2>
+            <p>This page can issue <em>signed</em> problem links only to authorized instructors. Paste the token your administrator gave you; it's stored in this browser's <code>localStorage</code> so you won't be asked again on this device. The token never leaves your machine except to verify against the backend.</p>
+            <div class="input-group">
+                <label for="tokenInput">Instructor token:</label>
+                <input type="password" id="tokenInput" autocomplete="off" spellcheck="false" placeholder="paste token here">
+            </div>
+            <div class="button-row">
+                <button type="button" class="primary-button" id="btnSaveToken">Save token &amp; continue</button>
+                <button type="button" class="secondary-button" id="btnSkipToken">Continue without signing (practice only)</button>
+            </div>
+            <p class="viz-caption">Without a valid token you can still build problem links, but they will carry an <strong>unsigned</strong> badge. Students should be told not to trust unsigned links for graded work.</p>
+        </section>
+
+        <section class="section token-status" id="tokenStatus" style="display:none;">
+            <div class="token-status-line">
+                <span class="token-status-badge" id="tokenStatusBadge">&bull;</span>
+                <span id="tokenStatusText">Signed in as instructor. Links from this device will be signed.</span>
+                <button type="button" class="secondary-button" id="btnSignOut">Sign out (clear token)</button>
+            </div>
+        </section>
+
+        <div id="builderPanel">
         <section class="section">
             <h2>Step 1 &mdash; Describe the problem</h2>
             <div class="input-group">
@@ -118,6 +141,7 @@
             </div>
             <p class="viz-caption" id="signStatus">Not yet generated.</p>
         </section>
+        </div>
     </main>
 
     <footer class="footer-container">
