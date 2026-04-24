@@ -581,6 +581,21 @@
             assertClose(r.w, 1, 1e-9, 'W should be 1 for zero-variance data');
         });
 
+        test('returns NaN and a note on non-finite input', () => {
+            const r = ZtChi.shapiroWilk([1, 2, NaN, 3, 4]);
+            assert(!Number.isFinite(r.w), 'W should be NaN on non-finite input');
+            assert(r.note && /non-finite/i.test(r.note), `expected note about non-finite, got: ${r.note}`);
+        });
+
+        test('W is clamped to [0, 1] (no floating-point overshoot)', () => {
+            // Near-identical values with tiny jitter — without the clamp, W
+            // can numerically come out at 1 + tiny epsilon.
+            const xs = [1.0000001, 1.0000002, 1.0000001, 1.0000003, 1.0000002, 1.0000001];
+            const r = ZtChi.shapiroWilk(xs);
+            assert(r.w <= 1, `W should be <= 1, got ${r.w}`);
+            assert(r.w >= 0, `W should be >= 0, got ${r.w}`);
+        });
+
         test('symmetric bell-shaped sample gives W close to 1', () => {
             // Nearly-normal quantile sample (10 equally-spaced normal quantiles)
             const xs = [];
@@ -628,6 +643,18 @@
             try { ZtChi.wilcoxonSignedRank([0, 0, 5], 0); } catch (_) { threw = true; }
             assert(threw, 'should throw when n<2 after dropping zeros');
         });
+
+        test('throws on NaN input (no silent contamination)', () => {
+            let threw = false;
+            try { ZtChi.wilcoxonSignedRank([1, 2, NaN, 3], 0); } catch (_) { threw = true; }
+            assert(threw, 'should throw on NaN input');
+        });
+
+        test('throws on non-finite mu0', () => {
+            let threw = false;
+            try { ZtChi.wilcoxonSignedRank([1, 2, 3], NaN); } catch (_) { threw = true; }
+            assert(threw, 'should throw on NaN mu0');
+        });
     });
 
     describe('Wilcoxon rank-sum / Mann-Whitney U (ZtChi.wilcoxonRankSum)', () => {
@@ -653,6 +680,18 @@
             const ys = sampleNormal(rng, 51, 5, 20);
             const r = ZtChi.wilcoxonRankSum(xs, ys);
             assertClose(r.u1 + r.u2, xs.length * ys.length, 1e-9, 'U1+U2=n1*n2');
+        });
+
+        test('throws on n < 3 per group (normal approximation unreliable)', () => {
+            let threw = false;
+            try { ZtChi.wilcoxonRankSum([1, 2], [3, 4, 5]); } catch (_) { threw = true; }
+            assert(threw, 'should throw on n1 < 3');
+        });
+
+        test('throws on NaN input (no silent contamination)', () => {
+            let threw = false;
+            try { ZtChi.wilcoxonRankSum([1, 2, NaN], [3, 4, 5]); } catch (_) { threw = true; }
+            assert(threw, 'should throw on NaN in xs');
         });
     });
 

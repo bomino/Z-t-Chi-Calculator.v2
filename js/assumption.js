@@ -180,26 +180,43 @@
             ? '<p>None flagged.</p>'
             : `<ul>${outliers.outliers.map((o) => `<li>x = ${fmt(o.value)} (position ${o.index + 1})</li>`).join('')}</ul>`;
 
-        // Wilcoxon signed-rank test against H0: median = 0. Provides a
-        // non-parametric reference the student can cite when the red tier
-        // recommends it. Mu0 is fixed at 0 here because the Coach analyzes
-        // a single vector; paired data should already be differenced before
-        // being entered.
+        // Wilcoxon signed-rank test. Uses the μ₀ the user entered in the
+        // input field. If the field is blank we skip the panel entirely
+        // rather than running against a default of zero — running against
+        // zero on non-zero-centered data (blood pressures, test scores) is
+        // mathematically correct but pedagogically useless and actively
+        // misleading (the "is BP different from zero?" null is never the
+        // one a student is asking about).
         let wilcoxonHtml = '';
-        try {
-            const w = wilcoxonSignedRank(xs, 0);
-            const dropped = w.zerosDropped > 0
-                ? ` (${w.zerosDropped} zero-difference observation${w.zerosDropped === 1 ? '' : 's'} dropped)`
-                : '';
+        const mu0Input = document.getElementById('assm-mu0');
+        const mu0Raw = mu0Input ? mu0Input.value.trim() : '';
+        if (mu0Raw === '') {
             wilcoxonHtml = `
                 <div class="assm-stats">
                     <h3>Wilcoxon signed-rank test (non-parametric alternative)</h3>
-                    <p>H<sub>0</sub>: median = 0. <em>W</em><sub>+</sub> = ${fmt(w.wPlus, 2)}, <em>W</em><sub>&minus;</sub> = ${fmt(w.wMinus, 2)}, <em>n</em><sub>eff</sub> = ${w.n}${dropped}. Normal-approximation <em>z</em> = ${fmt(w.z, 3)}, two-tailed <em>p</em> = ${pFmt(w.pTwoTailed)}.</p>
-                    ${w.note ? `<p class="compare-note"><small>&#9888; ${w.note}</small></p>` : ''}
-                    <p class="compare-note"><small>Rank-based, makes no normality assumption. If you centered your data around a non-zero reference value, re-enter as <code>x &minus; &mu;<sub>0</sub></code>. For paired data enter the differences (A &minus; B).</small></p>
+                    <p class="compare-note">Enter a reference value (<em>&mu;</em><sub>0</sub>) in the input above to run the Wilcoxon signed-rank test. The test asks "does the median differ from &mu;<sub>0</sub>?" &mdash; pick the hypothesized reference from your research question (e.g., 120 for systolic BP, 100 for IQ, 0 for already-centered paired differences). We deliberately skip this test when no reference is given, since &mu;<sub>0</sub> = 0 is almost never the right null for raw biomeasurements.</p>
                 </div>`;
-        } catch (err) {
-            wilcoxonHtml = `<div class="assm-stats"><h3>Wilcoxon signed-rank test</h3><p class="compare-note">Not computable: ${escapeHtml(err.message || String(err))}</p></div>`;
+        } else {
+            const mu0 = Number(mu0Raw);
+            if (!Number.isFinite(mu0)) {
+                wilcoxonHtml = `<div class="assm-stats"><h3>Wilcoxon signed-rank test</h3><p class="compare-note">Not computable: μ₀ must be a finite number.</p></div>`;
+            } else {
+                try {
+                    const w = wilcoxonSignedRank(xs, mu0);
+                    const dropped = w.zerosDropped > 0
+                        ? ` (${w.zerosDropped} observation${w.zerosDropped === 1 ? '' : 's'} equal to μ₀ dropped)`
+                        : '';
+                    wilcoxonHtml = `
+                        <div class="assm-stats">
+                            <h3>Wilcoxon signed-rank test (non-parametric alternative)</h3>
+                            <p>H<sub>0</sub>: median = ${fmt(mu0)}. <em>W</em><sub>+</sub> = ${fmt(w.wPlus, 2)}, <em>W</em><sub>&minus;</sub> = ${fmt(w.wMinus, 2)}, <em>n</em><sub>eff</sub> = ${w.n}${dropped}. Normal-approximation <em>z</em> = ${fmt(w.z, 3)}, two-tailed <em>p</em> = ${pFmt(w.pTwoTailed)}.</p>
+                            ${w.note ? `<p class="compare-note"><small>&#9888; ${w.note}</small></p>` : ''}
+                            <p class="compare-note"><small>Rank-based, makes no normality assumption. For paired data enter the differences (A &minus; B) and set μ₀ = 0.</small></p>
+                        </div>`;
+                } catch (err) {
+                    wilcoxonHtml = `<div class="assm-stats"><h3>Wilcoxon signed-rank test</h3><p class="compare-note">Not computable: ${escapeHtml(err.message || String(err))}</p></div>`;
+                }
+            }
         }
 
         const html = `

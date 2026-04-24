@@ -480,14 +480,18 @@
     ZtChi.shapiroWilk = function shapiroWilk(xs) {
         const n = xs.length;
         if (n < 4) return { w: NaN, p: NaN, n, method: 'Shapiro-Wilk', note: 'needs at least 4 observations.' };
-        if (n > 2000) {
-            // Polynomial starts losing accuracy beyond here; still compute but flag.
+        if (!xs.every(Number.isFinite)) {
+            return { w: NaN, p: NaN, n, method: 'Shapiro-Wilk', note: 'input contains non-finite values; clean the data first.' };
         }
 
         const sorted = xs.slice().sort((a, b) => a - b);
         const mean = sorted.reduce((a, b) => a + b, 0) / n;
         const ss = sorted.reduce((a, b) => a + (b - mean) * (b - mean), 0);
-        if (ss === 0) return { w: 1, p: 1, n, method: 'Shapiro-Wilk', note: 'all observations identical.' };
+        // Relaxed check: near-zero variance (within floating-point noise of an
+        // identical-observations dataset) is also treated as W = 1 to avoid
+        // division-by-tiny-number spurious W > 1 values.
+        const ssFloor = 1e-12 * Math.max(1, Math.abs(mean)) * Math.max(1, Math.abs(mean)) * n;
+        if (ss === 0 || ss < ssFloor) return { w: 1, p: 1, n, method: 'Shapiro-Wilk', note: 'all observations identical (or within floating-point noise thereof).' };
 
         // Royston (1992) coefficients — m_i = Φ^{-1}((i − 3/8) / (n + 1/4))
         const m = new Array(n);
@@ -508,11 +512,9 @@
 
         const a = new Array(n);
         let epsilon;
-        if (n === 3) {
-            a[0] = -Math.sqrt(1 / 2);
-            a[2] = Math.sqrt(1 / 2);
-            a[1] = 0;
-        } else if (n <= 5) {
+        if (n <= 5) {
+            // n = 4 or 5: only the outermost coefficients use the polynomial;
+            // the middle are m_i / sqrt(epsilon).
             epsilon = (mSum2 - 2 * m[n - 1] * m[n - 1]) / (1 - 2 * aN * aN);
             for (let i = 1; i < n - 1; i++) a[i] = m[i] / Math.sqrt(epsilon);
             a[0] = -aN;
@@ -529,7 +531,10 @@
 
         let numerator = 0;
         for (let i = 0; i < n; i++) numerator += a[i] * sorted[i];
-        const w = (numerator * numerator) / ss;
+        // Clamp to [0, 1] — floating-point roundoff in numerator/ss can
+        // produce a W slightly above 1 (e.g., 1 + 1e-15) which then breaks
+        // log(1 - W) in the p-value transform.
+        const w = Math.max(0, Math.min(1, (numerator * numerator) / ss));
 
         // Royston 1992 p-value transform. Different polynomials for n ∈ [4, 11]
         // vs n ∈ [12, 2000].
@@ -553,7 +558,9 @@
         return {
             w, p, n,
             method: 'Shapiro-Wilk (Royston 1992 approximation)',
-            note: n > 2000 ? 'n > 2000: Royston\'s polynomial approximation begins to degrade.' : null,
+            note: n > 2000
+                ? 'n > 2000: Royston\'s polynomial approximation begins to degrade beyond the range it was fit for (4 ≤ n ≤ 2000).'
+                : null,
         };
     };
 
@@ -604,6 +611,12 @@
         if (!Array.isArray(xs) || xs.length < 2) {
             throw new Error('Wilcoxon signed-rank needs at least 2 observations.');
         }
+        if (!xs.every(Number.isFinite)) {
+            throw new Error('Input contains non-finite values (NaN, Infinity, or empty cells). Clean the data and try again.');
+        }
+        if (!Number.isFinite(mu0)) {
+            throw new Error('Reference value μ₀ must be a finite number.');
+        }
         const diffs = xs.map((x) => x - mu0);
         const nonZero = diffs.filter((d) => d !== 0);
         const zerosDropped = diffs.length - nonZero.length;
@@ -650,8 +663,11 @@
         if (!Array.isArray(xs) || !Array.isArray(ys)) {
             throw new Error('Wilcoxon rank-sum needs two arrays.');
         }
-        if (xs.length < 1 || ys.length < 1) {
-            throw new Error('Both groups must have at least one observation.');
+        if (xs.length < 3 || ys.length < 3) {
+            throw new Error('Wilcoxon rank-sum needs at least 3 observations in each group. The normal approximation is unreliable below that.');
+        }
+        if (!xs.every(Number.isFinite) || !ys.every(Number.isFinite)) {
+            throw new Error('Input contains non-finite values (NaN, Infinity, or empty cells). Clean the data and try again.');
         }
         const n1 = xs.length;
         const n2 = ys.length;

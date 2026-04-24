@@ -56,6 +56,15 @@
                           placeholder="e.g.  98.4, 97.8, 98.2, 98.1, 99.1, 97.6, ..."></textarea>
                 <small class="input-help">Comma, space or newline separated. Non-numeric tokens are skipped with a warning.</small>
             </div>
+
+            <div class="input-group">
+                <label for="assm-mu0">Reference value (&mu;<sub>0</sub>) for the Wilcoxon signed-rank test:</label>
+                <input type="number" step="any" id="assm-mu0" placeholder="leave blank to skip Wilcoxon">
+                <small class="input-help">
+                    The Wilcoxon signed-rank test asks "does the median differ from &mu;<sub>0</sub>?" Enter your hypothesized reference &mdash; e.g., 120 for systolic BP against a reference value of 120 mm Hg, or 0 if your data are already centered (paired differences, log-ratios). Leave blank to skip the Wilcoxon panel entirely.
+                </small>
+            </div>
+
             <div class="button-group">
                 <button id="assm-run-btn" class="primary-button">Check My Data</button>
                 <button id="assm-example-norm-btn" class="secondary-button">Example: normal (N=30)</button>
