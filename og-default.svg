@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1976d2"/>
+      <stop offset="100%" stop-color="#0d3f6e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Icon panel -->
+  <rect x="72" y="72" width="140" height="140" rx="20" fill="#ffffff" opacity="0.12"/>
+  <text x="142" y="172" text-anchor="middle" font-family="system-ui, sans-serif" font-size="80" font-weight="700" fill="#ffffff">Z·t·χ²</text>
+
+  <!-- Main headline -->
+  <text x="72" y="340" font-family="system-ui, sans-serif" font-size="78" font-weight="700" fill="#ffffff">Z-t-Chi Calculator</text>
+  <text x="72" y="410" font-family="system-ui, sans-serif" font-size="38" fill="#ffffff" opacity="0.85">Free biostatistics calculators — no ads, no tracking</text>
+
+  <!-- Tool list -->
+  <text x="72" y="500" font-family="system-ui, sans-serif" font-size="26" fill="#ffffff" opacity="0.7">Z · t · Chi-square · Epidemiology 2×2 · Multiple corrections · Assumption coach</text>
+
+  <!-- URL -->
+  <line x1="72" y1="540" x2="280" y2="540" stroke="#c77d11" stroke-width="4"/>
+  <text x="72" y="580" font-family="system-ui, sans-serif" font-size="28" fill="#c77d11" font-weight="600">ztchi.hgaladima.com</text>
+</svg>

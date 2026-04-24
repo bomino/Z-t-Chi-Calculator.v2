@@ -3,13 +3,17 @@
  * projects (ztchi-calculator at ztchi.hgaladima.com and ztchi-teach at
  * teach.hgaladima.com).
  *
- * Two jobs:
+ * Three jobs:
  *   1. Block repo-internal paths that shouldn't be web-served (the
  *      backend/ directory, docs/, git metadata, etc.).
  *   2. Enforce the host-based split between student and instructor
  *      subdomains. On teach.hgaladima.com we rewrite / to /instructor.html
  *      and 404 the student calculator pages; on ztchi.hgaladima.com we
  *      404 the instructor builder and its JS glue.
+ *   3. Inject `X-Robots-Tag: noindex, nofollow, noarchive` on every
+ *      teach-host response — the strongest signal to Google that this
+ *      subdomain should never be indexed. Complements the host-aware
+ *      robots.txt and the meta robots on instructor.html.
  *
  * Wrapped in try/catch so a bug in the middleware never brings the whole
  * site down — on error we pass through to static asset serving.
@@ -18,8 +22,6 @@ export async function onRequest(context) {
     try {
         return await handle(context);
     } catch (err) {
-        // Surface the error in the Function log but fall through to the
-        // normal pipeline rather than 5xx the whole response.
         console.error('middleware error', err);
         return context.next();
     }
@@ -31,30 +33,25 @@ async function handle(context) {
     const pathname = url.pathname;
     const host = url.hostname;
 
-    // CF Pages auto-redirects /foo.html ↔ /foo (the "pretty URL" behavior).
-    // Normalize to the .html form before matching so that both `/z_calculator`
-    // and `/z_calculator.html` hit the same rule — otherwise a user on the
-    // wrong subdomain could bypass the block by dropping the extension.
     const asHtml = pathname.endsWith('.html') || pathname === '/'
         ? pathname
         : pathname + '.html';
 
     // 1. Block repo-internal paths on any host.
     if (/^\/(backend|docs|\.github|\.git|\.vscode|\.wrangler)\//.test(pathname)) {
-        return notFound();
+        return withTeachNoindex(host, notFound());
     }
 
     // 2. Host-based split. Only fires on the production custom domains;
-    //    on *.pages.dev (preview/default) we pass everything through so
-    //    canary testing works.
+    //    on *.pages.dev (preview/default) we pass everything through.
     if (host === 'teach.hgaladima.com') {
         if (pathname === '/' || pathname === '/index.html') {
-            // Rewrite root to the instructor builder.
             const rewritten = new URL('/instructor.html', url);
-            return next(new Request(rewritten, context.request));
+            const response = await next(new Request(rewritten, context.request));
+            return withTeachNoindex(host, response);
         }
         if (STUDENT_ONLY_PATHS.has(asHtml)) {
-            return notFound();
+            return withTeachNoindex(host, notFound());
         }
     } else if (host === 'ztchi.hgaladima.com') {
         if (asHtml === '/instructor.html' || pathname === '/js/instructor-builder.js') {
@@ -62,7 +59,8 @@ async function handle(context) {
         }
     }
 
-    return next();
+    const response = await next();
+    return withTeachNoindex(host, response);
 }
 
 const STUDENT_ONLY_PATHS = new Set([
@@ -81,6 +79,22 @@ const STUDENT_ONLY_PATHS = new Set([
     '/tests.html',
 ]);
 
+/**
+ * On the teach subdomain, stamp every outgoing response with a
+ * noindex directive. Safe no-op on other hosts. Preserves the original
+ * response status, body, and any other headers.
+ */
+function withTeachNoindex(host, response) {
+    if (host !== 'teach.hgaladima.com') return response;
+    const headers = new Headers(response.headers);
+    headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+    return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+    });
+}
+
 // Minimal self-contained 404 — avoids fetching /404.html back through the
 // edge, which was the hanging path that produced 522 in the first deploy.
 function notFound() {
@@ -89,6 +103,7 @@ function notFound() {
 <head>
 <meta charset="UTF-8">
 <title>Not found</title>
+<meta name="robots" content="noindex">
 <style>body{font-family:system-ui,sans-serif;max-width:560px;margin:60px auto;padding:0 20px;text-align:center;color:#333}h1{font-size:3em;margin:0;color:#1976d2}p{color:#666}a{color:#1976d2}</style>
 </head>
 <body>
