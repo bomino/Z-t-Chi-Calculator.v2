@@ -130,9 +130,14 @@
         } else if (outliers.outliers.length > 0) {
             conditions.push(`${outliers.outliers.length} outlier(s) flagged. Worth inspecting individually.`);
         }
-        if (n >= 30 && jb.p < 0.01 && absSkew < 1.2) {
-            conditions.push(`JB rejects normality (p = ${pFmt(jb.p)}) but n = ${n} is moderate; CLT likely makes the t-test approximately valid for the mean.`);
-            if (tier === 'red' && absSkew < 1.2) tier = 'yellow';
+        // CLT may partially rescue the t-test at moderate n, but only when BOTH
+        // skewness and excess kurtosis are modest. Heavy-tailed (high kurtosis)
+        // distributions can still produce inflated Type I error rates well above
+        // alpha at n = 30–100 (Wilcox 2012; Micceri 1989), so a red verdict
+        // driven by kurtosis must not be demoted on the basis of skew alone.
+        if (n >= 30 && jb.p < 0.01 && absSkew < 1.2 && absExcKurt < 2.0) {
+            conditions.push(`JB rejects normality (p = ${pFmt(jb.p)}) but skew and kurtosis are moderate at n = ${n}; CLT may help the t-test for the mean, though p-values and CIs can still be biased under heavy tails. Cross-check with the bootstrap on the <a href="simulate.html">Simulate</a> page if in doubt.`);
+            if (tier === 'red') tier = 'yellow';
         }
         if (conditions.length === 0) {
             conditions.push('No major issues flagged. Parametric tests (t-test, Z-test) are appropriate.');

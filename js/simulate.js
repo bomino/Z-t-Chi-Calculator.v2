@@ -106,7 +106,11 @@
             for (let i = 0; i < iterations; i++) {
                 if (Math.abs(stats[i]) >= absObs) geExtreme++;
             }
-            const pTwoTailed = geExtreme / iterations;
+            // Use (1 + count) / (1 + iterations) so the observed permutation is
+            // counted among the null reference set. This prevents the misleading
+            // "p = 0.000" output that can appear when no resampled statistic
+            // reaches the observed extremity — see Phipson & Smyth (2010), SAGMB.
+            const pTwoTailed = (1 + geExtreme) / (1 + iterations);
 
             self.postMessage({
                 type: 'done',

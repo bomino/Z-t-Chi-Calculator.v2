@@ -185,7 +185,7 @@
         const pTwo = 2 * (1 - (typeof jStat !== 'undefined' ? jStat.normal.cdf(Math.abs(z), 0, 1) : 0.5));
         const seUnpooled = Math.sqrt((p1 * (1 - p1)) / n1 + (p2 * (1 - p2)) / n2);
         const diff = p1 - p2;
-        const crit = 1.959963984540054;
+        const crit = typeof jStat !== 'undefined' ? jStat.normal.inv(0.975, 0, 1) : 1.959963984540054;
         return {
             z,
             pTwoTailed: pTwo,

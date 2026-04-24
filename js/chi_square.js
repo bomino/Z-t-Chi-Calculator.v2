@@ -79,7 +79,7 @@ function getLowExpectedWarning(expected, rows, cols) {
     const pct = ((lowCells.length / (rows * cols)) * 100).toFixed(1);
     return `
         <div class="warning-message" role="alert">
-            <strong>Warning:</strong> ${lowCells.length} expected frequency cell(s) (${pct}%) are below 5. The chi-square approximation may be unreliable. Consider Fisher's exact test for small expected counts.
+            <strong>Warning:</strong> ${lowCells.length} expected frequency cell(s) (${pct}%) are below 5. By Cochran's (1954) rule the &chi;&sup2; approximation may be unreliable; consider <a href="compare.html">Fisher's exact test</a> for small expected counts. Note: more recent simulation work (Larntz 1978; Campbell 2007) suggests the E &ge; 5 rule is sometimes overly conservative and that E &ge; 1 may be adequate in much of the parameter space, so take the warning as a prompt to inspect rather than a hard prohibition.
         </div>
     `;
 }

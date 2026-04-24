@@ -21,7 +21,7 @@ Ten pages, each focused on a teaching moment that the others don't cover:
 
 Pedagogy layer woven through every result page:
 
-- **Predict-Then-Reveal** — optional Learning Mode prompts students to commit to a prediction before seeing a p-value (pretesting effect: Kornell, Hays & Bjork 2009)
+- **Predict-Then-Reveal** — optional Learning Mode prompts students to commit to a prediction before seeing a p-value. An active-learning cue inspired by the retrieval-practice literature (Kornell, Hays & Bjork 2009; Richland, Kornell & Kao 2009); the binary reject/fail-to-reject form here is a lighter instance than the generative protocols those studies evaluated, so treat this as plausibly helpful rather than empirically proven for this specific task.
 - **Show-Work** — LaTeX step-by-step rendering of the computation via MathJax
 - **Formative self-checks** — 2 misconception cards per test, pooled from an item bank citing ASA (2016), Haller & Krauss (2002), Cumming (2014), and 14 other verified sources
 - **APA and AMA report generators** — one-click clipboard copy with correct p-value formatting
@@ -203,5 +203,5 @@ Released under the [MIT License](./LICENSE).
 ## Acknowledgments
 
 - Statistical formulas follow standard references for the normal, Student's t, chi-square, hypergeometric, and related distributions.
-- Pedagogy (Predict-Then-Reveal, formative self-checks) is grounded in the ASA Statement on p-Values (2016), GAISE 2016 recommendations, the pretesting-effect literature (Kornell, Hays & Bjork, 2009; Roediger & Karpicke, 2006), Cumming's New Statistics (2014), and Cochran's (1954) classic guidance on χ² usage.
+- Pedagogy (Predict-Then-Reveal, formative self-checks) is informed by the ASA Statement on p-Values (2016), GAISE 2016 recommendations, the retrieval-practice literature (Kornell, Hays & Bjork, 2009; Roediger & Karpicke, 2006), Cumming's New Statistics (2014), and Cochran's (1954) classic guidance on χ² usage. Individual alignment with each source is partial — see `docs/audits/scientific-critical-review-2026-04.md` for a specific accounting of what's backed by the cited work and what is a plausible extension.
 - Curated dataset examples cite their original sources (Francis et al. 1955 for Salk; Steering Committee 1989 for PHS; Mackowiak et al. 1992 for body temperature; Fisher 1935 for Lady Tasting Tea).

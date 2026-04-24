@@ -2,8 +2,16 @@
  * Predict-Then-Reveal pedagogy.
  * Before revealing a result, prompts the student to commit to a prediction.
  *
- * Research basis: the "pretesting effect" — unsuccessful retrieval attempts
- * before studying enhance subsequent learning. Primary references:
+ * Design rationale: this is an active-learning cue inspired by (but not a
+ * direct instance of) the pretesting-effect literature. The original
+ * retrieval-practice studies asked learners to generate a candidate answer —
+ * e.g., translate an unfamiliar word, recall a definition. The binary
+ * reject/fail-to-reject prediction here is a weaker generative act than
+ * those studies evaluated, so the effect size of this feature on student
+ * retention is not established empirically; it is plausibly helpful rather
+ * than demonstrably so.
+ *
+ * Related references:
  *   - Kornell, N., Hays, M. J., & Bjork, R. A. (2009). Unsuccessful retrieval
  *     attempts enhance subsequent learning. J. Exp. Psychol. LMC, 35(4), 989–998.
  *   - Richland, L. E., Kornell, N., & Kao, L. S. (2009). The pretesting effect:
@@ -56,7 +64,7 @@
                     <button type="button" class="secondary-button" data-predict="fail-to-reject">Fail to reject H&#8320;</button>
                     <button type="button" class="action-button" data-predict="unsure">Not sure &mdash; reveal anyway</button>
                 </div>
-                <p class="predict-footnote">Why we ask: committing to a prediction before seeing feedback improves learning (the <em>pretesting effect</em>; Kornell, Hays &amp; Bjork, 2009; Richland, Kornell &amp; Kao, 2009).</p>
+                <p class="predict-footnote">Why we ask: committing to a prediction before seeing feedback is an active-learning cue — related to the pretesting-effect literature (Kornell, Hays &amp; Bjork, 2009; Richland, Kornell &amp; Kao, 2009), though a binary guess is a lighter instance of that paradigm.</p>
             </form>
         `;
         document.body.appendChild(dialog);
