@@ -49,6 +49,12 @@
     }
 
     function isInstructorPage() {
+        // On teach.hgaladima.com the middleware rewrites / to /instructor.html
+        // internally — the browser URL stays at /, so pathname-based detection
+        // misses this case and we'd render the student nav (which on teach
+        // would produce links that the same middleware then 404s). Detect by
+        // hostname so the instructor nav shows across every path on teach.
+        if (window.location.hostname === 'teach.hgaladima.com') return true;
         return currentPage() === 'instructor.html';
     }
 
