@@ -450,6 +450,126 @@
     };
 
     /**
+     * Rank a numeric array with midrank convention for ties.
+     * Returns an array of ranks in the original order. Also returns the
+     * tie-correction sum Σ(t³ − t) summed over all tie groups of size t,
+     * used by Wilcoxon and Mann-Whitney variance corrections.
+     */
+    function rankWithTies(xs) {
+        const n = xs.length;
+        const indexed = xs.map((v, i) => ({ v, i })).sort((a, b) => a.v - b.v);
+        const ranks = new Array(n);
+        let tieCorrection = 0;
+        let i = 0;
+        while (i < n) {
+            let j = i + 1;
+            while (j < n && indexed[j].v === indexed[i].v) j++;
+            const groupSize = j - i;
+            const avgRank = (i + j + 1) / 2; // average of ranks i+1..j (1-indexed)
+            for (let k = i; k < j; k++) ranks[indexed[k].i] = avgRank;
+            if (groupSize > 1) tieCorrection += groupSize * groupSize * groupSize - groupSize;
+            i = j;
+        }
+        return { ranks, tieCorrection };
+    }
+
+    /**
+     * Wilcoxon signed-rank test (one-sample / paired).
+     * Tests H0: median of the (paired) differences equals mu0. Equivalent
+     * to the one-sample median test for a single vector vs mu0.
+     *
+     * Approach: compute d_i = x_i − mu0 (or paired differences), drop zeros
+     * per Pratt's / Wilcoxon's convention (we drop them), rank |d_i| with
+     * midranks, sum the ranks of positive d_i to get W+. The null-distribution
+     * mean and variance with tie correction:
+     *   E[W+]   = n(n+1)/4
+     *   Var[W+] = n(n+1)(2n+1)/24 − ΣT/48     where ΣT = Σ(t³ − t) over tie groups
+     *
+     * For n ≥ 10 we use a z approximation with continuity correction; for
+     * smaller n we also fall back on the same approximation but flag that
+     * the exact distribution would be more accurate (not implemented here).
+     *
+     * Returns { wPlus, wMinus, n, z, pTwoTailed, mu0, zerosDropped, method }.
+     * Reference: Wilcoxon (1945); Hollander, Wolfe & Chicken (2014, ch. 3).
+     */
+    ZtChi.wilcoxonSignedRank = function wilcoxonSignedRank(xs, mu0 = 0) {
+        if (!Array.isArray(xs) || xs.length < 2) {
+            throw new Error('Wilcoxon signed-rank needs at least 2 observations.');
+        }
+        const diffs = xs.map((x) => x - mu0);
+        const nonZero = diffs.filter((d) => d !== 0);
+        const zerosDropped = diffs.length - nonZero.length;
+        const n = nonZero.length;
+        if (n < 2) throw new Error('After dropping zero differences, fewer than 2 observations remain.');
+
+        const absDiffs = nonZero.map(Math.abs);
+        const { ranks, tieCorrection } = rankWithTies(absDiffs);
+        let wPlus = 0;
+        for (let i = 0; i < n; i++) if (nonZero[i] > 0) wPlus += ranks[i];
+        const wMinus = (n * (n + 1)) / 2 - wPlus;
+
+        const mean = (n * (n + 1)) / 4;
+        const varW = (n * (n + 1) * (2 * n + 1)) / 24 - tieCorrection / 48;
+        const sd = Math.sqrt(varW);
+        const cc = wPlus > mean ? -0.5 : wPlus < mean ? 0.5 : 0;
+        const z = sd === 0 ? 0 : (wPlus - mean + cc) / sd;
+        const pTwoTailed = 2 * (1 - jStat.normal.cdf(Math.abs(z), 0, 1));
+
+        return {
+            wPlus, wMinus, n, z, pTwoTailed, mu0, zerosDropped,
+            method: 'Wilcoxon signed-rank (normal approximation with continuity correction)',
+            note: n < 10 ? 'n < 10: exact distribution would be more accurate than the normal approximation.' : null,
+        };
+    };
+
+    /**
+     * Wilcoxon rank-sum test (Mann-Whitney U, two independent samples).
+     * Tests H0: the two samples come from the same distribution (equivalently,
+     * P(X < Y) = 0.5 for independent X from xs and Y from ys).
+     *
+     * Approach: combine samples, rank with midranks, sum the ranks in group
+     * xs. The null-distribution mean and variance with tie correction:
+     *   E[Wx] = n1(n1+n2+1)/2
+     *   Var   = n1*n2*(N+1)/12 * (1 − ΣT / (N³ − N))     N = n1+n2
+     *
+     * For small samples the exact distribution would be more accurate; we use
+     * the normal approximation with continuity correction for consistency.
+     *
+     * Returns { wx, u1, u2, n1, n2, z, pTwoTailed, method }.
+     * Reference: Mann & Whitney (1947); Hollander, Wolfe & Chicken (2014, ch. 4).
+     */
+    ZtChi.wilcoxonRankSum = function wilcoxonRankSum(xs, ys) {
+        if (!Array.isArray(xs) || !Array.isArray(ys)) {
+            throw new Error('Wilcoxon rank-sum needs two arrays.');
+        }
+        if (xs.length < 1 || ys.length < 1) {
+            throw new Error('Both groups must have at least one observation.');
+        }
+        const n1 = xs.length;
+        const n2 = ys.length;
+        const N = n1 + n2;
+        const combined = xs.concat(ys);
+        const { ranks, tieCorrection } = rankWithTies(combined);
+        let wx = 0;
+        for (let i = 0; i < n1; i++) wx += ranks[i];
+        const u1 = wx - (n1 * (n1 + 1)) / 2;
+        const u2 = n1 * n2 - u1;
+
+        const mean = (n1 * (N + 1)) / 2;
+        const variance = ((n1 * n2) / 12) * ((N + 1) - tieCorrection / (N * (N - 1)));
+        const sd = Math.sqrt(variance);
+        const cc = wx > mean ? -0.5 : wx < mean ? 0.5 : 0;
+        const z = sd === 0 ? 0 : (wx - mean + cc) / sd;
+        const pTwoTailed = 2 * (1 - jStat.normal.cdf(Math.abs(z), 0, 1));
+
+        return {
+            wx, u1, u2, n1, n2, z, pTwoTailed,
+            method: 'Wilcoxon rank-sum / Mann-Whitney U (normal approximation with continuity correction)',
+            note: Math.min(n1, n2) < 10 ? 'smaller group < 10: exact distribution would be more accurate.' : null,
+        };
+    };
+
+    /**
      * Wilson score confidence interval for a single proportion.
      * More accurate than Wald, especially for small n or extreme proportions.
      * Reference: Wilson (1927); Agresti & Coull (1998).

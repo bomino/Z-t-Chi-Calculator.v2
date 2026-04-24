@@ -552,6 +552,71 @@
         });
     });
 
+    describe('Wilcoxon signed-rank (ZtChi.wilcoxonSignedRank)', () => {
+        test('symmetric data around zero gives p near 1', () => {
+            const xs = [-3, -2, -1, 1, 2, 3];
+            const r = ZtChi.wilcoxonSignedRank(xs, 0);
+            assertClose(r.wPlus, 10.5, 1e-9, 'W+');
+            assertClose(r.wMinus, 10.5, 1e-9, 'W-');
+            assert(r.pTwoTailed > 0.9, `expected p close to 1, got ${r.pTwoTailed}`);
+        });
+
+        test('all-positive shift gives small p', () => {
+            // Classic small-sample example: x = 5..14 vs mu0=0 must reject hard
+            const xs = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+            const r = ZtChi.wilcoxonSignedRank(xs, 0);
+            assertClose(r.wPlus, 55, 1e-9, 'W+ = n(n+1)/2 when all positive');
+            assert(r.pTwoTailed < 0.01, `expected p<0.01, got ${r.pTwoTailed}`);
+        });
+
+        test('handles ties correctly via midrank', () => {
+            // With a repeated magnitude the tie correction must activate
+            const xs = [1, 1, 2, 3];
+            const r = ZtChi.wilcoxonSignedRank(xs, 0);
+            // Ranks of |1|,|1|,|2|,|3| = 1.5, 1.5, 3, 4 — all positive so W+ = 10
+            assertClose(r.wPlus, 10, 1e-9, 'W+ with midranks');
+        });
+
+        test('drops zeros before ranking', () => {
+            const xs = [0, 1, 2, 3];
+            const r = ZtChi.wilcoxonSignedRank(xs, 0);
+            assert(r.zerosDropped === 1, `expected 1 zero dropped, got ${r.zerosDropped}`);
+            assert(r.n === 3, `expected n=3 after drop, got ${r.n}`);
+        });
+
+        test('throws on fewer than 2 non-zero observations', () => {
+            let threw = false;
+            try { ZtChi.wilcoxonSignedRank([0, 0, 5], 0); } catch (_) { threw = true; }
+            assert(threw, 'should throw when n<2 after dropping zeros');
+        });
+    });
+
+    describe('Wilcoxon rank-sum / Mann-Whitney U (ZtChi.wilcoxonRankSum)', () => {
+        test('identical samples give p near 1', () => {
+            const xs = [1, 2, 3, 4, 5];
+            const ys = [1, 2, 3, 4, 5];
+            const r = ZtChi.wilcoxonRankSum(xs, ys);
+            assert(r.pTwoTailed > 0.9, `expected p close to 1, got ${r.pTwoTailed}`);
+        });
+
+        test('disjoint well-separated samples give tiny p', () => {
+            const xs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            const ys = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+            const r = ZtChi.wilcoxonRankSum(xs, ys);
+            assertClose(r.u1, 0, 1e-9, 'U1 when xs strictly below ys');
+            assertClose(r.u2, 100, 1e-9, 'U2 when xs strictly below ys');
+            assert(r.pTwoTailed < 0.001, `expected p<0.001, got ${r.pTwoTailed}`);
+        });
+
+        test('U1 + U2 = n1*n2 identity', () => {
+            const rng = makeRng(42);
+            const xs = sampleNormal(rng, 50, 5, 15);
+            const ys = sampleNormal(rng, 51, 5, 20);
+            const r = ZtChi.wilcoxonRankSum(xs, ys);
+            assertClose(r.u1 + r.u2, xs.length * ys.length, 1e-9, 'U1+U2=n1*n2');
+        });
+    });
+
     describe('Sanity: bulk synthetic t-tests (false-positive rate ≤ α + noise)', () => {
         test('Under H₀ (true μ=100), 200 replications of n=30 give rejection rate ≤ 10%', () => {
             const rng = makeRng(987654321);

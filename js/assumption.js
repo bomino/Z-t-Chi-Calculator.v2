@@ -16,6 +16,7 @@
     const {
         escapeHtml, showNotification,
         summaryStats, skewness, kurtosis, jarqueBera, qqPoints, iqrOutliers,
+        wilcoxonSignedRank,
     } = window.ZtChi;
 
     function parseData(raw) {
@@ -153,12 +154,12 @@
                 ? {
                     label: 'Use caution',
                     colorClass: 'verdict fail',
-                    advice: 'The t-test may still be OK, but consider: (a) reporting both the t-CI and the bootstrap CI (Simulate page) as a robustness check; (b) if n is small and the distribution is clearly non-normal, use Wilcoxon (not provided here) or a permutation / bootstrap approach.',
+                    advice: 'The t-test may still be OK, but consider: (a) reporting both the t-CI and the bootstrap CI (<a href="simulate.html">Simulate</a> page) as a robustness check; (b) if n is small and the distribution is clearly non-normal, use the Wilcoxon signed-rank result below, or a permutation / bootstrap approach.',
                 }
                 : {
                     label: 'Prefer non-parametric / bootstrap',
                     colorClass: 'verdict fail',
-                    advice: 'Parametric t-test results may be misleading. Use: the Wilcoxon signed-rank / rank-sum test (not provided here), OR the bootstrap CI + permutation p-value on the <a href="simulate.html">Simulate</a> page.',
+                    advice: 'Parametric t-test results may be misleading. Use the Wilcoxon signed-rank result below, or the bootstrap CI + permutation p-value on the <a href="simulate.html">Simulate</a> page.',
                 };
 
         return { tier, verdict, conditions };
@@ -178,6 +179,28 @@
         const outlierList = outliers.outliers.length === 0
             ? '<p>None flagged.</p>'
             : `<ul>${outliers.outliers.map((o) => `<li>x = ${fmt(o.value)} (position ${o.index + 1})</li>`).join('')}</ul>`;
+
+        // Wilcoxon signed-rank test against H0: median = 0. Provides a
+        // non-parametric reference the student can cite when the red tier
+        // recommends it. Mu0 is fixed at 0 here because the Coach analyzes
+        // a single vector; paired data should already be differenced before
+        // being entered.
+        let wilcoxonHtml = '';
+        try {
+            const w = wilcoxonSignedRank(xs, 0);
+            const dropped = w.zerosDropped > 0
+                ? ` (${w.zerosDropped} zero-difference observation${w.zerosDropped === 1 ? '' : 's'} dropped)`
+                : '';
+            wilcoxonHtml = `
+                <div class="assm-stats">
+                    <h3>Wilcoxon signed-rank test (non-parametric alternative)</h3>
+                    <p>H<sub>0</sub>: median = 0. <em>W</em><sub>+</sub> = ${fmt(w.wPlus, 2)}, <em>W</em><sub>&minus;</sub> = ${fmt(w.wMinus, 2)}, <em>n</em><sub>eff</sub> = ${w.n}${dropped}. Normal-approximation <em>z</em> = ${fmt(w.z, 3)}, two-tailed <em>p</em> = ${pFmt(w.pTwoTailed)}.</p>
+                    ${w.note ? `<p class="compare-note"><small>&#9888; ${w.note}</small></p>` : ''}
+                    <p class="compare-note"><small>Rank-based, makes no normality assumption. If you centered your data around a non-zero reference value, re-enter as <code>x &minus; &mu;<sub>0</sub></code>. For paired data enter the differences (A &minus; B).</small></p>
+                </div>`;
+        } catch (err) {
+            wilcoxonHtml = `<div class="assm-stats"><h3>Wilcoxon signed-rank test</h3><p class="compare-note">Not computable: ${escapeHtml(err.message || String(err))}</p></div>`;
+        }
 
         const html = `
             <div class="assm-result">
@@ -212,6 +235,7 @@
                         <p>Lower fence = ${fmt(outliers.lower)}, upper fence = ${fmt(outliers.upper)}.</p>
                         ${outlierList}
                     </div>
+                    ${wilcoxonHtml}
                     <div class="assm-conditions">
                         <h3>What the diagnostics say</h3>
                         <ul>${rec.conditions.map((c) => `<li>${c}</li>`).join('')}</ul>
