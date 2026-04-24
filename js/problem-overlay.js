@@ -45,7 +45,15 @@
                 <span class="problem-overlay-result" id="problem-answer-result" role="status" aria-live="polite"></span>
             </div>
         `;
-        document.body.appendChild(overlay);
+        // Insert before the footer so the problem appears above it rather
+        // than appended at the very end of <body>. Fall back to body-end
+        // append when there's no footer (unusual but defensive).
+        const footer = document.querySelector('footer.footer-container') || document.querySelector('footer');
+        if (footer) {
+            document.body.insertBefore(overlay, footer);
+        } else {
+            document.body.appendChild(overlay);
+        }
 
         document.getElementById('problem-overlay-close').addEventListener('click', () => {
             overlay.classList.add('problem-overlay-hidden');
