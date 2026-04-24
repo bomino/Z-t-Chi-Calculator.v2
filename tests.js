@@ -552,6 +552,45 @@
         });
     });
 
+    describe('Shapiro-Wilk normality (ZtChi.shapiroWilk)', () => {
+        test('clean normal sample yields p > 0.05 (does not reject normality)', () => {
+            const rng = makeRng(314159);
+            const xs = sampleNormal(rng, 100, 10, 30);
+            const r = ZtChi.shapiroWilk(xs);
+            assert(r.w > 0 && r.w <= 1, `W should be in (0, 1], got ${r.w}`);
+            assert(r.p > 0.05, `expected p > 0.05 for clean normal, got ${r.p}`);
+        });
+
+        test('strongly skewed sample yields p < 0.05 (rejects normality)', () => {
+            // Deterministic right-skewed sample (cubes of standard normals)
+            const rng = makeRng(271828);
+            const zs = sampleNormal(rng, 0, 1, 50);
+            const xs = zs.map((z) => z * z * z + 5); // heavy right tail
+            const r = ZtChi.shapiroWilk(xs);
+            assert(r.p < 0.05, `expected p < 0.05 for skewed data, got ${r.p}`);
+        });
+
+        test('rejects on n < 4', () => {
+            const r = ZtChi.shapiroWilk([1, 2, 3]);
+            assert(!Number.isFinite(r.w), 'W should be NaN for n < 4');
+            assert(!Number.isFinite(r.p), 'p should be NaN for n < 4');
+        });
+
+        test('identical observations return W = 1', () => {
+            const r = ZtChi.shapiroWilk([5, 5, 5, 5, 5]);
+            assertClose(r.w, 1, 1e-9, 'W should be 1 for zero-variance data');
+        });
+
+        test('symmetric bell-shaped sample gives W close to 1', () => {
+            // Nearly-normal quantile sample (10 equally-spaced normal quantiles)
+            const xs = [];
+            for (let i = 1; i <= 10; i++) xs.push(jStat.normal.inv(i / 11, 0, 1));
+            const r = ZtChi.shapiroWilk(xs);
+            assert(r.w > 0.97, `W should exceed 0.97 for near-normal quantiles, got ${r.w}`);
+            assert(r.p > 0.5, `p should exceed 0.5 for near-normal quantiles, got ${r.p}`);
+        });
+    });
+
     describe('Wilcoxon signed-rank (ZtChi.wilcoxonSignedRank)', () => {
         test('symmetric data around zero gives p near 1', () => {
             const xs = [-3, -2, -1, 1, 2, 3];

@@ -16,7 +16,7 @@
     const {
         escapeHtml, showNotification,
         summaryStats, skewness, kurtosis, jarqueBera, qqPoints, iqrOutliers,
-        wilcoxonSignedRank,
+        wilcoxonSignedRank, shapiroWilk,
     } = window.ZtChi;
 
     function parseData(raw) {
@@ -226,9 +226,18 @@
                         <p>${rec.verdict.advice}</p>
                     </div>
                     <div class="assm-stats">
-                        <h3>Normality check (Jarque-Bera)</h3>
-                        <p>JB = ${fmt(jb.jb, 3)} on ~χ²(2), p = ${pFmt(jb.p)}. ${jb.p < 0.05 ? 'Rejects' : 'Does not reject'} H₀ that data come from a normal distribution.</p>
-                        <p class="compare-note"><small>JB relies on skewness + excess kurtosis and is powerful for n ≳ 30. For smaller n, trust the Q-Q plot more than the p-value; consider the Shapiro-Wilk test in R/SPSS/jamovi as the gold standard.</small></p>
+                        <h3>Normality checks</h3>
+                        <p><strong>Jarque-Bera:</strong> JB = ${fmt(jb.jb, 3)} on ~χ²(2), <em>p</em> = ${pFmt(jb.p)}. ${jb.p < 0.05 ? 'Rejects' : 'Does not reject'} H₀ that data come from a normal distribution.</p>
+                        ${(() => {
+                            try {
+                                const sw = shapiroWilk(xs);
+                                if (!Number.isFinite(sw.w)) return `<p><strong>Shapiro-Wilk:</strong> not computable — ${escapeHtml(sw.note || 'need n ≥ 4')}.</p>`;
+                                return `<p><strong>Shapiro-Wilk:</strong> W = ${fmt(sw.w, 4)}, <em>p</em> = ${pFmt(sw.p)}. ${sw.p < 0.05 ? 'Rejects' : 'Does not reject'} H₀ of normality. ${sw.note ? `<small>${escapeHtml(sw.note)}</small>` : ''}</p>`;
+                            } catch (err) {
+                                return `<p><strong>Shapiro-Wilk:</strong> not computable — ${escapeHtml(err.message || String(err))}.</p>`;
+                            }
+                        })()}
+                        <p class="compare-note"><small>JB is powerful for n ≳ 30 and uses skew + kurtosis directly. Shapiro-Wilk (via Royston 1992 approximation) is generally the more powerful test for n &lt; 50 and is the standard small-sample normality test in R, SPSS, and jamovi. When the two disagree, trust Shapiro-Wilk at small n and the Q-Q plot over both.</small></p>
                     </div>
                     <div class="assm-stats">
                         <h3>Outliers (Tukey 1.5 × IQR rule)</h3>

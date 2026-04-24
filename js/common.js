@@ -450,6 +450,114 @@
     };
 
     /**
+     * Shapiro-Wilk test for normality. Uses Royston's (1992) polynomial
+     * approximation for the coefficients (a_i) and the p-value transform,
+     * which gives good accuracy for 4 <= n <= 2000 — within that range the
+     * test is widely considered the most powerful general-purpose normality
+     * test and is the "gold standard" small-n referenced in the Assumption
+     * Coach copy.
+     *
+     * Pipeline:
+     *   1. Sort observations.
+     *   2. Compute a_i coefficients from Royston's AS R94 (1992) approximation
+     *      to the inverse-normal order statistics, adjusted for finite n.
+     *   3. W = (Σ a_i * x_(i))² / Σ (x_i − x̄)².
+     *   4. Transform W to a normal deviate via Royston's (1992) polynomial
+     *      (different polynomials for n ≤ 11 vs n ≥ 12) and convert to p.
+     *
+     * References:
+     *   - Shapiro & Wilk (1965). An analysis of variance test for normality
+     *     (complete samples). Biometrika, 52(3/4), 591–611.
+     *   - Royston, P. (1982). An extension of Shapiro and Wilk's W test for
+     *     normality to large samples. Appl. Stat., 31(2), 115–124.
+     *   - Royston, P. (1992). Approximating the Shapiro-Wilk W-test for
+     *     non-normality. Stat. Comput., 2(3), 117–119.
+     *
+     * Returns { w, p, n, method, note } where `note` flags out-of-range
+     * conditions (n < 4 → NaN, n > 2000 → warning that the polynomial
+     * approximation degrades).
+     */
+    ZtChi.shapiroWilk = function shapiroWilk(xs) {
+        const n = xs.length;
+        if (n < 4) return { w: NaN, p: NaN, n, method: 'Shapiro-Wilk', note: 'needs at least 4 observations.' };
+        if (n > 2000) {
+            // Polynomial starts losing accuracy beyond here; still compute but flag.
+        }
+
+        const sorted = xs.slice().sort((a, b) => a - b);
+        const mean = sorted.reduce((a, b) => a + b, 0) / n;
+        const ss = sorted.reduce((a, b) => a + (b - mean) * (b - mean), 0);
+        if (ss === 0) return { w: 1, p: 1, n, method: 'Shapiro-Wilk', note: 'all observations identical.' };
+
+        // Royston (1992) coefficients — m_i = Φ^{-1}((i − 3/8) / (n + 1/4))
+        const m = new Array(n);
+        for (let i = 0; i < n; i++) m[i] = jStat.normal.inv((i + 1 - 3 / 8) / (n + 1 / 4), 0, 1);
+
+        const mSum2 = m.reduce((a, b) => a + b * b, 0);
+        const sqrtMSum2 = Math.sqrt(mSum2);
+        const u = 1 / Math.sqrt(n);
+
+        // a_{n} and a_{n-1} from Royston 1992 AS R94 polynomial fits to the
+        // inverse of the covariance matrix of normal order statistics.
+        const aN = -2.706056 * Math.pow(u, 5) + 4.434685 * Math.pow(u, 4)
+                   - 2.071190 * Math.pow(u, 3) - 0.147981 * Math.pow(u, 2)
+                   + 0.221157 * u + m[n - 1] / sqrtMSum2;
+        const aNm1 = -3.582633 * Math.pow(u, 5) + 5.682633 * Math.pow(u, 4)
+                     - 1.752460 * Math.pow(u, 3) - 0.293762 * Math.pow(u, 2)
+                     + 0.042981 * u + m[n - 2] / sqrtMSum2;
+
+        const a = new Array(n);
+        let epsilon;
+        if (n === 3) {
+            a[0] = -Math.sqrt(1 / 2);
+            a[2] = Math.sqrt(1 / 2);
+            a[1] = 0;
+        } else if (n <= 5) {
+            epsilon = (mSum2 - 2 * m[n - 1] * m[n - 1]) / (1 - 2 * aN * aN);
+            for (let i = 1; i < n - 1; i++) a[i] = m[i] / Math.sqrt(epsilon);
+            a[0] = -aN;
+            a[n - 1] = aN;
+        } else {
+            epsilon = (mSum2 - 2 * m[n - 1] * m[n - 1] - 2 * m[n - 2] * m[n - 2])
+                     / (1 - 2 * aN * aN - 2 * aNm1 * aNm1);
+            for (let i = 2; i < n - 2; i++) a[i] = m[i] / Math.sqrt(epsilon);
+            a[0] = -aN;
+            a[1] = -aNm1;
+            a[n - 2] = aNm1;
+            a[n - 1] = aN;
+        }
+
+        let numerator = 0;
+        for (let i = 0; i < n; i++) numerator += a[i] * sorted[i];
+        const w = (numerator * numerator) / ss;
+
+        // Royston 1992 p-value transform. Different polynomials for n ∈ [4, 11]
+        // vs n ∈ [12, 2000].
+        let p;
+        if (n <= 11) {
+            const gamma = -2.273 + 0.459 * n;
+            const mu = 0.5440 - 0.39978 * n + 0.025054 * n * n - 0.0006714 * n * n * n;
+            const sigma = Math.exp(1.3822 - 0.77857 * n + 0.062767 * n * n - 0.0020322 * n * n * n);
+            const wLog = -Math.log(gamma - Math.log(1 - w));
+            const z = (wLog - mu) / sigma;
+            p = 1 - jStat.normal.cdf(z, 0, 1);
+        } else {
+            const logN = Math.log(n);
+            const mu = -1.5861 - 0.31082 * logN - 0.083751 * logN * logN + 0.0038915 * logN * logN * logN;
+            const sigma = Math.exp(-0.4803 - 0.082676 * logN + 0.0030302 * logN * logN);
+            const wLog = Math.log(1 - w);
+            const z = (wLog - mu) / sigma;
+            p = 1 - jStat.normal.cdf(z, 0, 1);
+        }
+
+        return {
+            w, p, n,
+            method: 'Shapiro-Wilk (Royston 1992 approximation)',
+            note: n > 2000 ? 'n > 2000: Royston\'s polynomial approximation begins to degrade.' : null,
+        };
+    };
+
+    /**
      * Rank a numeric array with midrank convention for ties.
      * Returns an array of ranks in the original order. Also returns the
      * tie-correction sum Σ(t³ − t) summed over all tie groups of size t,
