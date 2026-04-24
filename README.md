@@ -110,9 +110,13 @@ Z-t-Chi-Calculator/
 ├── compare.html
 ├── simulate.html
 ├── epidemiology.html
+├── corrections.html               Multiple-comparisons corrections + inflation viz
 ├── datasets.html
 ├── assumption.html
 ├── guide.html
+├── notation.html                  Notation translator (textbook ↔ SPSS ↔ R ↔ APA)
+├── error-traps.html               Common-error library
+├── instructor.html                Instructor Mode builder (signed problem links)
 ├── tests.html                     Regression test harness
 ├── manifest.webmanifest           PWA manifest
 ├── icon.svg                       App icon
@@ -125,20 +129,36 @@ Z-t-Chi-Calculator/
 │   │                              toast, csv helpers
 │   ├── state.js                   URL-hash state codec + sessionStorage
 │   │                              recent-results ring buffer
+│   ├── backend.js                 Optional-backend feature detection (probes
+│   │                              /health, exposes ZtChi.backend.ready)
+│   ├── theme.js                   Light / dark / high-contrast switcher
 │   ├── layout.js                  Nav injector, embed-mode, SW registrar
 │   ├── reports.js                 APA / AMA report generators
 │   ├── predict.js                 Predict-Then-Reveal dialog
 │   ├── checks.js                  Formative self-check item bank
 │   ├── show-work.js               LaTeX step-by-step renderer
+│   ├── three-level.js             Three-level interpretation (data/stats/plain)
 │   ├── datasets.js                Curated dataset library + loadInto
+│   ├── ai-interpret.js            Opt-in AI interpretation button (requires
+│   │                              backend)
+│   ├── instructor.js              Instructor Mode spec encoder + sign client
+│   ├── instructor-builder.js      Instructor Mode builder UI glue
+│   ├── problem-overlay.js         Student-facing problem overlay
 │   ├── z_calculator.js            ...
 │   ├── t_calculator.js
 │   ├── chi_square.js
 │   ├── compare.js
 │   ├── simulate.js
 │   ├── epidemiology.js
+│   ├── corrections.js
 │   └── assumption.js
-├── documentation.md               API reference for the math helpers
+├── backend/                       Optional Cloudflare Worker — see backend/DEPLOY.md
+│   ├── worker.js                  /health, /sign, /ai endpoints
+│   ├── wrangler.toml              CF Workers config
+│   ├── README.md                  Short overview + pointer to DEPLOY.md
+│   └── DEPLOY.md                  Step-by-step deployment walkthrough
+├── docs/
+│   └── documentation.md           Math-helper API reference
 ├── tests.js                       65-test regression harness
 ├── LICENSE                        MIT
 └── README.md                      This file.
