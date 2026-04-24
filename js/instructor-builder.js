@@ -83,7 +83,11 @@
             return;
         }
         const token = ZtChi.instructor.encodeSpec(spec);
-        const signed = await ZtChi.instructor.sign(spec);
+        // Sign the wrapped spec (with `v` and `issuedAt` added by encodeSpec) so the
+        // student's client, which decodes the token back into that same wrapped shape,
+        // reproduces byte-identical JSON when it re-signs for verification.
+        const fullSpec = ZtChi.instructor.decodeSpec(token);
+        const signed = await ZtChi.instructor.sign(fullSpec);
 
         const status = document.getElementById('signStatus');
         const out = document.getElementById('outputLink');

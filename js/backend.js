@@ -22,7 +22,7 @@
 
     const ZtChi = window.ZtChi || (window.ZtChi = {});
 
-    const BACKEND_URL = ''; // hardcoded fallback; leave empty for "not deployed yet"
+    const BACKEND_URL = 'https://ztchi-backend.malawali.workers.dev';
 
     function resolveUrl() {
         if (typeof window.ZTCHI_BACKEND_URL === 'string' && window.ZTCHI_BACKEND_URL) {

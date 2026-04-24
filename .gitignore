@@ -20,3 +20,8 @@ npm-debug.log*
 
 # Local server artifacts
 *.log
+
+# Cloudflare Workers local state (wrangler dev/deploy cache, secrets file)
+backend/.wrangler/
+.wrangler/
+.dev.vars
