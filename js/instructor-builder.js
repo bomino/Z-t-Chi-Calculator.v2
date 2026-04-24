@@ -164,7 +164,8 @@
         try {
             const { enabled, reason } = await ZtChi.backend.ready;
             if (enabled) {
-                span.textContent = `online (${ZtChi.backend.url})`;
+                span.textContent = 'Online';
+                span.title = ZtChi.backend.url;
                 span.className = 'status-ok';
             } else if (reason === 'no-url') {
                 span.textContent = 'not configured — links will be unsigned';
