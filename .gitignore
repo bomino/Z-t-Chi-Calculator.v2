@@ -29,3 +29,8 @@ backend/.wrangler/
 # Ad-hoc screenshots from debugging sessions
 Screenshot*.png
 screenshot*.png
+
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
