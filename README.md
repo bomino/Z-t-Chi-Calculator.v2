@@ -1,10 +1,10 @@
 # Z-t-Chi Calculator
 
-A browser-native statistical calculator suite for biostatistics education. Developed for MPHO 605: Introduction to Biostatistics. No build step, no server required, no tracking; runs entirely in the browser and works offline after first visit (PWA).
+A browser-native statistical calculator suite for biostatistics education. Developed for MPHO 605: Introduction to Biostatistics by [Hadiza Galadima, PhD](https://hgaladima.com/). Live at **[ztchi.hgaladima.com](https://ztchi.hgaladima.com/)**. No build step, no server required, no tracking; runs entirely in the browser and works offline after first visit (PWA).
 
 ## What's inside
 
-Ten pages, each focused on a teaching moment that the others don't cover:
+Fourteen student-facing pages, each focused on a teaching moment that the others don't cover:
 
 | Page | What it does |
 |---|---|
@@ -43,20 +43,13 @@ Then visit `http://localhost:8000/`.
 
 > **Note on service worker:** the PWA service worker only registers over `http(s)` (or `localhost`), not over `file://`. You'll see the app without PWA features when opening HTML files directly.
 
-## Deploying to GitHub Pages
+## Deployment
 
-A GitHub Actions workflow at `.github/workflows/deploy.yml` is preconfigured. It uses `actions/configure-pages@v5` with `enablement: true`, which attempts to turn Pages on automatically when the workflow first runs. In most cases the first push will enable and deploy Pages in one go.
+**Primary**: two Cloudflare Pages projects from this repo, served at `ztchi.hgaladima.com` and `teach.hgaladima.com` (see *Subdomain layout* below). CF auto-deploys on every push to `main`.
 
-**If the workflow fails with `Get Pages site failed … HttpError: Not Found`**, Pages couldn't be auto-enabled (common on org-restricted or brand-new repos). Enable it manually, then re-run the workflow:
+**Optional mirror**: `.github/workflows/deploy.yml` ships the repo root to GitHub Pages at <https://bomino.github.io/Z-t-Chi-Calculator.v2/> as a fallback / preview path. Canonical tags on every page point at the `ztchi.hgaladima.com` form so search engines treat the GH Pages mirror as a duplicate, not a separate ranking target.
 
-1. Open your repo on github.com.
-2. Go to **Settings → Pages** (left sidebar).
-3. Under *Build and deployment → Source*, choose **GitHub Actions**.
-4. Go to the **Actions** tab, open the failed run, and click **Re-run all jobs**.
-
-Every subsequent push to `main` redeploys automatically. The live URL appears at **Settings → Pages** and in each workflow run summary — it will look like `https://<user>.github.io/<repo>/`. For this repo specifically: <https://bomino.github.io/Z-t-Chi-Calculator.v2/>.
-
-The workflow uploads the repo root as the Pages artifact, so `index.html` becomes the landing page.
+The migration from GH-Pages-only to the dual CF Pages setup happened in April 2026; see `docs/migration-runbook.md` for the full historical record (kept for reference).
 
 ### First-time push from a local clone
 
@@ -94,6 +87,31 @@ Both projects connect to the **same git remote** and the **same `main` branch**.
 
 Why separate subdomains: students never see the instructor builder in their nav or URL bar. Dr. Galadima (or a TA who's been given the instructor token) bookmarks `https://teach.hgaladima.com/` and the whole builder UI is there with no student-facing chrome. See `backend/DEPLOY.md` for setup of the second CF Pages project.
 
+The footer of every page reverse-cross-links the author back to [hgaladima.com](https://hgaladima.com/) (her professional portfolio) — closes the link-equity loop with the parent property.
+
+## SEO and indexing
+
+The calculator is fully indexable; the instructor builder is comprehensively de-indexed.
+
+**Per-page SEO** (every student-facing HTML page):
+- Unique `<title>` and `<meta name="description">`
+- `<link rel="canonical">` pointing at the `ztchi.hgaladima.com/` form
+- Open Graph + Twitter Card meta with `og-default.svg` as the social preview image
+- Page-type JSON-LD: `SoftwareApplication` for the 8 calculator pages, `LearningResource` for the 4 reference pages, `WebSite` + `BreadcrumbList` on the home page
+
+**Static `sitemap.xml`** at the repo root lists all 13 indexable URLs.
+
+**Host-aware `/robots.txt`** is served by `functions/robots.txt.js`, which inspects the request `Host` header:
+- `teach.hgaladima.com` → `User-agent: * \n Disallow: /` (block everything)
+- `ztchi.hgaladima.com` (and any other host) → standard allow + sitemap pointer
+
+**Three-layer noindex on `teach.hgaladima.com`**:
+1. The host-aware `robots.txt` above.
+2. `X-Robots-Tag: noindex, nofollow, noarchive` HTTP header injected by `functions/_middleware.js` on every teach-host response.
+3. `<meta name="robots" content="noindex, nofollow, noarchive">` on `instructor.html`.
+
+Belt + suspenders + parachute. Even if a crawler ignores robots.txt and ignores the header, the meta tag still applies; if it ignored all three, the host's middleware also blocks all student-page paths so there's almost no content to index.
+
 ## Embedding in an LMS
 
 Append `?embed=1` to any calculator URL to hide the navigation and footer:
@@ -115,35 +133,40 @@ Append `?embed=1` to any calculator URL to hide the navigation and footer:
 
 ```
 Z-t-Chi-Calculator/
-├── .github/workflows/deploy.yml   GH Actions → Pages deploy
+├── .github/workflows/deploy.yml   GH Actions → Pages mirror deploy (optional)
 ├── index.html                     Landing page
-├── z_calculator.html              ...
-├── t_calculator.html
-├── chi_square.html
-├── compare.html
-├── simulate.html
-├── epidemiology.html
+├── z_calculator.html              Z-test calculator
+├── t_calculator.html              t-test calculator (4 modes)
+├── chi_square.html                χ² test of independence
+├── compare.html                   Compare χ² / Fisher / Z on a 2×2 table
+├── simulate.html                  Bootstrap CIs + permutation tests
+├── epidemiology.html              Epi 2×2 (sens/spec/PPV/RR/OR/NNT)
 ├── corrections.html               Multiple-comparisons corrections + inflation viz
-├── datasets.html
-├── assumption.html
-├── guide.html
+├── datasets.html                  Curated dataset library
+├── assumption.html                Assumption Coach (normality diagnostics)
+├── guide.html                     Decision tree + walkthrough
 ├── notation.html                  Notation translator (textbook ↔ SPSS ↔ R ↔ APA)
 ├── error-traps.html               Common-error library
-├── instructor.html                Instructor Mode builder (signed problem links)
-├── tests.html                     Regression test harness
+├── instructor.html                Instructor Mode builder (noindex; teach subdomain)
+├── tests.html                     Regression test harness (noindex)
+├── 404.html                       Custom 404 (noindex)
 ├── manifest.webmanifest           PWA manifest
 ├── icon.svg                       App icon
+├── og-default.svg                 Social-preview OG image (1200×630)
 ├── sw.js                          Service worker
+├── sitemap.xml                    13 indexable student-facing URLs
 ├── styles.css                     Shared stylesheet
-├── js/
+├── tests.js                       65-test regression harness
+├── functions/                     Cloudflare Pages Functions (host-aware edge logic)
+│   ├── _middleware.js             Host-based routing + X-Robots-Tag for teach
+│   ├── robots.txt.js              Host-aware robots.txt (Allow vs Disallow:/)
+│   └── api/[[path]].js            Service-binding proxy → backend Worker
+├── js/                            Per-page modules + shared infrastructure
 │   ├── common.js                  Shared namespace (ZtChi.*): validators,
-│   │                              summary stats, epidemiology, effect
-│   │                              sizes, normality diagnostics, banner,
-│   │                              toast, csv helpers
+│   │                              summary stats, epidemiology, effect sizes,
+│   │                              normality diagnostics, banner, toast, csv
 │   ├── state.js                   URL-hash state codec + sessionStorage
-│   │                              recent-results ring buffer
-│   ├── backend.js                 Optional-backend feature detection (probes
-│   │                              /health, exposes ZtChi.backend.ready)
+│   ├── backend.js                 Backend feature detection (/health probe)
 │   ├── theme.js                   Light / dark / high-contrast switcher
 │   ├── layout.js                  Nav injector, embed-mode, SW registrar
 │   ├── reports.js                 APA / AMA report generators
@@ -152,27 +175,26 @@ Z-t-Chi-Calculator/
 │   ├── show-work.js               LaTeX step-by-step renderer
 │   ├── three-level.js             Three-level interpretation (data/stats/plain)
 │   ├── datasets.js                Curated dataset library + loadInto
-│   ├── ai-interpret.js            Opt-in AI interpretation button (requires
-│   │                              backend)
+│   ├── ai-interpret.js            Opt-in AI interpretation (requires backend)
 │   ├── instructor.js              Instructor Mode spec encoder + sign client
 │   ├── instructor-builder.js      Instructor Mode builder UI glue
 │   ├── problem-overlay.js         Student-facing problem overlay
-│   ├── z_calculator.js            ...
-│   ├── t_calculator.js
-│   ├── chi_square.js
-│   ├── compare.js
-│   ├── simulate.js
-│   ├── epidemiology.js
-│   ├── corrections.js
-│   └── assumption.js
+│   └── (per-page logic)           z_calculator.js, t_calculator.js,
+│                                  chi_square.js, compare.js, simulate.js,
+│                                  epidemiology.js, corrections.js,
+│                                  assumption.js
 ├── backend/                       Optional Cloudflare Worker — see backend/DEPLOY.md
-│   ├── worker.js                  /health, /sign, /ai endpoints
+│   ├── worker.js                  /health, /sign, /ai, /verify endpoints
 │   ├── wrangler.toml              CF Workers config
 │   ├── README.md                  Short overview + pointer to DEPLOY.md
 │   └── DEPLOY.md                  Step-by-step deployment walkthrough
 ├── docs/
-│   └── documentation.md           Math-helper API reference
-├── tests.js                       65-test regression harness
+│   ├── documentation.md           Math-helper API reference
+│   ├── migration-runbook.md       The April 2026 GH Pages → CF Pages migration
+│   │                              (kept for reference; migration is complete)
+│   └── audits/                    Scientific-critical-thinking review records
+│       ├── scientific-critical-review-2026-04.md
+│       └── scientific-critical-review-new-code-2026-04.md
 ├── LICENSE                        MIT
 └── README.md                      This file.
 ```

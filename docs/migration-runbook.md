@@ -1,5 +1,7 @@
 # Migration guide — GH Pages → Cloudflare Pages at `hgaladima.com`
 
+> **Status (April 2026):** **completed**. Both CF Pages projects are live; ztchi.hgaladima.com and teach.hgaladima.com are serving production traffic. This document is preserved as the historical record of how the migration was done. If a similar migration ever needs to be repeated (different domain, different account), follow the steps below as a template.
+
 Complete step-by-step walkthrough for moving the Z-t-Chi Calculator off
 GitHub Pages and onto Cloudflare Pages under two subdomains of
 `hgaladima.com`:

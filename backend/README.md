@@ -1,17 +1,14 @@
 # Z-t-Chi Calculator — Optional Backend
 
-The main app at the repo root runs as a pure static site on GitHub Pages
-and never requires this backend. Two *optional enhancements* call into
-Cloudflare Workers defined here:
+The main app deploys to Cloudflare Pages (production: `ztchi.hgaladima.com` / `teach.hgaladima.com`) and runs as a pure static site that never requires this backend. Three *optional enhancements* call into the Cloudflare Worker defined here:
 
-1. **`/sign`** — HMAC-signs an instructor-authored problem spec so the
-   student's client can verify it hasn't been tampered with.
-2. **`/ai`** — proxies requests to the Anthropic Claude API for the
-   opt-in AI Interpretation feature. The API key lives only in the
-   Worker's secret environment; it never reaches the client.
+1. **`/sign`** — HMAC-signs an instructor-authored problem spec so the student's client can verify it hasn't been tampered with. Token-gated via the `INSTRUCTOR_TOKENS` env var.
+2. **`/verify`** — public endpoint that students' clients call to confirm a signed problem link is intact. Constant-time comparison; returns only a boolean (no signature material leaks).
+3. **`/ai`** — proxies requests to the Anthropic Claude API for the opt-in AI Interpretation feature. The API key lives only in the Worker's secret environment; it never reaches the client.
 
-Both endpoints live in a single Worker (`worker.js`) behind a path
-router so you only need one deployment.
+All three endpoints live in a single Worker (`worker.js`) behind a path router so you only need one deployment.
+
+The frontend reaches the Worker via `functions/api/[[path]].js` on either CF Pages project — that Pages Function proxies `/api/*` to the Worker through a service binding, which keeps the browser on a same-origin call (no CORS preflight).
 
 **For full step-by-step deployment instructions see [`DEPLOY.md`](./DEPLOY.md)** — that file covers
 prerequisites, CLI install, secret generation, origin allowlist,
